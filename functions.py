@@ -641,7 +641,7 @@ def create_df_inventories(file_path, list_units, list_categories, factors_time):
             time_steps = find_times(line)
             for i, t in enumerate(time_steps):
                 time_steps[i] = t.replace(" ", "")
-            columns_df = ['Group name', re.sub("s$", "", category) + " name"]
+            columns_df = ['Group', re.sub("s$", "", category)]
             columns_df.extend(time_steps)
 
         if readblock == 1 and regex_noe != None:
@@ -675,10 +675,10 @@ def create_df_inventories(file_path, list_units, list_categories, factors_time):
             ### inv[k1][k2] is a list of dataframes. Let's concatenate them and transform
             ### this list into a single dataframe
             inv[k1][k2] = pd.concat(inv[k1][k2])
-            if "Isotope name" in inv[k1][k2].columns:
-                inv[k1][k2] = inv[k1][k2].groupby(['Group name', 'Isotope name']).sum()
-            if "Element name" in inv[k1][k2].columns:
-                inv[k1][k2] = inv[k1][k2].groupby(['Group name', 'Element name']).sum()
+            if "Isotope" in inv[k1][k2].columns:
+                inv[k1][k2] = inv[k1][k2].groupby(['Group', 'Isotope']).sum()
+            if "Element" in inv[k1][k2].columns:
+                inv[k1][k2] = inv[k1][k2].groupby(['Group', 'Element']).sum()
                         
             del inv[k1][k2]['initial']
             del inv[k1][k2]['charge']
