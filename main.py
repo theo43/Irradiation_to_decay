@@ -5,11 +5,9 @@
 
 import pickle, re, sys, os, glob, shutil, time
 import matplotlib.pyplot as plt
-#import numpy as np
 import pandas as pd
 from functions_dict import *
 from Tkinter import *
-#from tkFont import Font
 
 ### ****************************** Beginnning of main ******************************
 
@@ -20,7 +18,7 @@ if __name__ == '__main__':
     ##########################################################################################
 
     root = Tk()
-    root.title('Post_ORIGEN-S')
+    root.title('MAIN')
     
     # Create vertical and horizontal Scrollbars
     SbV = Scrollbar(root, orient=VERTICAL)
@@ -46,7 +44,7 @@ if __name__ == '__main__':
       
     # Add widgets
     r = 0
-    La = Label(Fr, text="Welcome in Post_ORIGEN-S!")
+    La = Label(Fr, text="Welcome!")
     La.grid(row=r, columnspan=4)
     
     r += 1
@@ -74,7 +72,7 @@ if __name__ == '__main__':
     La.grid(row=r, column=0, columnspan=4, sticky=W)
     
     r += 1
-    t = "Select the ORIGEN-S output files to post-treat "
+    t = "Select the output files to post-treat "
     t += "and fill-in the required data"
     La = Label(Fr, text=t)
     La.grid(row=r, columnspan=4, sticky=W)
@@ -88,9 +86,9 @@ if __name__ == '__main__':
     r += 1
     La = Label(Fr, text="Files names")
     La.grid(row=r, column=0)
-    La = Label(Fr, text="Number of fuel assemblies")
+    La = Label(Fr, text="Number of FA")
     La.grid(row=r, column=1, sticky=W)
-    La = Label(Fr, text="Fuel assembly mass (tons)")
+    La = Label(Fr, text="FA mass (tons)")
     La.grid(row=r, column=2, sticky=W)
     
     dict_out = {}
@@ -114,11 +112,11 @@ if __name__ == '__main__':
     La.grid(row=r, column=0, columnspan=4, sticky=W)
     
     r += 1
-    La = Label(Fr, text="Information for decay power generation:")
+    La = Label(Fr, text="Information for power curve generation:")
     La.grid(row=r, columnspan=3, column=0, sticky=W)
     
     r += 1
-    La = Label(Fr, text="Core total thermal power (MW)")
+    La = Label(Fr, text="Total thermal power (MW)")
     La.grid(row=r, column=0, sticky=W)
     core_power = StringVar()
     En = Entry(Fr, textvariable=core_power)
@@ -204,7 +202,7 @@ if __name__ == '__main__':
         print "Unable to continue, you need to select at least one task to perform."
         sys.exit(0)
         
-    list_OrigensOut_names = []
+    list_out_names = []
     n_FA_batch = []
     FA_mass = []
     
@@ -226,7 +224,7 @@ if __name__ == '__main__':
     info.append(n_FA_batch)
     list_loc = []
     
-    for f in list_OrigensOut_names:
+    for f in list_out_names:
         list_loc.append(loc_input+'/'+f)
     info.append(list_loc)
     
@@ -248,7 +246,7 @@ if __name__ == '__main__':
         try:
             core_power = float(core_power.get())
         except ValueError:
-            print "Unable to continue: the core thermal power is not a number."
+            print "Unable to continue: the thermal power is not a number."
             sys.exit(0)
         mox = mox.get()
         
@@ -256,7 +254,7 @@ if __name__ == '__main__':
             list_batch_df.append(create_df_decay_power('../Input/'+file_name, factors_time))
         
         df_total = gather_df(list_batch_df,            FA_mass,
-                             n_FA_batch,               list_OrigensOut_names,
+                             n_FA_batch,               list_out_names,
                              core_power,               mox,
                              act_u9_np9_uncertainty,   u9_np9_uncertainty,
                              fp_uncertainty,           fuel_uncertainty,
@@ -307,7 +305,7 @@ if __name__ == '__main__':
                 
         list_batch_df = []
         t0 = time.time()
-        for file_name in list_OrigensOut_names:
+        for file_name in list_out_names:
             list_batch_df.append(create_df_inventories('../Input/'+file_name,
                                                        list_units,
                                                        list_categories,
@@ -332,7 +330,7 @@ if __name__ == '__main__':
         time_steps = sorted(l, key=lambda x: convert_str_sec(x, factors_time))
         
         root = Tk()
-        root.title('Post_ORIGEN-S: available time steps')
+        root.title('Available time steps')
         
         # Create vertical and horizontal Scrollbars
         SbV = Scrollbar(root, orient=VERTICAL)
