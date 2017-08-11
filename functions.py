@@ -957,3 +957,43 @@ def get_state_IntVar(dictionary, factors):
         if dictionary[k].get() == 1:
             list_IntVar1.append(k)
     return list_IntVar1
+
+##########################################################################################################
+
+def plot_inventory(di, category, unit, group, list_noe):
+    """
+    Plot evolution of isotope or nuclide over decay time.
+    """
+    import re
+    import matplotlib.pyplot as plt
+    from functions_dict import convert_str_sec, factors_time
+    # "di" comes from create_df_inventories, needs a bit of preparation
+    d = di[category][unit]
+    
+    # Reset index
+    d = d.reset_index()
+    
+    # Drop "Totals" in "Elements" category
+    if category == 'Elements':
+        d = d[d['Element'] != 'Totals']
+    
+    # Target the "group" group
+    d = d[d['Group'] == group]
+    
+    # Delete the "Group name" feature
+    del d['Group']
+    
+    # Set index on noe name
+    d = d.set_index(re.sub('s$', ' ', category)+'name')
+    d.columns.name = 'Time'
+    
+    # Transpose the dataframe
+    d = d.T.reset_index()
+    d['Time [s]'] = d['Time'].apply(lambda t: convert_str_sec(t, factors_time))
+    del d['Time']
+    d = d.set_index('Time [s]').sort_index()
+    
+    # Finally plot
+    t = 'Title'
+    d[list_noe].plot(logx=1, logy=0, title=t, grid=1, subplots=1)
+    plt.show()
