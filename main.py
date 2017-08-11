@@ -274,6 +274,15 @@ if __name__ == '__main__':
         df_info.to_excel(writer, "Data")
         df_total.to_excel(writer, "Results")
         writer.save()
+        
+        # Plotting of the decay power curves
+        df_total = df_total.reset_index()
+        df_total = df_total.set_index(['Time steps [s]'])
+        df_total = df_total.drop(['Time steps', 'Sigma value [%]'], axis=1)
+        ax = df_total.plot(logx=1, logy=0, title='Decay power curves', grid=1)
+        ax.set_xlabel('Decay time [s]')
+        ax.set_ylabel('Decay power [% FP]')
+        plt.show()
     
     # Other choice.
     ##########################################################################################
