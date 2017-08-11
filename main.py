@@ -11,15 +11,6 @@ from functions_dict import *
 from Tkinter import *
 #from tkFont import Font
 
-### Dictionnary containing the conversion factor between different time units and seconds.
-factors_time = {
-                'sec': 1.,
-                'min': 60., # WARNING: minutes not yet considered in find_times function
-                'hr': 3600.,
-                'd': 24. * 3600.,
-                'yr': 365 * 24. * 3600.
-               }
-
 ### ****************************** Beginnning of main ******************************
 
 if __name__ == '__main__':
