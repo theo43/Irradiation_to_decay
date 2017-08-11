@@ -6,6 +6,15 @@
 ### DICTIONARIES    
 ##########################################################################################################
 
+### Dictionnary containing the conversion factor between different time units and seconds.
+factors_time = {
+                'sec': 1.,
+                'min': 60., # WARNING: minutes not yet considered in find_times function
+                'hr': 3600.,
+                'd': 24. * 3600.,
+                'yr': 365 * 24. * 3600.
+               }
+
 fp_uncertainty = {
                      '0.1sec':          0.079,
                      '1.0sec':          0.079,
