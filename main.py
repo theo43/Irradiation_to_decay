@@ -1,4 +1,4 @@
-# TO BE USED WITH PYTHON V2.7
+# WORKS WITH PYTHON V3.6
 # -*- coding: iso-8859-1 -*-
 # -*- encoding: iso8859-1 -*-
 # Author: theo43@github
@@ -6,13 +6,8 @@
 import sys, os, glob, time
 import matplotlib.pyplot as plt
 import pandas as pd
-import Tkinter as tk
-from functions import create_df_decay_power, factors_time, regex_time,
-regex_category, reg_categ_unit, gather_df, 
-act_u9_np9_uncertainty, u9_np9_uncertainty, 
-fp_uncertainty, fuel_uncertainty, create_df_inventories,
-reg_after_Decay, convert_str_sec, get_state_IntVar,
-get_dict_group_noe, dict_unit
+import tkinter as tk
+from functions import *
 
 if __name__ == '__main__':
     
@@ -281,7 +276,8 @@ if __name__ == '__main__':
                                                        factors_time,
                                                        regex_time,
                                                        regex_category,
-                                                       reg_categ_unit))
+                                                       reg_categ_unit,
+                                                       reg_after_Decay))
         
         df_total = gather_df(list_batch_df,            FA_mass,
                              n_FA_batch,               list_files_post,
@@ -437,7 +433,7 @@ if __name__ == '__main__':
         time_steps = get_state_IntVar(dict_IntVar, factors_time)                                                          
         
         for c in list_categories:
-            u_tmp = dinv[c].keys()[0]
+            u_tmp = list(dinv[c].keys())[0]
             dict_grp_noe = get_dict_group_noe(dinv[c][u_tmp])
             dict_IntVar = {}
             
