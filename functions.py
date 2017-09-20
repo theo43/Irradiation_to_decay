@@ -11,14 +11,15 @@
 regex_time = "^\s+(charge\s+discharge|initial)\s+\d+\.\d?\s?[sechrdyr]"
 # 2. For category ('elements' or 'nuclides') research
 regex_category = {
-### For results concerning elements category. Gets the "totals"
-'Elements': "^\s+([a-z]{,2}|totals)\s+\d\.\d{2}E[+-]\d{2}",
-### For results concerning nuclides category. Does not get "total"
-# "totals" from elements is instead taken.
-'Isotopes': "^\s+[a-z]{1,2}\s{0,2}\d{1,3}[m]?\s+\d\.\d{2}E[+-]\d{2}"
+    # For 'Elements' category. Gets the "totals"
+    'Elements': "^\s+([a-z]{,2}|totals)\s+\d\.\d{2}E[+-]\d{2}",
+    # For 'Isotopes' category. Does not get "total"
+    'Isotopes': "^\s+[a-z]{1,2}\s{0,2}\d{1,3}[m]?\s+\d\.\d{2}E[+-]\d{2}"
 }
+### Regular expression to detect category and unit
 reg_categ_unit = "concentrations, grams|radioactivity, curies|thermal"
 reg_categ_unit += " power, watts|gamma power, watts"
+### Regular expression matching groups only
 reg_after_Decay = "actinides|fission products|light elements"
 
 ##############################################################################
@@ -192,11 +193,11 @@ fuel_uncertainty = {
 
 ### Correspondance between units and units for printing (source terms printing)                   
 dict_unit = {
-             'W': 'watts',
-             'W_gamma': 'watts_gamma',
-             'g': 'grams',
-             'Bq': 'becquerels'
-            }
+    'W': 'watts',
+    'W_gamma': 'watts_gamma',
+    'g': 'grams',
+    'Bq': 'becquerels'
+}
 
 ##############################################################################
 ### FUNCTIONS    
@@ -276,127 +277,9 @@ def find_results(line):
 
 ##############################################################################
 
-def compare_ti_tf(ti, tf, factors):
-    """ 
-    Take as input two strings representing time steps on the
-    following format: 'float + time dimension' without any space.
-       
-    Example: '1.0hr', '0.2sec', '50.0yr'. The only specific case should be
-    'discharge' (time zero).
-    Returns True if ti <= tf, False else.
-    NOT USED.
-    """
-    from re import findall
-    times = {}
-    L = (ti, tf)
-    for i, time in enumerate(L):
-        if time == 'discharge':
-            times[time] = 0.0
-        else:
-            times[time] = float(findall("\d+\.\d+", time)[0]) *\
-                                factors[findall("[a-z]+", time)[0]]
-    return times[ti] <= times[tf]
-
-##############################################################################
-
-def user_plot(d, categ, grp, noe, unit, ti, tf, factors):
-    """ 
-    Take as input all the information in order to plot the evolution of the
-    unit of an element or nuclide.
-    NOT USED.
-    """
-    from re import findall
-    import matplotlib.pyplot as plt
-    X = []
-    Y = []
-    L = []
-    min_y = 1.0E30
-    max_y = -1.0
-    timesteps = d[categ][grp][noe].keys()
-    for t in timesteps:
-        if compare_ti_tf(ti, t, factors) and compare_ti_tf(t, tf, factors):
-            if t == 'discharge':
-                x = 0.0
-            else:
-                x = float(findall("\d+\.\d+", t)[0]) *\
-                          factors[findall("[a-z]+", t)[0]]
-
-            y = float(d[categ][grp][noe][t][unit])
-
-            if y < min_y:
-                min_y = y
-            if y > max_y:
-                max_y = y
-            L.append((x, y))
-
-    L = sorted(L, key=lambda x: x[0])
-    for i in range(len(L)):
-        X.append(L[i][0])
-        Y.append(L[i][1])
-
-    plt.xscale('log')
-    plt.title('')
-    plt.grid(True)
-    plt.semilogx(X, Y, color='r', label=noe)
-    ### Legend location: 1 (inside, upper right); 2 (inside, upper left);
-    # 3 (inside, lower left); 4 (inside, lower right); 5 (inside, lower right);
-    plt.legend(loc=0)
-    plt.xlabel('Time (s)')
-    ylabel = {
-              "g": "Mass (g)",
-              "Bq": "Activity (Bq)",
-              "W": "Total power (W)",
-              "W_gamma": "Gamma power (W)"
-             }
-    plt.ylabel(ylabel[unit])
-    plt.axis([0., float(findall("\d+\.\d+", tf)[0]) *\
-                        factors[findall("[a-z]+", tf)[0]], min_y, max_y])
-    plt.show()
-    #plt.savefig("test.eps")
-
-##############################################################################
-
-def dictionary2dataframe(dictionary, list_time, list_noe, category, unit):
-    """
-    Take as input a dictionary containing data to be printed via a
-    pandas DataFrame.
-    Return a pandas DataFrame.
-    Lists of nuclides or elements (noe) and time steps are assumed sorted.
-    list_time elements.
-    NOT USED.
-    """
-    import pandas as pd
-    import numpy as np
-    List_2d = []
-    for noe in list_noe:
-        row_noe = []
-        for t in list_time:
-            ### Initialization of the results to 0. and NaN to True.
-            res = 0.
-            NaN = True
-
-            for group in dictionary[category].keys():
-
-                if noe in dictionary[category][group].keys():
-                    NaN = False # The noe is eventually present in the
-                                #Origen-S output.
-                    res += float(dictionary[category][group][noe][t][unit])
-            if NaN == True:
-                res = np.nan
-            row_noe.append(res)
-
-        List_2d.append(row_noe)
-    array = np.array(List_2d)
-
-    ### DataFrame needs a 2d numpy array as first argument.
-    df = pd.DataFrame(array, index=list_noe, columns=list_time)
-    return df
-
-##############################################################################
-
-def create_df_inventories(file_path, list_units, list_categories, factors_time,
-                          regex_time, regex_category, reg_categ_unit,
-                          reg_after_Decay):
+def create_df_inventories(file_path, list_units, list_categories,
+                          factors_time, regex_time, regex_category,
+                          reg_categ_unit, reg_after_Decay):
     """
     Read an Origen-S.out file, return a dictionary containing the stored data
     in the following order:
@@ -465,7 +348,7 @@ def create_df_inventories(file_path, list_units, list_categories, factors_time,
                     
         if (re.search("^\x0c", line)) and (readblock == 1):
             ### Detect the special font at the end of the bloc of data
-            # caractherizing the bloc's end: stops the reading of data
+            # caractherizing the bloc's end: stops data reading
             readblock = 0
             
             ### End of the bloc of data: an elementary DataFrame based on
@@ -493,8 +376,8 @@ def create_df_inventories(file_path, list_units, list_categories, factors_time,
 
 ##############################################################################
 
-def create_df_decay_power(file_path, factors_time,
-                          regex_time, regex_category, reg_categ_unit):
+def create_df_decay_power(file_path, factors_time, regex_time, regex_category,
+                          reg_categ_unit, reg_after_Decay):
     """
     Read an Origen-S.out file, return a DataFrame containing the results for
     time steps (columns), and the following contribution (index):
@@ -505,51 +388,40 @@ def create_df_decay_power(file_path, factors_time,
     """
     import re
     import pandas as pd
-   
-    ### Regular expressions allowing getting time steps and results in blocks of data being read.
-    ### For time steps research.
-    regex_time = "^\s+(charge\s+discharge|initial)\s+\d+\.\d?\s?[sechrdyr]"
-    ### For category ('elements' or 'nuclides') research.
-    regex_category = {
-                      ### For results concerning elements category. Gets the "totals".
-                      'Elements': "^\s+([a-z]{,2}|totals)\s+\d\.\d{2}E[+-]\d{2}",
-                      ### For results concerning nuclides category. Does not get "total". "totals" from elements is instead taken.
-                      'Isotopes': "^\s+[a-z]{1,2}\s{0,2}\d{1,3}[m]?\s+\d\.\d{2}E[+-]\d{2}"
-                     }
 
     ### Regex "nuclides or elements": initially 'None', switches to:
     ### >>>> regex_category['elements'] if category == elements;
     ### >>>> regex_category['nuclides'] if category == nuclides.
-
     regex_noe = None
 
     ### Variable switching to 1 when a block of 'Decay' results is read.
     readblock = 0
     
-    ### Creation of the DataFrame containing the results
+    ### Create the DataFrame containing the results
     df = pd.DataFrame()
     df.columns.name = 'Time steps'
     df.index.name = 'Contributions'
 
-    ### Openning of the OrigenS.out file in read mode and storage of the lines in the 'read_file' list.
+    ### Open the OrigenS.out file in read mode and store the lines in a list
     with open(file_path, 'r') as fi:
         read_file = fi.readlines()
 
     for i, line in enumerate(read_file):
 
-        if re.search("^\s+Decay ", line):
+        if re.search("^\s+Decay ", line) and\
+        (re.search(reg_after_Decay, line)):
             readblock = 1
-            ### Research of the group of nuclides or elements: 'fission products', 'actinides' or 'light elements'.
+            ### Search the group of nuclides or elements
+            ### Ex: 'fission products', 'actinides' or 'light elements'
             group = find_group(line)
         
         if readblock == 1 and re.search(reg_categ_unit, line):
-            ### Research of the category, output: 'elements' or 'nuclides' as first argument,
-            ### unit as second argument ("mass", "activity", "total power", "gamma power")
+            ### Search the category ('elements' or 'nuclides')
             category, unit = find_category_unit(line)
             regex_noe = regex_category[category]
 
         if readblock == 1 and re.search(regex_time, line):
-            ### Reading of the block of data only if the " Decay " information has been detected (readblock ==1).
+            ### Read the block of data only if " Decay " has been read
             time_steps = find_times(line)
             for i, t in enumerate(time_steps):
                 time_steps[i] = t.replace(" ", "")
@@ -557,17 +429,18 @@ def create_df_decay_power(file_path, factors_time,
         if readblock == 1 and regex_noe != None:
 
             if re.search(regex_noe, line) and unit == 'W':
-                ### Research of the list of results for the current block of data.
-                ### results[0]: name of the nuclide or element.
-                ### results[1], results[2], ..: result for the results[0] nuclide or element for the corresponding unit tracked above.
+                ### Search the list of results for the current bloc of data
+                # results[0]: name of the nuclide or element
+                # results[i!=0]: result for the corresponding unit and time
                 results = find_results(line)
 
-                ### 'NOE': Nuclide Or Element name, without any space
+                ### 'NOE': Nuclide Or Element name, without space(s) in it
                 NOE = results[0].replace(" ", "")
                 NOE = NOE.replace("totals", "total")
                 
                 cond1 = (NOE == 'u239' or NOE == 'np239')
-                cond2 = (group in  ['Actinides', 'Fission products'] and NOE == 'total')
+                cond2 = (group in  ['Actinides', 'Fission products'] and\
+                         NOE == 'total')
                 
                 if cond1 == True:
                     se = pd.Series(results[1:],
@@ -582,19 +455,21 @@ def create_df_decay_power(file_path, factors_time,
                     df = df.append(se)
                     
         if re.search("^\x0c", line) and readblock == 1:
-            ### Detection of the special font at the end of the block of data that caractherizes the end of
-            ### the block of data: stops the reading of data.
+            ### Detect the special font at the end of the bloc of data
+            # caractherizing the bloc's end: stops data reading
             readblock = 0
 
     df = df.groupby(df.index).sum()
     del df['initial']
     del df['charge']
-    df = df.reindex(columns=sorted(df.columns, key=lambda x: convert_str_sec(x, factors_time)))
+    df = df.reindex(columns=sorted(df.columns,
+                                   key=lambda x: convert_str_sec(x,
+                                                                factors_time)))
     df = df.T
     df['Total (BE)'] = df['Actinides']+df['Fission products']
     return df
 
-##########################################################################################################
+##############################################################################
   
 def convert_str_sec(word, factors):
     """
@@ -604,15 +479,17 @@ def convert_str_sec(word, factors):
     if word == 'discharge':
         sec = 0.0
     else:
-        sec = float(findall("\d+\.\d+", word)[0]) * factors[findall("[a-z]+", word)[0]]
+        sec = float(findall("\d+\.\d+", word)[0]) *\
+              factors[findall("[a-z]+", word)[0]]
     
     return sec
 
-##########################################################################################################
+##############################################################################
 
 def test_df_consistency(list_df):
     """
-    Return True is all the DataFrames in list_df have the same indexes and columns.
+    Return True is all the DataFrames in list_df have the same indexes and
+    columns.
     NOT USED YET BUT SHOULD.
     """
     df0 = list_df[0]
@@ -629,14 +506,14 @@ def test_df_consistency(list_df):
             continue
         return True
 
-##########################################################################################################
+##############################################################################
 
 def gather_df(list_batch_df,            FA_mass,
-             n_FA_batch,               list_names,
-             core_power,               mox,
-             act_u9_np9_uncertainty,   u9_np9_uncertainty,
-             fp_uncertainty,           fuel_uncertainty,
-             factors):
+              n_FA_batch,               list_names,
+              core_power,               mox,
+              act_u9_np9_uncertainty,   u9_np9_uncertainty,
+              fp_uncertainty,           fuel_uncertainty,
+              factors):
     """
     Gather the DataFrames listed in list_batch_df, taking into account the
     number of FA per batch, the FA mass.
@@ -645,7 +522,7 @@ def gather_df(list_batch_df,            FA_mass,
     the BE power, and with 1.645, 2 and 3 sigma (all power value given in %FP.
     """
     from pandas import DataFrame
-    from numpy import nan, sqrt, array
+    from numpy import nan, sqrt
     
     df = DataFrame()
     
@@ -705,8 +582,9 @@ def gather_df(list_batch_df,            FA_mass,
         list_time_sec.append(convert_str_sec(t_str, factors))
     df['Time steps [s]'] = list_time_sec
     
-    columns_final = ['Time steps [s]', 'Best-estimate [%FP]', 'Sigma value [%]',
-                     '1.645 sigma [%FP]', '2 sigma [%FP]', '3 sigma [%FP]']
+    columns_final = ['Time steps [s]'  ,  'Best-estimate [%FP]',
+                     'Sigma value [%]' ,  '1.645 sigma [%FP]',
+                     '2 sigma [%FP]'   ,  '3 sigma [%FP]']
     df = df.reindex(columns=columns_final)
     df['Best-estimate [%FP]'] = df['Best-estimate [%FP]']*100
     df['Sigma value [%]'] = df['Sigma value [%]']*100
@@ -715,7 +593,7 @@ def gather_df(list_batch_df,            FA_mass,
     df['3 sigma [%FP]'] = df['3 sigma [%FP]']*100
     return df   
 
-##########################################################################################################   
+############################################################################## 
 
 def find_unc(time_str, dictionary, factors):
     """
@@ -724,25 +602,26 @@ def find_unc(time_str, dictionary, factors):
     time_sec = convert_str_sec(time_str, factors)
     L = sorted(dictionary.keys(), key=lambda x: convert_str_sec(x, factors))
     for i, key in enumerate(L):
-        if time_sec == convert_str_sec(L[i], factors) or time_sec < convert_str_sec(L[i], factors):
+        if (time_sec == convert_str_sec(L[i], factors)) or\
+           (time_sec < convert_str_sec(L[i], factors)):
             uncertainty = dictionary[L[i]]
             break
-        if time_sec > convert_str_sec(L[i], factors) and time_sec < convert_str_sec(L[i+1], factors):
+        if (time_sec > convert_str_sec(L[i], factors)) and\
+           (time_sec < convert_str_sec(L[i+1], factors)):
             uncertainty = max(dictionary[L[i]], dictionary[L[i+1]])
             break
         else:
             continue
     return uncertainty
 
-##########################################################################################################
+##############################################################################
 
 def get_dict_group_noe(df):
     """
-    Return a dictionary from a dataframe, whose first key represents the groups.
-    The corresponding values are a list of isotopes or elements available for this
-    group.
+    Return a dictionary from a dataframe, whose first key represents the
+    groups. The corresponding values are a list of isotopes or elements
+    available for this group.
     """
-    import pandas
     d = {}
     L0 = df.index.get_level_values(0)
     L1 = df.index.get_level_values(1)
@@ -757,20 +636,20 @@ def get_dict_group_noe(df):
         d[k] = sorted(d[k])
     return d
 
-##########################################################################################################        
+##############################################################################
 
 def get_state_IntVar(dictionary, factors):
     """
     Get the state IntVar instances stored in a dictionary.
     """
     list_IntVar1 = []
-    for k in sorted(dictionary.keys(), key=lambda x: convert_str_sec(x, factors)):
-        #print "<<\t{}: {}\t>>".format(k, dictionary[k].get())
+    for k in sorted(dictionary.keys(),
+                    key=lambda x: convert_str_sec(x, factors)):
         if dictionary[k].get() == 1:
             list_IntVar1.append(k)
     return list_IntVar1
 
-##########################################################################################################
+##############################################################################
 
 def plot_inventory(di, category, unit, group, list_noe):
     """

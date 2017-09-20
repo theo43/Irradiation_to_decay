@@ -3,11 +3,16 @@
 # -*- encoding: iso8859-1 -*-
 # Author: theo43@github
 
-import pickle, re, sys, os, glob, shutil, time
+import sys, os, glob, time
 import matplotlib.pyplot as plt
 import pandas as pd
-from functions import *
 import Tkinter as tk
+from functions import create_df_decay_power, factors_time, regex_time,
+regex_category, reg_categ_unit, gather_df, 
+act_u9_np9_uncertainty, u9_np9_uncertainty, 
+fp_uncertainty, fuel_uncertainty, create_df_inventories,
+reg_after_Decay, convert_str_sec, get_state_IntVar,
+get_dict_group_noe, dict_unit
 
 if __name__ == '__main__':
     
@@ -484,7 +489,7 @@ if __name__ == '__main__':
                 
                     dict_IntVar[g][noe] = tk.IntVar()
                     Ch = tk.Checkbutton(Fr, text=noe.title(),
-                                     variable=dict_IntVar[g][noe])
+                                       variable=dict_IntVar[g][noe])
                     Ch.grid(row=ro, column=co+5*i, sticky='w')
                 
                 i += 1 
