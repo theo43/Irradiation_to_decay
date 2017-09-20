@@ -2,172 +2,193 @@
 # -*- encoding: iso8859-1 -*-
 # Author: theo43@github
 
-##########################################################################################################
-### DICTIONARIES    
-##########################################################################################################
+##############################################################################
+### REGULAR EXPRESSIONS    
+##############################################################################
 
-### Dictionnary containing the conversion factor between different time units and seconds.
+### Regular expressions allowing getting time steps and results in blocks
+# 1. For time steps research
+regex_time = "^\s+(charge\s+discharge|initial)\s+\d+\.\d?\s?[sechrdyr]"
+# 2. For category ('elements' or 'nuclides') research
+regex_category = {
+### For results concerning elements category. Gets the "totals"
+'Elements': "^\s+([a-z]{,2}|totals)\s+\d\.\d{2}E[+-]\d{2}",
+### For results concerning nuclides category. Does not get "total"
+# "totals" from elements is instead taken.
+'Isotopes': "^\s+[a-z]{1,2}\s{0,2}\d{1,3}[m]?\s+\d\.\d{2}E[+-]\d{2}"
+}
+reg_categ_unit = "concentrations, grams|radioactivity, curies|thermal"
+reg_categ_unit += " power, watts|gamma power, watts"
+reg_after_Decay = "actinides|fission products|light elements"
+
+##############################################################################
+### DICTIONARIES    
+##############################################################################
+
+### Dictionnary containing the conversion factor between different
+# time units and seconds.
 factors_time = {
-                'sec': 1.,
-                'min': 60., # WARNING: minutes not yet considered in find_times function
-                'hr': 3600.,
-                'd': 24. * 3600.,
-                'yr': 365 * 24. * 3600.
-               }
+    'sec': 1.,
+    'min': 60., # WARNING: minutes not yet considered in find_times
+    'hr': 3600.,
+    'd': 24. * 3600.,
+    'yr': 365 * 24. * 3600.
+}
 
 fp_uncertainty = {
-                     '0.1sec':          0.079,
-                     '1.0sec':          0.079,
-                     '10.0sec':         0.072,
-                     '100.0sec':        0.072,
-                     '300.0sec':        0.06,
-                     '600.0sec':        0.06,
-                     '1800.0sec':       0.04,
-                     '1.0hr':           0.04,
-                     '2.0hr':           0.04,
-                     '5.0hr':           0.03,
-                     '10.0hr':          0.03,
-                     '1.0d':            0.03,
-                     '2.0d':            0.025,
-                     '4.0d':            0.025,
-                     '8.0d':            0.025,
-                     '15.0d':           0.025,
-                     '30.0d':           0.025,
-                     '90.0d':           0.025,
-                     '180.0d':          0.025,
-                     '270.0d':          0.025,
-                     '1.0yr':           0.025,
-                     '1.25yr':          0.025,
-                     '1.5yr':           0.025,
-                     '2.0yr':           0.025,
-                     '3.0yr':           0.025,
-                     '5.0yr':           0.025,
-                     '10.0yr':          0.025,
-                     '50.0yr':          0.025,
-                     '100.0yr':         0.025,
-                     '10000.0yr':       0.025
-                 }
+    '0.1sec':          0.079,
+    '1.0sec':          0.079,
+    '10.0sec':         0.072,
+    '100.0sec':        0.072,
+    '300.0sec':        0.06,
+    '600.0sec':        0.06,
+    '1800.0sec':       0.04,
+    '1.0hr':           0.04,
+    '2.0hr':           0.04,
+    '5.0hr':           0.03,
+    '10.0hr':          0.03,
+    '1.0d':            0.03,
+    '2.0d':            0.025,
+    '4.0d':            0.025,
+    '8.0d':            0.025,
+    '15.0d':           0.025,
+    '30.0d':           0.025,
+    '90.0d':           0.025,
+    '180.0d':          0.025,
+    '270.0d':          0.025,
+    '1.0yr':           0.025,
+    '1.25yr':          0.025,
+    '1.5yr':           0.025,
+    '2.0yr':           0.025,
+    '3.0yr':           0.025,
+    '5.0yr':           0.025,
+    '10.0yr':          0.025,
+    '50.0yr':          0.025,
+    '100.0yr':         0.025,
+    '10000.0yr':       0.025
+}
 
-act_u9_np9_uncertainty = {     '0.1sec':      0.25,
-                               '1.0sec':      0.25,
-                               '10.0sec':     0.25,
-                               '100.0sec':    0.25,
-                               '300.0sec':    0.25,
-                               '600.0sec':    0.25,
-                               '1800.0sec':   0.25,
-                               '1.0hr':       0.25,
-                               '2.0hr':       0.25,
-                               '5.0hr':       0.25,
-                               '10.0hr':      0.25,
-                               '1.0d':        0.25,
-                               '2.0d':        0.25,
-                               '4.0d':        0.25,
-                               '8.0d':        0.25,
-                               '15.0d':       0.25,
-                               '30.0d':       0.25,
-                               '90.0d':       0.24,
-                               '180.0d':      0.22,
-                               '270.0d':      0.20,
-                               '1.0yr':       0.18,
-                               '1.25yr':      0.16,
-                               '1.5yr':       0.14,
-                               '2.0yr':       0.11,
-                               '3.0yr':       0.08,
-                               '5.0yr':       0.07,
-                               '10.0yr':      0.07,
-                               '50.0yr':      0.10,
-                               '100.0yr':     0.11,
-                               '10000.0yr':   0.11
-                         }
+act_u9_np9_uncertainty = {
+    '0.1sec':      0.25,
+    '1.0sec':      0.25,
+    '10.0sec':     0.25,
+    '100.0sec':    0.25,
+    '300.0sec':    0.25,
+    '600.0sec':    0.25,
+    '1800.0sec':   0.25,
+    '1.0hr':       0.25,
+    '2.0hr':       0.25,
+    '5.0hr':       0.25,
+    '10.0hr':      0.25,
+    '1.0d':        0.25,
+    '2.0d':        0.25,
+    '4.0d':        0.25,
+    '8.0d':        0.25,
+    '15.0d':       0.25,
+    '30.0d':       0.25,
+    '90.0d':       0.24,
+    '180.0d':      0.22,
+    '270.0d':      0.20,
+    '1.0yr':       0.18,
+    '1.25yr':      0.16,
+    '1.5yr':       0.14,
+    '2.0yr':       0.11,
+    '3.0yr':       0.08,
+    '5.0yr':       0.07,
+    '10.0yr':      0.07,
+    '50.0yr':      0.10,
+    '100.0yr':     0.11,
+    '10000.0yr':   0.11
+}
 
 u9_np9_uncertainty = {
-                           '0.1sec':          0.06,
-                           '1.0sec':          0.06,
-                           '10.0sec':         0.06,
-                           '100.0sec':        0.06,
-                           '300.0sec':        0.06,
-                           '600.0sec':        0.06,
-                           '1800.0sec':       0.06,
-                           '1.0hr':           0.06,
-                           '2.0hr':           0.06,
-                           '5.0hr':           0.06,
-                           '10.0hr':          0.06,
-                           '1.0d':            0.06,
-                           '2.0d':            0.06,
-                           '4.0d':            0.06,
-                           '8.0d':            0.06,
-                           '15.0d':           0.06,
-                           '30.0d':           0.06,
-                           '90.0d':           0.00,
-                           '10000.0yr':       0.00
-                     }
+    '0.1sec':          0.06,
+    '1.0sec':          0.06,
+    '10.0sec':         0.06,
+    '100.0sec':        0.06,
+    '300.0sec':        0.06,
+    '600.0sec':        0.06,
+    '1800.0sec':       0.06,
+    '1.0hr':           0.06,
+    '2.0hr':           0.06,
+    '5.0hr':           0.06,
+    '10.0hr':          0.06,
+    '1.0d':            0.06,
+    '2.0d':            0.06,
+    '4.0d':            0.06,
+    '8.0d':            0.06,
+    '15.0d':           0.06,
+    '30.0d':           0.06,
+    '90.0d':           0.00,
+    '10000.0yr':       0.00
+}
 
 fuel_uncertainty = {
-                       'UO2': {
-                               '0.1sec':        0.075,
-                               '1.0sec':        0.074,
-                               '10.0sec':       0.067,
-                               '100.0sec':      0.064,
-                               '300.0sec':      0.053,
-                               '600.0sec':      0.052,
-                               '1800.0sec':     0.035,
-                               '1.0hr':         0.035,
-                               '2.0hr':         0.035,
-                               '5.0hr':         0.027,
-                               '10.0hr':        0.027,
-                               '1.0d':          0.027,
-                               '2.0d':          0.024,
-                               '4.0d':          0.024,
-                               '8.0d':          0.025,
-                               '15.0d':         0.026,
-                               '30.0d':         0.026,
-                               '90.0d':         0.028,
-                               '180.0d':        0.028,
-                               '270.0d':        0.027,
-                               '1.0yr':         0.027,
-                               '1.25yr':        0.026,
-                               '1.5yr':         0.025,
-                               '2.0yr':         0.025,
-                               '3.0yr':         0.024,
-                               '5.0yr':         0.024,
-                               '10.0yr':        0.025,
-                               '50.0yr':        0.047,
-                               '100.0yr':       0.076,
-                               '10000.0yr':     0.076
-                             },
-                       'MOX': {
-                               '0.1sec':        0.075,
-                               '1.0sec':        0.074,
-                               '10.0sec':       0.067,
-                               '100.0sec':      0.064,
-                               '300.0sec':      0.053,
-                               '600.0sec':      0.052,
-                               '1800.0sec':     0.035,
-                               '1.0hr':         0.035,
-                               '2.0hr':         0.035,
-                               '5.0hr':         0.027,
-                               '10.0hr':        0.027,
-                               '1.0d':          0.027,
-                               '2.0d':          0.024,
-                               '4.0d':          0.024,
-                               '8.0d':          0.025,
-                               '15.0d':         0.026,
-                               '30.0d':         0.026,
-                               '90.0d':         0.028,
-                               '180.0d':        0.028,
-                               '270.0d':        0.027,
-                               '1.0yr':         0.027,
-                               '1.25yr':        0.026,
-                               '1.5yr':         0.025,
-                               '2.0yr':         0.025,
-                               '3.0yr':         0.024,
-                               '5.0yr':         0.024,
-                               '10.0yr':        0.025,
-                               '50.0yr':        0.047,
-                               '100.0yr':       0.076,
-                               '10000.0yr':     0.076
-                              }
-                   }
+    'UO2': {
+        '0.1sec':        0.075,
+        '1.0sec':        0.074,
+        '10.0sec':       0.067,
+        '100.0sec':      0.064,
+        '300.0sec':      0.053,
+        '600.0sec':      0.052,
+        '1800.0sec':     0.035,
+        '1.0hr':         0.035,
+        '2.0hr':         0.035,
+        '5.0hr':         0.027,
+        '10.0hr':        0.027,
+        '1.0d':          0.027,
+        '2.0d':          0.024,
+        '4.0d':          0.024,
+        '8.0d':          0.025,
+        '15.0d':         0.026,
+        '30.0d':         0.026,
+        '90.0d':         0.028,
+        '180.0d':        0.028,
+        '270.0d':        0.027,
+        '1.0yr':         0.027,
+        '1.25yr':        0.026,
+        '1.5yr':         0.025,
+        '2.0yr':         0.025,
+        '3.0yr':         0.024,
+        '5.0yr':         0.024,
+        '10.0yr':        0.025,
+        '50.0yr':        0.047,
+        '100.0yr':       0.076,
+        '10000.0yr':     0.076
+    },
+    'MOX': {
+        '0.1sec':        0.075,
+        '1.0sec':        0.074,
+        '10.0sec':       0.067,
+        '100.0sec':      0.064,
+        '300.0sec':      0.053,
+        '600.0sec':      0.052,
+        '1800.0sec':     0.035,
+        '1.0hr':         0.035,
+        '2.0hr':         0.035,
+        '5.0hr':         0.027,
+        '10.0hr':        0.027,
+        '1.0d':          0.027,
+        '2.0d':          0.024,
+        '4.0d':          0.024,
+        '8.0d':          0.025,
+        '15.0d':         0.026,
+        '30.0d':         0.026,
+        '90.0d':         0.028,
+        '180.0d':        0.028,
+        '270.0d':        0.027,
+        '1.0yr':         0.027,
+        '1.25yr':        0.026,
+        '1.5yr':         0.025,
+        '2.0yr':         0.025,
+        '3.0yr':         0.024,
+        '5.0yr':         0.024,
+        '10.0yr':        0.025,
+        '50.0yr':        0.047,
+        '100.0yr':       0.076,
+        '10000.0yr':     0.076
+    }
+}
 
 ### Correspondance between units and units for printing (source terms printing)                   
 dict_unit = {
@@ -177,9 +198,9 @@ dict_unit = {
              'Bq': 'becquerels'
             }
 
-##########################################################################################################
+##############################################################################
 ### FUNCTIONS    
-##########################################################################################################
+##############################################################################
 
 def find_group(line):
     """
@@ -196,7 +217,7 @@ def find_group(line):
         group = "Light elements"
     return group
 
-##########################################################################################################
+##############################################################################
 
 def find_category_unit(line):
     """ 
@@ -224,7 +245,7 @@ def find_category_unit(line):
         category = "Isotopes"
     return category, unit
 
-##########################################################################################################
+##############################################################################
 
 def find_times(line):
     """ 
@@ -241,7 +262,7 @@ def find_times(line):
     time_steps = findall("[a-z]+|\d+\.\d{,2}\s?[secdhryr]{1,3}", line)
     return time_steps
 
-##########################################################################################################
+##############################################################################
 
 def find_results(line):
     """ 
@@ -253,14 +274,15 @@ def find_results(line):
         results[i+1] = float(r)
     return results
 
-##########################################################################################################
+##############################################################################
 
 def compare_ti_tf(ti, tf, factors):
     """ 
     Take as input two strings representing time steps on the
     following format: 'float + time dimension' without any space.
        
-    Example: '1.0hr', '0.2sec', '50.0yr'. The only specific case should be 'discharge' (time zero).
+    Example: '1.0hr', '0.2sec', '50.0yr'. The only specific case should be
+    'discharge' (time zero).
     Returns True if ti <= tf, False else.
     NOT USED.
     """
@@ -271,14 +293,16 @@ def compare_ti_tf(ti, tf, factors):
         if time == 'discharge':
             times[time] = 0.0
         else:
-            times[time] = float(findall("\d+\.\d+", time)[0]) * factors[findall("[a-z]+", time)[0]]
+            times[time] = float(findall("\d+\.\d+", time)[0]) *\
+                                factors[findall("[a-z]+", time)[0]]
     return times[ti] <= times[tf]
 
-##########################################################################################################
+##############################################################################
 
 def user_plot(d, categ, grp, noe, unit, ti, tf, factors):
     """ 
-    Take as input all the information in order to plot the evolution of the unit of an element or nuclide.
+    Take as input all the information in order to plot the evolution of the
+    unit of an element or nuclide.
     NOT USED.
     """
     from re import findall
@@ -294,7 +318,8 @@ def user_plot(d, categ, grp, noe, unit, ti, tf, factors):
             if t == 'discharge':
                 x = 0.0
             else:
-                x = float(findall("\d+\.\d+", t)[0]) * factors[findall("[a-z]+", t)[0]]
+                x = float(findall("\d+\.\d+", t)[0]) *\
+                          factors[findall("[a-z]+", t)[0]]
 
             y = float(d[categ][grp][noe][t][unit])
 
@@ -313,7 +338,8 @@ def user_plot(d, categ, grp, noe, unit, ti, tf, factors):
     plt.title('')
     plt.grid(True)
     plt.semilogx(X, Y, color='r', label=noe)
-    ### Legend location: 1 (inside, upper right); 2 (inside, upper left); 3 (inside, lower left); 4 (inside, lower right); 5 (inside, lower right);
+    ### Legend location: 1 (inside, upper right); 2 (inside, upper left);
+    # 3 (inside, lower left); 4 (inside, lower right); 5 (inside, lower right);
     plt.legend(loc=0)
     plt.xlabel('Time (s)')
     ylabel = {
@@ -323,15 +349,17 @@ def user_plot(d, categ, grp, noe, unit, ti, tf, factors):
               "W_gamma": "Gamma power (W)"
              }
     plt.ylabel(ylabel[unit])
-    plt.axis([0., float(findall("\d+\.\d+", tf)[0]) * factors[findall("[a-z]+", tf)[0]], min_y, max_y])
+    plt.axis([0., float(findall("\d+\.\d+", tf)[0]) *\
+                        factors[findall("[a-z]+", tf)[0]], min_y, max_y])
     plt.show()
     #plt.savefig("test.eps")
 
-##########################################################################################################
+##############################################################################
 
 def dictionary2dataframe(dictionary, list_time, list_noe, category, unit):
     """
-    Take as input a dictionary containing data to be printed via a pandas DataFrame.
+    Take as input a dictionary containing data to be printed via a
+    pandas DataFrame.
     Return a pandas DataFrame.
     Lists of nuclides or elements (noe) and time steps are assumed sorted.
     list_time elements.
@@ -350,7 +378,8 @@ def dictionary2dataframe(dictionary, list_time, list_noe, category, unit):
             for group in dictionary[category].keys():
 
                 if noe in dictionary[category][group].keys():
-                    NaN = False # The noe is eventually present in the Origen-S output.
+                    NaN = False # The noe is eventually present in the
+                                #Origen-S output.
                     res += float(dictionary[category][group][noe][t][unit])
             if NaN == True:
                 res = np.nan
@@ -363,119 +392,19 @@ def dictionary2dataframe(dictionary, list_time, list_noe, category, unit):
     df = pd.DataFrame(array, index=list_noe, columns=list_time)
     return df
 
-##########################################################################################################
+##############################################################################
 
-def outputfile2dictionary(file_path, factors_time):
+def create_df_inventories(file_path, list_units, list_categories, factors_time,
+                          regex_time, regex_category, reg_categ_unit,
+                          reg_after_Decay):
     """
-    Read an Origen-S.out file, return a dictionary containing the stored data in
-    the following order:
-    * 1st key: category ('elements' or 'nuclides');
-    * 2nd key: group ('actinides', 'fission products' or 'light elements');
-    * 3rd key: name of the element ('u' for Uranium, 'xe' for Xenon, ..) or nuclide ('u236', 'pu239', ..)
-    * 4th key: time step;
-    * 5th key: unit of the result ('g' for mass, 'Bq' for activity, 'W' for total power, 'W_gamma' for gamma power)
-    NOT USED.
-    """
-    import re
-    inventories = {
-                  "nuclides": {},
-                  "elements": {}
-                  }
-
-    ### Regular expressions allowing getting time steps and results in blocks of data being read.
-    ### For time steps research.
-    regex_time = "^\s+(charge\s+discharge|initial)\s+\d+\.\d?\s?[sechrdyr]"
-    ### For category ('elements' or 'nuclides') research.
-    regex_category = {
-                      ### For results concerning elements category. Gets the "totals".
-                      'elements': "^\s+([a-z]{,2}|totals)\s+\d\.\d{2}E[+-]\d{2}",
-                      ### For results concerning nuclides category. Does not get "total". "totals" from elements is instead taken.
-                      'nuclides': "^\s+[a-z]{1,2}\s{0,2}\d{1,3}[m]?\s+\d\.\d{2}E[+-]\d{2}"
-                     }
-
-    ### Regex "nuclides or elements": initially 'None', switches to:
-    ### >>>> regex_category['elements'] if category == elements;
-    ### >>>> regex_category['nuclides'] if category == nuclides.
-
-    regex_noe = None
-
-    ### Variable switching to 1 when a block of 'Decay' results is read.
-    readblock = 0
-
-
-    ### Openning of the OrigenS.out file in read mode and storage of the lines in the 'read_file' list.
-    with open(file_path, 'r') as fi:
-        read_file = fi.readlines()
-
-    for i, line in enumerate(read_file):
-
-        if re.search("^\s+Decay ", line):
-            readblock = 1
-            ### Research of the group of nuclides or elements: 'fission products', 'actinides' or 'light elements'.
-            group = find_group(line)
-
-        if readblock == 1 and re.search("concentrations, grams|radioactivity, curies|thermal power, watts|gamma power, watts", line):
-            ### Research of the category, output: 'elements' or 'nuclides' as first argument, unit as second argument ("mass", "activity", "total power", "gamma power")
-            category, unit = find_category_unit(line)
-            regex_noe = regex_category[category]
-
-            ### Creation of the 'group' key if it does not already exist.
-            if group not in inventories[category].keys():
-                inventories[category][group] = {}
-
-        if readblock == 1 and re.search(regex_time, line):
-            ### Reading of the block of data only if the " Decay " information has been detected (readblock ==1).
-
-            time_steps = find_times(line)
-
-        if readblock == 1 and regex_noe != None:
-
-            if re.search(regex_noe, line):
-                ### Research of the list of results for the current block of data.
-                ### results[0]: name of the nuclide or element.
-                ### results[1], results[2], ..: result for the results[0] nuclide or element for the corresponding unit tracked above.
-                results = find_results(line)
-                ### 'NOE': Nuclide Or Element name, without any space
-                NOE = results[0].replace(" ", "")
-
-                ### If the nuclide or element is not already a key, they create it.
-                if NOE not in inventories[category][group].keys():
-                    inventories[category][group][NOE] = {}
-
-                ### Association of the 'results' list with 'time_steps' list.
-                for j, time in enumerate(time_steps):
-
-                    if time != "charge" and time != "initial":
-                        time = time.replace(" ", "")
-                        ### If the time step is not already a key, they create it.
-                        if time not in inventories[category][group][NOE].keys():
-                            inventories[category][group][NOE][time] = {}
-
-                        if unit not in inventories[category][group][NOE][time].keys():
-                            ### Final step in the 'd' dictionary: storage of the result.
-                            ### Warning: a time step in time_steps list at position j ('time' here) corresponds to a result in results list at position j+1.
-                            ### Converts Curies to Becquerels (1 Cu = 3.7e10 Bq)
-                            if unit == 'Bq':
-                                inventories[category][group][NOE][time][unit] = float(results[j+1])*3.7e10
-                            else:
-                                inventories[category][group][NOE][time][unit] = float(results[j+1])
-
-        if re.search("^\x0c", line) and readblock == 1:
-            ### Detection of the special font at the end of the block of data that caractherizes the end of the block of data: stops the reading of data.
-            readblock = 0
-    return inventories
-
-##########################################################################################################
-
-def create_df_inventories_old(file_path, list_units, list_categories, factors_time):
-    """
-    Read an Origen-S.out file, return a dictionary containing the stored data in
-    the following order:
+    Read an Origen-S.out file, return a dictionary containing the stored data
+    in the following order:
     * 1st key: category ('Elements' or 'Isotopes');
-    * 2nd key: unit ('g' for mass, 'Bq' for activity, 'W' for total power, 'W_gamma' for gamma power);
-    The 2nd key values are a DataFrame containing the results for time steps, group, isotope
-    or element name.
-    NOT USED.
+    * 2nd key: unit ('g' for mass, 'Bq' for activity, 'W' for total power,
+                    'W_gamma' for gamma power);
+    The 2nd key values are a DataFrame containing the results for time steps,
+    group, isotope or element name.
     """
     import re
     import pandas as pd
@@ -485,159 +414,36 @@ def create_df_inventories_old(file_path, list_units, list_categories, factors_ti
         inv['Elements'] = {}
     if 'Isotopes' in list_categories:
         inv['Isotopes'] = {}
-
-    ### Regular expressions allowing getting time steps and results in blocks of data being read.
-    ### For time steps research.
-    regex_time = "^\s+(charge\s+discharge|initial)\s+\d+\.\d?\s?[sechrdyr]"
-    ### For category ('elements' or 'nuclides') research.
-    regex_category = {
-                      ### For results concerning elements category. Gets the "totals".
-                      'Elements': "^\s+([a-z]{,2}|totals)\s+\d\.\d{2}E[+-]\d{2}",
-                      ### For results concerning nuclides category. Does not get "total". "totals" from elements is instead taken.
-                      'Isotopes': "^\s+[a-z]{1,2}\s{0,2}\d{1,3}[m]?\s+\d\.\d{2}E[+-]\d{2}"
-                     }
-
-    ### Regex "nuclides or elements": initially 'None', switches to:
-    ### >>>> regex_category['elements'] if category == elements;
-    ### >>>> regex_category['nuclides'] if category == nuclides.
-
-    regex_noe = None
-
-    ### Variable switching to 1 when a block of 'Decay' results is read.
-    readblock = 0
-
-
-    ### Openning of the OrigenS.out file in read mode and storage of the lines in the 'read_file' list.
-    with open(file_path, 'r') as fi:
-        read_file = fi.readlines()
-
-    for i, line in enumerate(read_file):
-
-        if re.search("^\s+Decay ", line):
-            readblock = 1
-            ### Research of the group of nuclides or elements: 'fission products', 'actinides' or 'light elements'.
-            group = find_group(line)
-        
-        t = "concentrations, grams|radioactivity, curies|thermal power, watts|gamma power, watts"
-        if readblock == 1 and re.search(t, line):
-            ### Research of the category, output: 'elements' or 'nuclides' as first argument,
-            ### unit as second argument ("mass", "activity", "total power", "gamma power")
-            category, unit = find_category_unit(line)
-            regex_noe = regex_category[category]
-
-        if readblock == 1 and re.search(regex_time, line):
-            ### Reading of the block of data only if the " Decay " information has been detected (readblock ==1).
-            time_steps = find_times(line)
-            for i, t in enumerate(time_steps):
-                time_steps[i] = t.replace(" ", "")
-            grp_times = ['Group']
-            grp_times.extend(time_steps)
-
-        if readblock == 1 and regex_noe != None:
-
-            if re.search(regex_noe, line) and (unit in list_units) and (category in list_categories) :
-                ### Research of the list of results for the current block of data.
-                ### results[0]: name of the nuclide or element.
-                ### results[1], results[2], ..: result for the results[0] nuclide or element for the corresponding unit tracked above.
-                results = find_results(line)
-                row_res = [group]
-                row_res.extend(results[1:])
-                ### 'NOE': Nuclide Or Element name, without any space
-                NOE = results[0].replace(" ", "")
-                NOE = NOE.replace("totals", "total")
-
-                ### Creation of the 'unit' key if it does not already exist.
-                if unit not in inv[category].keys():
-                    df = pd.DataFrame([row_res],
-                                      index=[NOE.title()],
-                                      columns=grp_times)
-                    df.index.name = category
-                    df.columns.name = 'Time steps'
-                    inv[category][unit] = df
-                else:
-                    se = pd.Series(row_res,
-                                   index=grp_times,
-                                   name=NOE.title())
-                    inv[category][unit] = inv[category][unit].append(se)
-                    l_index = inv[category][unit].index
-                    
-        if re.search("^\x0c", line) and readblock == 1:
-            ### Detection of the special font at the end of the block of data that caractherizes the end of
-            ### the block of data: stops the reading of data.
-            readblock = 0
-
-    for k1 in inv.keys():
-        for k2 in inv[k1].keys():
-            l_index = inv[k1][k2].index
-            inv[k1][k2] = inv[k1][k2].groupby(['Group', l_index]).sum()
-            del inv[k1][k2]['initial']
-            del inv[k1][k2]['charge']
-
-    return inv
-
-##########################################################################################################
-
-def create_df_inventories(file_path, list_units, list_categories, factors_time):
-    """
-    Read an Origen-S.out file, return a dictionary containing the stored data in
-    the following order:
-    * 1st key: category ('Elements' or 'Isotopes');
-    * 2nd key: unit ('g' for mass, 'Bq' for activity, 'W' for total power, 'W_gamma' for gamma power);
-    The 2nd key values are a DataFrame containing the results for time steps, group, isotope
-    or element name.
-    """
-    import re
-    import pandas as pd
-    inv = {}
-    
-    if 'Elements' in list_categories:
-        inv['Elements'] = {}
-    if 'Isotopes' in list_categories:
-        inv['Isotopes'] = {}
-
-    ### Regular expressions allowing getting time steps and results in blocks of data being read.
-    ### For time steps research.
-    regex_time = "^\s+(charge\s+discharge|initial)\s+\d+\.\d?\s?[sechrdyr]"
-    ### For category ('elements' or 'nuclides') research.
-    regex_category = {
-                      ### For results concerning elements category. Gets the "totals".
-                      'Elements': "^\s+([a-z]{,2}|totals)\s+\d\.\d{2}E[+-]\d{2}",
-                      ### For results concerning nuclides category. Does not get "total". "totals" from elements is instead taken.
-                      'Isotopes': "^\s+[a-z]{1,2}\s{0,2}\d{1,3}[m]?\s+\d\.\d{2}E[+-]\d{2}"
-                     }
-    reg_categ_unit = "concentrations, grams|radioactivity, curies|thermal power, watts|gamma power, watts"
-    reg_after_Decay = "actinides|fission products|light elements"
     
     ### Regex "nuclides or elements": initially 'None', switches to:
-    ### >>>> regex_category['elements'] if category == elements;
-    ### >>>> regex_category['nuclides'] if category == nuclides.
-
+    ### >>>> regex_category['elements'] if category == elements
+    ### >>>> regex_category['nuclides'] if category == nuclides
     regex_noe = None
 
-    ### Variable switching to 1 when a block of 'Decay' results is read.
+    ### Variable switching to 1 when a block of 'Decay' results is read
     readblock = 0
 
-
-    ### Openning of the OrigenS.out file in read mode and storage of the lines in the 'read_file' list.
+    ### Open the OrigenS.out file in read mode and store the lines in a list
     with open(file_path, 'r') as fi:
         read_file = fi.readlines()
 
     for i, line in enumerate(read_file):
         
-        if (re.search("^\s+Decay ", line)) and (re.search(reg_after_Decay, line)):
+        if (re.search("^\s+Decay ", line)) and\
+        (re.search(reg_after_Decay, line)):
             readblock = 1
-            ### Research of the group of nuclides or elements: 'fission products', 'actinides' or 'light elements'.
+            ### Search the group of nuclides or elements
+            ### Ex: 'fission products', 'actinides' or 'light elements'
             group = find_group(line)
             bloc_res = []
         
         if readblock == 1 and re.search(reg_categ_unit, line):
-            ### Research of the category, output: 'elements' or 'nuclides' as first argument,
-            ### unit as second argument ("mass", "activity", "total power", "gamma power")
+            ### Search the category ('elements' or 'nuclides')
             category, unit = find_category_unit(line)
             regex_noe = regex_category[category]
 
         if readblock == 1 and re.search(regex_time, line):
-            ### Reading of the block of data only if the " Decay " information has been detected (readblock ==1).
+            ### Read the block of data only if " Decay " has been read
             time_steps = find_times(line)
             for i, t in enumerate(time_steps):
                 time_steps[i] = t.replace(" ", "")
@@ -646,34 +452,34 @@ def create_df_inventories(file_path, list_units, list_categories, factors_time):
 
         if readblock == 1 and regex_noe != None:
 
-            if re.search(regex_noe, line) and (unit in list_units) and (category in list_categories) :
-                ### Research of the list of results for the current block of data.
-                ### results[0]: name of the nuclide or element.
-                ### results[1], results[2], ..: result for the results[0] nuclide or element for the corresponding unit tracked above.
+            if re.search(regex_noe, line) and (unit in list_units) and\
+            (category in list_categories) :
+                ### Search the list of results for the current bloc of data
+                # results[0]: name of the nuclide or element
+                # results[i!=0]: result for the corresponding unit and time
                 results = find_results(line)
-		results[0] = re.sub("\s+", "", results[0]).title()
+                results[0] = re.sub("\s+", "", results[0]).title()
                 row_res = [group]
-		row_res.extend(results)
+                row_res.extend(results)
                 bloc_res.append(row_res)
                     
         if (re.search("^\x0c", line)) and (readblock == 1):
-            ### Detection of the special font at the end of the block of data that caractherizes the end of
-            ### the block of data: stops the reading of data.
+            ### Detect the special font at the end of the bloc of data
+            # caractherizing the bloc's end: stops the reading of data
             readblock = 0
             
-            ### End of the bloc of data: an elementary DataFrame based on "bloc_res" matrix (content) and
-            ### "columns_df" for DataFrame indices.
+            ### End of the bloc of data: an elementary DataFrame based on
+            # "bloc_res" matrix (content) and "columns_df" for indices
             if (unit in list_units) and (category in list_categories): 
                 if unit not in inv[category].keys():
                     inv[category][unit] = []
                 df = pd.DataFrame(bloc_res, columns=columns_df)
-		inv[category][unit].append(df)
+                inv[category][unit].append(df)
 
     for k1 in inv.keys():
         for k2 in inv[k1].keys():
             
-            ### inv[k1][k2] is a list of dataframes. Let's concatenate them and transform
-            ### this list into a single dataframe
+            ### inv[k1][k2] is a dataframes list. Concatenate them into one df
             inv[k1][k2] = pd.concat(inv[k1][k2])
             if "Isotope" in inv[k1][k2].columns:
                 inv[k1][k2] = inv[k1][k2].groupby(['Group', 'Isotope']).sum()
@@ -685,12 +491,13 @@ def create_df_inventories(file_path, list_units, list_categories, factors_time):
 
     return inv
 
-##########################################################################################################
+##############################################################################
 
-def create_df_decay_power(file_path, factors_time):
+def create_df_decay_power(file_path, factors_time,
+                          regex_time, regex_category, reg_categ_unit):
     """
-    Read an Origen-S.out file, return a DataFrame containing the results for time steps (columns),
-    and the following contribution (index):
+    Read an Origen-S.out file, return a DataFrame containing the results for
+    time steps (columns), and the following contribution (index):
     * Total decay power (best-estimate)  
     * Actinides (without 239U and 239Np)
     * 239U and 239 Np
@@ -735,8 +542,7 @@ def create_df_decay_power(file_path, factors_time):
             ### Research of the group of nuclides or elements: 'fission products', 'actinides' or 'light elements'.
             group = find_group(line)
         
-        t = "concentrations, grams|radioactivity, curies|thermal power, watts|gamma power, watts"
-        if readblock == 1 and re.search(t, line):
+        if readblock == 1 and re.search(reg_categ_unit, line):
             ### Research of the category, output: 'elements' or 'nuclides' as first argument,
             ### unit as second argument ("mass", "activity", "total power", "gamma power")
             category, unit = find_category_unit(line)
@@ -876,17 +682,23 @@ def gather_df(list_batch_df,            FA_mass,
     
     if mox == 1:
         for i in df.index:
-            df['Sigma value [%]'][i] = max(df['sig_uo2'][i], df['sig_mox'][i], df['sigma_calc'][i])
+            df['Sigma value [%]'][i] = max(df['sig_uo2'][i],
+                                           df['sig_mox'][i],
+                                           df['sigma_calc'][i])
         del df['sig_mox']
         del df['sig_uo2']
     else:
         for i in df.index:
-            df['Sigma value [%]'][i] = max(df['sig_uo2'][i], df['sigma_calc'][i])
+            df['Sigma value [%]'][i] = max(df['sig_uo2'][i],
+                                           df['sigma_calc'][i])
         del df['sig_uo2']
     
-    df['1.645 sigma [%FP]'] = df['Best-estimate [%FP]']*(1+1.645*df['Sigma value [%]'])
-    df['2 sigma [%FP]'] = df['Best-estimate [%FP]']*(1+2.*df['Sigma value [%]'])
-    df['3 sigma [%FP]'] = df['Best-estimate [%FP]']*(1+3.*df['Sigma value [%]'])
+    df['1.645 sigma [%FP]'] = df['Best-estimate [%FP]'] *\
+                              (1 + 1.645 * df['Sigma value [%]'])
+    df['2 sigma [%FP]'] = df['Best-estimate [%FP]'] *\
+                          (1 + 2.0 * df['Sigma value [%]'])
+    df['3 sigma [%FP]'] = df['Best-estimate [%FP]'] *\
+                          (1 + 3.0 * df['Sigma value [%]'])
     
     list_time_sec = []
     for t_str in df.index:
