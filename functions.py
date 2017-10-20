@@ -121,119 +121,6 @@ def find_results(line):
     return results
 
 
-def create_df_inventories(file_path,        list_units,
-                          list_categories,  factors_time,
-                          regex_time,       regex_category,
-                          regex_categ_unit, regex_after_Decay):
-    """Read a single .out file and create a dictionary containing the stored
-       data with pandas DataFrames. The dictionary keys represent:
-           - 1st key: category ('Elements' or 'Isotopes')
-           - 2nd key: unit ('g' for mass, 'Bq' for activity, 'W' for total
-             power, 'W_gamma' for gamma power)
-       The value of a second key is a pandas DataFrame containing the results
-       for every detected time steps and for every detected elements or
-       isotopes
-
-       Arguments:
-           - file_path (string): absolute location of the file
-           - list_units (list): units chosen by the user
-           - list_categories (list): categories ('elements' or 'isotopes')
-             chosen by the user
-           - factors_time (dict): correspondence in seconds for different time
-             units
-           - regex_* (string): regular expressions
-
-       Returns:
-           inv (dict)
-
-    """
-    import re
-    import pandas as pd
-    inv = {}
-
-    if 'Elements' in list_categories:
-        inv['Elements'] = {}
-    if 'Isotopes' in list_categories:
-        inv['Isotopes'] = {}
-
-    ### Regex "nuclides or elements": initially 'None', switches to:
-    ### >>>> regex_category['elements'] if category == elements
-    ### >>>> regex_category['nuclides'] if category == nuclides
-    regex_noe = None
-
-    ### Variable switching to 1 when a block of 'Decay' results is read
-    readblock = 0
-
-    ### Open the .out file in read mode and store the lines in a list
-    with open(file_path, 'r') as fi:
-        read_file = fi.readlines()
-
-    for i, line in enumerate(read_file):
-
-        if (re.search("^\s+Decay ", line)) and\
-        (re.search(regex_after_Decay, line)):
-            readblock = 1
-            ### Search the group of nuclides or elements
-            ### Ex: 'fission products', 'actinides' or 'light elements'
-            group = find_group(line)
-            bloc_res = []
-
-        if readblock == 1 and re.search(regex_categ_unit, line):
-            ### Search the category ('elements' or 'nuclides')
-            category, unit = find_category_unit(line)
-            regex_noe = regex_category[category]
-
-        if readblock == 1 and re.search(regex_time, line):
-            ### Read the block of data only if " Decay " has been read
-            time_steps = find_times(line)
-            for i, t in enumerate(time_steps):
-                time_steps[i] = t.replace(" ", "")
-            columns_df = ['Group', re.sub("s$", "", category)]
-            columns_df.extend(time_steps)
-
-        if readblock == 1 and regex_noe != None:
-
-            if re.search(regex_noe, line) and (unit in list_units) and\
-            (category in list_categories) :
-                ### Search the list of results for the current bloc of data
-                # results[0]: name of the nuclide or element
-                # results[i!=0]: result for the corresponding unit and time
-                results = find_results(line)
-                results[0] = re.sub("\s+", "", results[0]).title()
-                row_res = [group]
-                row_res.extend(results)
-                bloc_res.append(row_res)
-
-        if (re.search("^\x0c", line)) and (readblock == 1):
-            ### Detect the special font at the end of the bloc of data
-            # caractherizing the bloc's end: stops data reading
-            readblock = 0
-
-            ### End of the bloc of data: an elementary DataFrame based on
-            # "bloc_res" matrix (content) and "columns_df" for indices
-            if (unit in list_units) and (category in list_categories):
-                if unit not in inv[category].keys():
-                    inv[category][unit] = []
-                df = pd.DataFrame(bloc_res, columns=columns_df)
-                inv[category][unit].append(df)
-
-    for k1 in inv.keys():
-        for k2 in inv[k1].keys():
-
-            ### inv[k1][k2] is a dataframes list. Concatenate them into one df
-            inv[k1][k2] = pd.concat(inv[k1][k2])
-            if "Isotope" in inv[k1][k2].columns:
-                inv[k1][k2] = inv[k1][k2].groupby(['Group', 'Isotope']).sum()
-            if "Element" in inv[k1][k2].columns:
-                inv[k1][k2] = inv[k1][k2].groupby(['Group', 'Element']).sum()
-
-            del inv[k1][k2]['initial']
-            del inv[k1][k2]['charge']
-
-    return inv
-
-##############################################################################
-
 def create_df_decay_power(file_path,      factors_time,     regex_time,
                           regex_category, regex_categ_unit, regex_after_Decay):
     """Read a single .out file and create a pandas DataFrame containing the
@@ -338,58 +225,11 @@ def create_df_decay_power(file_path,      factors_time,     regex_time,
     return df
 
 
-def convert_str_sec(word, factors_time):
-    """Convert a time step given in a string into a number of seconds.
-
-    Arguments:
-        - word (string): time step to convert
-        - factors_time (dict): correspondence in seconds for different time
-          units
-
-    Returns:
-        sec (float): corresponding time in seconds
-
-    Example:
-        >>> convert_str_sec("2.0hr", factors_time)
-        7200.0
-    
-    """
-
-    from re import findall
-    if word == 'discharge':
-        sec = 0.0
-    else:
-        sec = float(findall("\d+\.\d+", word)[0]) *\
-              factors_time[findall("[a-z]+", word)[0]]
-
-    return sec
-
-
-def test_df_consistency(list_df):
-    """Return True is all the DataFrames in list_df have the same indexes and
-    columns.
-    NOT USED YET BUT SHOULD.
-
-    """
-    df0 = list_df[0]
-    ind0 = df0.index
-    col0 = df0.columns
-    for i, df in enumerate(list_df[1:]):
-        ind = df.index
-        col = df.columns
-        if False in ind0 == ind:
-            return False
-            continue
-        if False in col0 == col:
-            return False
-            continue
-        return True
-
-def gather_df(list_batch_df,            FAmass_per_file,
-              nFA_per_file,             core_power,
-              mox,                      act_u9_np9_uncertainty,
-              u9_np9_uncertainty,       fp_uncertainty,
-              fuel_uncertainty,         factors_time):
+def gather_df_decay_power(list_batch_df,            FAmass_per_file,
+                          nFA_per_file,             core_power,
+                          mox,                      act_u9_np9_uncertainty,
+                          u9_np9_uncertainty,       fp_uncertainty,
+                          fuel_uncertainty,         factors_time):
     """Gather the DataFrames listed in list_batch_df, taking into account the
        number of FA per batch and the FA mass in each batch.
        Calculate the resulting Best-Estimate power (%FP), sigma value (%), and
@@ -488,6 +328,204 @@ def gather_df(list_batch_df,            FAmass_per_file,
     return df
 
 
+def create_df_inventories(file_path,        list_units,
+                          list_categories,  factors_time,
+                          regex_time,       regex_category,
+                          regex_categ_unit, regex_after_Decay):
+    """Read a single .out file and create a dictionary containing the stored
+       data with pandas DataFrames. The dictionary keys represent:
+           - 1st key: category ('Elements' or 'Isotopes')
+           - 2nd key: unit ('g' for mass, 'Bq' for activity, 'W' for total
+             power, 'W_gamma' for gamma power)
+       The value of a second key is a pandas DataFrame containing the results
+       for every detected time steps and for every detected elements or
+       isotopes
+
+       Arguments:
+           - file_path (string): absolute location of the file
+           - list_units (list): units chosen by the user
+           - list_categories (list): categories ('elements' or 'isotopes')
+             chosen by the user
+           - factors_time (dict): correspondence in seconds for different time
+             units
+           - regex_* (string): regular expressions
+
+       Returns:
+           inv (dict)
+
+    """
+    import re
+    import pandas as pd
+    inv = {}
+
+    if 'Elements' in list_categories:
+        inv['Elements'] = {}
+    if 'Isotopes' in list_categories:
+        inv['Isotopes'] = {}
+
+    ### Regex "nuclides or elements": initially 'None', switches to:
+    ### >>>> regex_category['elements'] if category == elements
+    ### >>>> regex_category['nuclides'] if category == nuclides
+    regex_noe = None
+
+    ### Variable switching to 1 when a block of 'Decay' results is read
+    readblock = 0
+
+    ### Open the .out file in read mode and store the lines in a list
+    with open(file_path, 'r') as fi:
+        read_file = fi.readlines()
+
+    for i, line in enumerate(read_file):
+
+        if (re.search("^\s+Decay ", line)) and\
+        (re.search(regex_after_Decay, line)):
+            readblock = 1
+            ### Search the group of nuclides or elements
+            ### Ex: 'fission products', 'actinides' or 'light elements'
+            group = find_group(line)
+            bloc_res = []
+
+        if readblock == 1 and re.search(regex_categ_unit, line):
+            ### Search the category ('elements' or 'nuclides')
+            category, unit = find_category_unit(line)
+            regex_noe = regex_category[category]
+
+        if readblock == 1 and re.search(regex_time, line):
+            ### Read the block of data only if " Decay " has been read
+            time_steps = find_times(line)
+            for i, t in enumerate(time_steps):
+                time_steps[i] = t.replace(" ", "")
+            columns_df = ['Group', re.sub("s$", "", category)]
+            columns_df.extend(time_steps)
+
+        if readblock == 1 and regex_noe != None:
+
+            if re.search(regex_noe, line) and (unit in list_units) and\
+            (category in list_categories) :
+                ### Search the list of results for the current bloc of data
+                # results[0]: name of the nuclide or element
+                # results[i!=0]: result for the corresponding unit and time
+                results = find_results(line)
+                results[0] = re.sub("\s+", "", results[0]).title()
+                if results[0] == "Totals":
+                    results[0] = "Total"
+                row_res = [group]
+                row_res.extend(results)
+                bloc_res.append(row_res)
+
+        if (re.search("^\x0c", line)) and (readblock == 1):
+            ### Detect the special font at the end of the bloc of data
+            # caractherizing the bloc's end: stops data reading
+            readblock = 0
+
+            ### End of the bloc of data: an elementary DataFrame based on
+            # "bloc_res" matrix (content) and "columns_df" for indices
+            if (unit in list_units) and (category in list_categories):
+                if unit not in inv[category].keys():
+                    inv[category][unit] = []
+                df = pd.DataFrame(bloc_res, columns=columns_df)
+                inv[category][unit].append(df)
+
+    for k1 in inv.keys():
+        for k2 in inv[k1].keys():
+
+            ### inv[k1][k2] is a dataframes list. Concatenate them into one df
+            inv[k1][k2] = pd.concat(inv[k1][k2])
+            if "Isotope" in inv[k1][k2].columns:
+                inv[k1][k2] = inv[k1][k2].groupby(['Group', 'Isotope']).sum()
+            if "Element" in inv[k1][k2].columns:
+                inv[k1][k2] = inv[k1][k2].groupby(['Group', 'Element']).sum()
+
+            del inv[k1][k2]['initial']
+            del inv[k1][k2]['charge']
+
+    return inv
+
+
+def gather_df_inventories(list_categories, list_units,
+                          list_batch_df, FAmass_per_file,
+                          nFA_per_file):
+    """Gather the pandas DataFrames created by create_df_inventories with the
+       corresponding FA mass and number of FA per batch. Create a dictionary
+       whose:
+           - 1st key is the chosen category(ies): 'Elements' or 'Isotopes'
+           - 2nd key is the chosen unit(s)
+
+       Arguments:
+           - list_category (list): categories chosen by the user
+           - list_units (list): units chosen by the user
+           - list_batch_df (list): list of dictionaries returned by
+             create_df_inventories
+           - FAmass_per_file (list): FA masses chosen by the user per batch
+           - nFA_per_file (list): number of FA chosen by the user per batch
+
+       Returns:
+           dinv (dict)
+
+    """
+    dinv = {}
+    for c in list_categories:
+        dinv[c] = {}
+        for u in list_units:
+            dinv[c][u] = list_batch_df[0][c][u]
+            dinv[c][u] = dinv[c][u] * FAmass_per_file[0]*\
+                         nFA_per_file[0]
+            for i, d in enumerate(list_batch_df[1:]):
+                df_to_add = d[c][u] * FAmass_per_file[i+1] *\
+                            nFA_per_file[i+1]
+                dinv[c][u] = dinv[c][u].add(df_to_add, fill_value=0)
+
+    return dinv
+
+
+def convert_str_sec(word, factors_time):
+    """Convert a time step given in a string into a number of seconds.
+
+    Arguments:
+        - word (string): time step to convert
+        - factors_time (dict): correspondence in seconds for different time
+          units
+
+    Returns:
+        sec (float): corresponding time in seconds
+
+    Example:
+        >>> convert_str_sec("2.0hr", factors_time)
+        7200.0
+
+    """
+
+    from re import findall
+    if word == 'discharge':
+        sec = 0.0
+    else:
+        sec = float(findall("\d+\.\d+", word)[0]) *\
+              factors_time[findall("[a-z]+", word)[0]]
+
+    return sec
+
+
+def test_df_consistency(list_df):
+    """Return True is all the DataFrames in list_df have the same indexes and
+    columns.
+    NOT USED YET BUT SHOULD.
+
+    """
+    df0 = list_df[0]
+    ind0 = df0.index
+    col0 = df0.columns
+    for i, df in enumerate(list_df[1:]):
+        ind = df.index
+        col = df.columns
+        if False in ind0 == ind:
+            return False
+            continue
+        if False in col0 == col:
+            return False
+            continue
+        return True
+
+
 def find_unc(time_str, dictionary, factors_time):
     """Find the uncertainty value to be used, depending on the time step. If
        time_str (converted from string to float in sec with convert_str_sec)
@@ -529,9 +567,17 @@ def find_unc(time_str, dictionary, factors_time):
 
 
 def get_dict_group_noe(df):
-    """Return a dictionary from a dataframe, whose first key represents the
-    groups. The corresponding values are a list of isotopes or elements
-    available for this group.
+    """Analyze a pandas Dataframe having a two levels index:
+           - 1st level: group of isotope or element ("Actinides", "Fission
+             products", ..)
+           - 2nd level: names of the isotopes or elements
+
+       Argument:
+           df (pandas.DataFrame): the two levels indexed DataFrame
+
+       Returns:
+           d (dict): dictionary whose keys are the contained group, and values
+           are the sorted list of isotopes or elements contained in this group
 
     """
     d = {}
@@ -544,13 +590,16 @@ def get_dict_group_noe(df):
             d[e0].append(L1[i])
         else:
             d[e0].append(L1[i])
+
+    # Sort the list of elements or isotopes
     for k in d.keys():
         d[k] = sorted(d[k])
+
     return d
 
 
 def get_state_IntVar(dictionary, factors_time):
-    """Get the state of IntVar instances stored in a dictionary.
+    """Get the state of IntVar instances stored in a dictionary
 
        Arguments:
            - dictionary (dict): keys are string instances whose values are 0
@@ -571,8 +620,56 @@ def get_state_IntVar(dictionary, factors_time):
     return list_IntVar1
 
 
-def plot_inventory(di, category, unit, group, list_noe):
-    """Plot evolution of isotope or nuclide over decay time."""
+def check_input_output(in_loc, out_loc):
+    """Check if ../Input and ../Output folders exist, and get all the available
+       .out files in ../Input folder
+       
+       Arguments:
+           - in_loc (string): absolute location of ../Input folder
+           - out_loc (string): absolute location of ../Output folder
+       
+       Returns:
+           list_in_files (list): absolute location of available .out files in
+           ../Input folder
+           
+    """
+    import os.path
+    from os import mkdir
+    import glob
+    import sys
+
+    # Check if 'Input' folder exists
+    if os.path.isdir(in_loc):
+        list_in_files = [f for f in glob.glob(os.path.join(in_loc, '*.out'))]
+
+        # If empty, restart needed
+        if list_in_files == []:
+            msg = ("\nWarning, the following folder:\n{}\ndoes not contain any"
+                   " \".out\" file. The files you want to post-treat need to "
+                   "be placed in it. Please restart.".format(in_loc))
+            print(msg)
+            sys.exit(0)
+
+    if not os.path.exists(in_loc):
+        msg = ("\nWarning, the following folder doesn't exist:\n{}\nIt is now "
+               "created and empty. The files you want to post-treat need to "
+               "be placed in it. Please restart.".format(in_loc))
+        os.mkdir(in_loc)
+        print(msg)
+        sys.exit(0)
+
+    # Also check if 'Output' folder exists. If not, create it
+    if not os.path.exists(out_loc):
+        os.mkdir(out_loc)
+        msg = ("\nThe following folder doesn't exist:\n{}\nCreation of this "
+               "folder, where your resulting files will be located."\
+               .format(out_loc))
+        print(msg)
+    
+    return list_in_files
+
+"""def plot_inventory(di, category, unit, group, list_noe):
+    Plot evolution of isotope or nuclide over decay time.
 
     import re
     import matplotlib.pyplot as plt
@@ -606,4 +703,4 @@ def plot_inventory(di, category, unit, group, list_noe):
     # Finally plot
     t = 'Title'
     d[list_noe].plot(logx=1, logy=0, title=t, grid=1, subplots=1)
-    plt.show()
+    plt.show()"""
