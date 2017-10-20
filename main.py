@@ -6,14 +6,14 @@ date: Sept. 2017
 POS: main program
 """
 
-import sys, os, glob, time
+import sys, os, time
 
 import matplotlib.pyplot as plt
 
 import pandas as pd
 
 from tkinter import (Tk, Scrollbar, Label, Frame, Canvas, Checkbutton, Button,
-                     IntVar, StringVar, Entry)
+                     IntVar)
 
 from functions import (create_df_decay_power, gather_df_decay_power,
                        create_df_inventories, convert_str_sec,
@@ -27,6 +27,10 @@ from dictionaries import (act_u9_np9_uncertainty, u9_np9_uncertainty,
                           fp_uncertainty, fuel_uncertainty, factors_time,
                           dict_unit)
 
+from classes import Multipage, UserData
+
+LARGE_FONT = ("Verdana", 12)
+
 if __name__ == '__main__':
 
     print("POS.py begins")
@@ -38,192 +42,33 @@ if __name__ == '__main__':
     # Check Input and Output folders, return available .out files
     list_in_files = check_input_output(in_loc, out_loc)
 
+
     ##########################################################################
-
-    root = Tk()
-    root.title('POS - main page')
-
-    # Create vertical and horizontal Scrollbars
-    SbV = Scrollbar(root, orient='vertical')
-    SbV.grid(row=0, column=1, sticky='n'+'s')
-    SbH = Scrollbar(root, orient='horizontal')
-    SbH.grid(row=1, column=0, sticky='E'+'W')
-
-    # Create a canvas
-    Ca = Canvas(root, yscrollcommand=SbV.set, xscrollcommand=SbH.set)
-    Ca.grid(row=0, column=0, sticky="news")
-
-    # Configure the Scrollbars on the Canvas
-    SbV.config(command=Ca.yview)
-    SbH.config(command=Ca.xview)
-
-    # Configure row index of a grid
-    root.grid_rowconfigure(0, weight=1)
-    # Configure column index of a grid
-    root.grid_columnconfigure(0, weight=1)
-
-    # Create a frame on the canvas
-    Fr = Frame(Ca)
-
-    # Add widgets
-    r = 0
-    La = Label(Fr, text="Welcome to POS.py!")
-    La.grid(row=r, columnspan=4)
-
-    r += 1
-    La = Label(Fr, text=190*"-")
-    La.grid(row=r, column=0, columnspan=4, sticky='w')
-
-    r += 1
-    La = Label(Fr, text="What do you want to generate?")
-    La.grid(row=r, columnspan=4, sticky='w')
-
-    r += 1
-    choice1 = IntVar()
-    Ch = Checkbutton(Fr, text="Decay power curve",
-                     variable=choice1)
-    Ch.grid(row=r, column=0, sticky='w')
-
-    r += 1
-    choice2 = IntVar()
-    Ch = Checkbutton(Fr, text="Source terms inventories",
-                     variable=choice2)
-    Ch.grid(row=r, column=0, sticky='w')
-
-    r += 1
-    La = Label(Fr, text=190*"-")
-    La.grid(row=r, column=0, columnspan=4, sticky='w')
-
-    r += 1
-    t = "Select the output files to post-treat and fill-in the required data"
-    La = Label(Fr, text=t)
-    La.grid(row=r, columnspan=4, sticky='w')
-
-    r += 1
-    t = "Available \".out\" files in {}:".format(in_loc)
-    La = Label(Fr, text=t)
-    La.grid(row=r, columnspan=4, sticky='w')
-
-    r += 1
-    La = Label(Fr, text="Files names")
-    La.grid(row=r, column=0, sticky='w')
-    La = Label(Fr, text="Number of FA")
-    La.grid(row=r, column=1, sticky='w')
-    La = Label(Fr, text="FA mass (tons)")
-    La.grid(row=r, column=2, sticky='w')
-
-    dict_out = {}
-    for f in sorted(list_in_files):
-        r += 1
-        dict_out[f] = {}
-        dict_out[f]['IntVar'] = IntVar()
-        Ch = Checkbutton(Fr,
-                         text=os.path.basename(f),
-                         variable=dict_out[f]['IntVar'])
-        Ch.grid(row=r, column=0, sticky='w')
-        dict_out[f]['nbFA'] = StringVar()
-        En = Entry(Fr, textvariable=dict_out[f]['nbFA'])
-        En.grid(row=r, column=1, sticky='w')
-        dict_out[f]['FAmass'] = StringVar()
-        En = Entry(Fr, textvariable=dict_out[f]['FAmass'])
-        En.grid(row=r, column=2, sticky='w')
-
-    r += 1
-    La = Label(Fr, text=190*"-")
-    La.grid(row=r, column=0, columnspan=4, sticky='w')
-
-    r += 1
-    La = Label(Fr, text="Information for power curve generation:")
-    La.grid(row=r, columnspan=3, column=0, sticky='w')
-
-    r += 1
-    La = Label(Fr, text="Total thermal power (MW)")
-    La.grid(row=r, column=0, sticky='w')
-    core_power = StringVar()
-    En = Entry(Fr, textvariable=core_power)
-    En.grid(row=r, column=1, sticky='w')
-
-    r += 1
-    mox = IntVar()
-    Ch = Checkbutton(Fr, text="The fuel contains MOX", variable=mox)
-    Ch.grid(row=r, columnspan=3, sticky='w')
-
-    r += 1
-    t = ("Suffix for the result file:\n"
-         "(\"Decay_power_curve_<suffix>.xlsx\")")
-    La = Label(Fr, text=t)
-    La.grid(row=r, column=0, sticky='w')
-    dec_suffix = StringVar()
-    En = Entry(Fr, textvariable=dec_suffix)
-    En.grid(row=r, column=1, sticky='w')
-
-    r += 1
-    La = Label(Fr, text=190*"-")
-    La.grid(row=r, column=0, columnspan=4, sticky='w')
-
-    r += 1
-    La = Label(Fr, text="Information for source terms generation:")
-    La.grid(row=r, columnspan=3, column=0, sticky='w')
-
-    r += 1
-    La = Label(Fr, text="Source terms are needed in:")
-    La.grid(row=r, columnspan=2, column=0)
-
-    r += 1
-    elements_needed = IntVar()
-    Ch = Checkbutton(Fr, text='Elements', variable=elements_needed)
-    Ch.grid(row=r, column=0, sticky='w')
-
-    isotopes_needed = IntVar()
-    Ch = Checkbutton(Fr, text='Isotopes', variable=isotopes_needed)
-    Ch.grid(row=r, column=1, sticky='w')
-
-    r += 1
-    La = Label(Fr, text="For the following units:")
-    La.grid(row=r, columnspan=2, column=0)
-
-    r += 1
-    u_tW = IntVar()
-    u_gW = IntVar()
-    u_g = IntVar()
-    u_bq = IntVar()
-    Ch = Checkbutton(Fr, text='Grams', variable=u_g)
-    Ch.grid(row=r, column=0, sticky='w')
-    Ch = Checkbutton(Fr, text='Becquerel', variable=u_bq)
-    Ch.grid(row=r, column=1, sticky='w')
-    Ch = Checkbutton(Fr, text='Watts (total)', variable=u_tW)
-    Ch.grid(row=r, column=2, sticky='w')
-    Ch = Checkbutton(Fr, text='Watts (gamma)', variable=u_gW)
-    Ch.grid(row=r, column=3, sticky='w')
-
-    r += 1
-    t = ("Suffix for the result file:\n"
-         "(\"Source_terms_<category>_<suffix>.xlsx\")")
-    La = Label(Fr, text=t)
-    La.grid(row=r, column=0, sticky='w')
-    inv_suffix = StringVar()
-    En = Entry(Fr, textvariable=inv_suffix)
-    En.grid(row=r, column=1, sticky='w')
-
-    r += 1
-    La = Label(Fr, text=190*"-")
-    La.grid(row=r, column=0, columnspan=4, sticky='w')
-
-    r += 1
-    Bu = Button(Fr, text='Next', command=root.destroy)
-    Bu.grid(row=r, column=3, columnspan=2, sticky='w')
-
-    Ca.create_window(0, 0, window=Fr)
-    Fr.update_idletasks()
-    Ca.config(scrollregion=Ca.bbox("all"))
-
-    root.mainloop()
-
+    
+    app = Multipage(UserData,
+                    location=in_loc,
+                    list_in_files=list_in_files,
+                    font=LARGE_FONT)
+    app.mainloop()
+    
+    dict_out = app.frames[UserData].return_info()
+    choice1, choice2 = app.frames[UserData].return_choice()
+    mox = app.frames[UserData].return_mox()
+    dec_suffix = app.frames[UserData].return_decaypower_suffix()
+    inv_suffix = app.frames[UserData].return_inventories_suffix()
+    core_power = app.frames[UserData].return_core_power()
+    list_units = app.frames[UserData].return_units()
+    list_categories = app.frames[UserData].return_categories()
+    
+    print("POST APP:", mox, dec_suffix, inv_suffix, core_power, choice1)
+    print('U: ', list_units)
+    print('C: ', list_categories)
+    
     # End of the first interface.
     ##########################################################################
     # General data gathering.
 
-    if choice1.get() == 0 and choice2.get() == 0:
+    if choice1 == 0 and choice2 == 0:
         msg = ("\nUnable to continue, you need to select at least one task"
                " to perform.")
         print(msg)
@@ -249,7 +94,13 @@ if __name__ == '__main__':
         except ValueError:
             print("Unable to continue: you need to fill in the blanks!")
             sys.exit(0)
-
+    
+    if n_selected_files == 0:
+        print("\nUnable to continue: you need to select at least one file.")
+        sys.exit(0)
+    else:
+        print("You selected {} files.".format(n_selected_files))
+        
     # Build a list containing the information chosen by the user to be
     # inserted in a Dataframe
     info = []
@@ -265,24 +116,17 @@ if __name__ == '__main__':
                                   'File location'])
     df_info = df_info.T.groupby(['File name']).sum()
 
-    if n_selected_files == 0:
-        print("\nUnable to continue: you need to select at least one file.")
-        sys.exit(0)
-    else:
-        print("You selected {} files.".format(n_selected_files))
-
     # End of general data gathering.
     ##########################################################################
     # Choice 1: Decay power generation chosen by the user.
 
-    if choice1.get() == 1:
+    if choice1 == 1:
         list_batch_df = []
         try:
-            core_power = float(core_power.get())
+            core_power = float(core_power)
         except ValueError:
             print("\nUnable to continue: the thermal power is not a number.")
             sys.exit(0)
-        mox = mox.get()
 
         # Create a DataFrame for each chosen file and append it to a list
         for file_loc in chosen_files:
@@ -314,7 +158,7 @@ if __name__ == '__main__':
             os.mkdir(fold)
 
         # Write the output file in Excel format
-        file_name = "Decay_power_curve_" + dec_suffix.get() + ".xlsx"
+        file_name = "Decay_power_curve_" + dec_suffix + ".xlsx"
         file_name = os.path.join(fold, file_name)
         writer = pd.ExcelWriter(file_name)
         df_info.to_excel(writer, "Data")
@@ -330,7 +174,7 @@ if __name__ == '__main__':
         ax.set_xlabel('Decay time [s]')
         ax.set_ylabel('Decay power [% FP]')
         #plt.show()
-        file_name = "Plot_decay_power_curve_" + dec_suffix.get() + ".eps"
+        file_name = "Plot_decay_power_curve_" + dec_suffix + ".eps"
         file_name = os.path.join(fold, file_name)
         plt.savefig(file_name)
         print("\nCreation of:\n{}".format(file_name))
@@ -338,22 +182,7 @@ if __name__ == '__main__':
     ##########################################################################
     # Choice 2: Source terms generation chosen by the user.
 
-    if choice2.get() == 1:
-        list_units = []
-        if u_tW.get() == 1:
-            list_units.append('W')
-        if u_gW.get() == 1:
-            list_units.append('W_gamma')
-        if u_g.get() == 1:
-            list_units.append('g')
-        if u_bq.get() == 1:
-            list_units.append('Bq')
-
-        list_categories = []
-        if elements_needed.get() == 1:
-            list_categories.append('Elements')
-        if isotopes_needed.get() == 1:
-            list_categories.append('Isotopes')
+    if choice2 == 1:
 
         list_batch_df = []
         t0 = time.time()
@@ -610,7 +439,7 @@ if __name__ == '__main__':
 
             # Write the output file in Excel format
             file_name = "Source_terms_" + c.lower() + "_"
-            file_name += inv_suffix.get() + ".xlsx"
+            file_name += inv_suffix + ".xlsx"
             file_name = os.path.join(fold, file_name)
             writer = pd.ExcelWriter(file_name)
 
