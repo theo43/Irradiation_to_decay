@@ -7,14 +7,22 @@ POS: main program
 """
 
 import sys, os, glob, time
+
 import matplotlib.pyplot as plt
+
 import pandas as pd
+
 from tkinter import (Tk, Scrollbar, Label, Frame, Canvas, Checkbutton, Button,
                      IntVar, StringVar, Entry)
-from functions import (create_df_decay_power, gather_df, create_df_inventories,
-                       convert_str_sec, get_dict_group_noe, get_state_IntVar)
+
+from functions import (create_df_decay_power, gather_df_decay_power,
+                       create_df_inventories, convert_str_sec,
+                       get_dict_group_noe, get_state_IntVar,
+                       gather_df_inventories, check_input_output)
+
 from regular_expressions import (regex_time, regex_category, regex_categ_unit,
                                  regex_after_Decay)
+
 from dictionaries import (act_u9_np9_uncertainty, u9_np9_uncertainty,
                           fp_uncertainty, fuel_uncertainty, factors_time,
                           dict_unit)
@@ -27,33 +35,8 @@ if __name__ == '__main__':
     in_loc = os.path.join(os.path.dirname(os.getcwd()), 'Input')
     out_loc = os.path.join(os.path.dirname(os.getcwd()), 'Output')
 
-    # Check if 'Input' folder exists
-    if os.path.isdir(in_loc):
-        list_in_files = [f for f in glob.glob(os.path.join(in_loc, '*.out'))]
-
-        # If empty, restart needed
-        if list_in_files == []:
-            msg = ("\nWarning, the following folder:\n{}\ndoes not contain any"
-                   " \".out\" file. The files you want to post-treat need to "
-                   "be placed in it. Please restart.".format(in_loc))
-            print(msg)
-            sys.exit(0)
-
-    if not os.path.exists(in_loc):
-        msg = ("\nWarning, the following folder doesn't exist:\n{}\nIt is now "
-               "created and empty. The files you want to post-treat need to "
-               "be placed in it. Please restart.".format(in_loc))
-        os.mkdir(in_loc)
-        print(msg)
-        sys.exit(0)
-
-    # Also check if 'Output' folder exists. If not, create it
-    if not os.path.exists(out_loc):
-        os.mkdir(out_loc)
-        msg = ("\nThe following folder doesn't exist:\n{}\nCreation of this "
-               "folder, where your resulting files will be located."\
-               .format(out_loc))
-        print(msg)
+    # Check Input and Output folders, return available .out files
+    list_in_files = check_input_output(in_loc, out_loc)
 
     ##########################################################################
 
@@ -123,7 +106,7 @@ if __name__ == '__main__':
 
     r += 1
     La = Label(Fr, text="Files names")
-    La.grid(row=r, column=0)
+    La.grid(row=r, column=0, sticky='w')
     La = Label(Fr, text="Number of FA")
     La.grid(row=r, column=1, sticky='w')
     La = Label(Fr, text="FA mass (tons)")
@@ -166,7 +149,9 @@ if __name__ == '__main__':
     Ch.grid(row=r, columnspan=3, sticky='w')
 
     r += 1
-    La = Label(Fr, text="Suffix for the decay power results file name:")
+    t = ("Suffix for the result file:\n"
+         "(\"Decay_power_curve_<suffix>.xlsx\")")
+    La = Label(Fr, text=t)
     La.grid(row=r, column=0, sticky='w')
     dec_suffix = StringVar()
     En = Entry(Fr, textvariable=dec_suffix)
@@ -212,7 +197,9 @@ if __name__ == '__main__':
     Ch.grid(row=r, column=3, sticky='w')
 
     r += 1
-    La = Label(Fr, text="Suffix for the source terms results file name:")
+    t = ("Suffix for the result file:\n"
+         "(\"Source_terms_<category>_<suffix>.xlsx\")")
+    La = Label(Fr, text=t)
     La.grid(row=r, column=0, sticky='w')
     inv_suffix = StringVar()
     En = Entry(Fr, textvariable=inv_suffix)
@@ -266,7 +253,7 @@ if __name__ == '__main__':
     # Build a list containing the information chosen by the user to be
     # inserted in a Dataframe
     info = []
-    info.append(os.path.basename(f))
+    info.append([os.path.basename(f) for f in chosen_files])
     info.append(FAmass_per_file)
     info.append(nFA_per_file)
     info.append(chosen_files)
@@ -297,7 +284,7 @@ if __name__ == '__main__':
             sys.exit(0)
         mox = mox.get()
 
-        # Create a DataFrame for each chosen file and add it to list_batch_df
+        # Create a DataFrame for each chosen file and append it to a list
         for file_loc in chosen_files:
             list_batch_df.append(create_df_decay_power(file_loc,
                                                        factors_time,
@@ -307,16 +294,16 @@ if __name__ == '__main__':
                                                        regex_after_Decay))
 
         # Gather the DataFrames of list_batch_df in df_total
-        df_total = gather_df(list_batch_df,
-                             FAmass_per_file,
-                             nFA_per_file,
-                             core_power,
-                             mox,
-                             act_u9_np9_uncertainty,
-                             u9_np9_uncertainty,
-                             fp_uncertainty,
-                             fuel_uncertainty,
-                             factors_time)
+        df_total = gather_df_decay_power(list_batch_df,
+                                         FAmass_per_file,
+                                         nFA_per_file,
+                                         core_power,
+                                         mox,
+                                         act_u9_np9_uncertainty,
+                                         u9_np9_uncertainty,
+                                         fp_uncertainty,
+                                         fuel_uncertainty,
+                                         factors_time)
 
         # Check if the decay power curve folder exists in "Output" folder
         # If not, it is created
@@ -370,6 +357,8 @@ if __name__ == '__main__':
 
         list_batch_df = []
         t0 = time.time()
+
+        # Create a DataFrame for each chosen file and append it to a list
         for file_loc in chosen_files:
             list_batch_df.append(create_df_inventories(file_loc,
                                                        list_units,
@@ -382,17 +371,10 @@ if __name__ == '__main__':
         t1 = time.time()
         t_df = round(t1-t0, 1)
 
-        dinv = {}
-        for c in list_categories:
-            dinv[c] = {}
-            for u in list_units:
-                dinv[c][u] = list_batch_df[0][c][u]
-                dinv[c][u] = dinv[c][u] * FAmass_per_file[0]*\
-                             nFA_per_file[0]
-                for i, d in enumerate(list_batch_df[1:]):
-                    df_to_add = d[c][u] * FAmass_per_file[i+1] *\
-                                nFA_per_file[i+1]
-                    dinv[c][u] = dinv[c][u].add(df_to_add, fill_value=0)
+        # Gather the dictionaries (one per chosen file) into a single one
+        dinv = gather_df_inventories(list_categories, list_units,
+                                     list_batch_df, FAmass_per_file,
+                                     nFA_per_file)
 
         t2 = time.time()
         t_ga = round(t2-t1, 1)
@@ -517,6 +499,8 @@ if __name__ == '__main__':
             La = Label(Fr, text="Choose your {}:".format(c.lower()))
             La.grid(row=0, columnspan=15)
 
+            # dict_grp_noe keys are the available group(s) of isotopes or
+            # elements from the chosen files
             i = 0
             for g in sorted(dict_grp_noe.keys()):
                 if g not in dict_IntVar.keys():
@@ -527,6 +511,8 @@ if __name__ == '__main__':
 
                 (ro, co) = (1, 0)
 
+                # dict_grp_noe values are sorted lists of isotopes or elements
+                # corresponding to the group g
                 for noe in sorted(dict_grp_noe[g]):
                     if ro <= 40:
                         ro += 1
