@@ -173,11 +173,3 @@ fuel_uncertainty = {
         '10000.0yr':   0.076
     }
 }
-
-# Correspondance between units and units for printing (source terms printing)
-dict_unit = {
-    'W':       'watts',
-    'W_gamma': 'watts_gamma',
-    'g':       'grams',
-    'Bq':      'becquerels'
-}
