@@ -6,10 +6,10 @@ date: Sept. 2017
 POS: page for main window
 """
 
-from tkinter import (Frame, messagebox, Tk, filedialog, Scrollbar, Canvas,
+from tkinter import (messagebox, Tk, filedialog, Scrollbar, Canvas,
                      IntVar, StringVar)
 import os
-from re import match
+from re import match, split
 from time import time
 from sys import exit
 from page_choose_files import ChooseFilesPage
@@ -27,6 +27,7 @@ from regular_expressions import (regex_time, regex_category, regex_categ_unit,
                                  regex_after_Decay)
 from dictionaries import (act_u9_np9_uncertainty, u9_np9_uncertainty,
                           fp_uncertainty, fuel_uncertainty, factors_time)
+LARGE_FONT= ("Verdana", 12)
 
 
 class Data():
@@ -35,34 +36,14 @@ class Data():
        Attributes:
            - working_dir (str): location of the folder of the files
            - file_data (dict): keys are chosen file names, whose values are
-             dictionaries whose keys are
+             dictionaries whose keys once provided in DisplayFilesPage are
                - loc (str) --> absolute path of the file
                - nbFA (StringVar) --> number of FA for this file
                - FAmass (StringVar) --> FA mass for this file
-           - choice (dict): {
-                 'decay': {
-                     'bool' (IntVar): if decay power curve generation is asked
-                     'power' (StringVar): total thermal power (MW)
-                     'suffix' (StringVar): suffix name for results file
-                     'mox' (IntVar): if fuel contains MOX
-                     'result' (DataFrame): decay power curve over time
-                 }
-                 'source': {
-                     'bool' (IntVar): if source terms inventories are asked
-                     'suffix' (StringVar): suffix name for results file
-                     'chosen_categ': {
-                         'Isotopes' (IntVar): for isotopes inventories
-                         'Elements' (IntVar): for elements inventories
-                     },
-                     'chosen_units': {
-                         'g' (IntVar): for source terms in grams
-                         'bq' (IntVar): for source terms in becquerels
-                         'wt' (IntVar): for source terms in watts (total)
-                         'wg' (IntVar): for source terms in watts (gamma)
-                     }
-                     'result': (dict) 'category'--> 'unit' --> DataFrame
-                }
-           }
+           - choice (dict): contains information regarding user choices
+       
+       Methods:
+           - 
     """
 
     def __init__(self, working_dir):
@@ -72,6 +53,7 @@ class Data():
             'decay': {
                 # Switches to a DataFrame when decay power curve is generated
                 'result': False,
+                'path_res': "",  # Path to 'result'
                 'bool': IntVar(),  # For decay power curve generation
                 'mox': IntVar(),  # If fuel contains MOX
                 'suffix': StringVar(),  # Suffix name for result file
@@ -93,7 +75,9 @@ class Data():
                     'wg': IntVar(),  # For source terms in Watts (gamma)
                 },
                 # Switches to a dict when inventories are generated
-                'result': False
+                'result': False,  # Available groups, elements/isotopes, units
+                'di_elem': False,  # Available groups and elements in 'result'
+                'di_isot': False,  # Available groups and isotopes in 'result'
             }
         }
 
@@ -106,8 +90,8 @@ class Data():
 
            Returns:
                (error, msg) (tuple):
-                   error (bool): True if an error is detected
-                   msg: error message to be printed in the message box
+                   - error (bool): True if an error is detected
+                   - msg: error message to be printed in the message box
 
         """
 
@@ -186,7 +170,7 @@ class Data():
             # Check if a category has been selected
             error = True
             for c in di['chosen_categ'].keys():
-                if di['chosen_categ'][c].get() == 1:
+                if di['chosen_categ'][c].get():
                     error = False
                     break
             if error:
@@ -196,7 +180,7 @@ class Data():
             # Check if a unit has been selected
             error = True
             for u in di['chosen_units'].keys():
-                if di['chosen_units'][u].get() == 1:
+                if di['chosen_units'][u].get():
                     error = False
                     break
             if error:
@@ -229,7 +213,7 @@ class Data():
                         pass
 
                     for ioe in list_ioe:
-                        if di[group][ioe].get() == 1:
+                        if di[group][ioe].get():
                             di['group_ioe'].append((group, ioe))
                 else:
                     pass
@@ -261,7 +245,7 @@ class Data():
                [0, 1.645, 2, 3]
 
         """
-        print("Enter Data.generate_power")
+
         list_df = []
         FAmass_per_file = []
         nFA_per_file = []
@@ -295,9 +279,257 @@ class Data():
                " sec".format(round(t2-t1, 1)))
         print(msg)
 
-        # Generic function allowing saving the result file for decay power
-        # curve or source terms inventories generation
-        # TO BE ADDED
         self.choice['decay']['bool'].set(0)
 
         return df
+
+    def generate_source(self):
+        """Generate source terms inventories
+
+           Returns:
+               dict_df (dict):
+                   - 1st key (str): categories ('Elements' or 'Isotopes')
+                   - 2nd key (str): units ('g', 'bq', 'wt', 'wg')
+                   - 2nd key values (pandas.DataFrame): source terms
+                     inventories for the corresponding category, unit. All the
+                     available time steps and elements/isotopes are considered.
+                     The user will later choose what time steps and elements/
+                     isotopes to consider in the final inventories
+        
+        """
+
+        list_df = []
+        FAmass_per_file = []
+        nFA_per_file = []
+        list_categories = []
+        list_units = []
+        di = self.choice['source']
+        for categ in sorted(di['chosen_categ'].keys()):
+            if di['chosen_categ'][categ].get() == 1:
+                list_categories.append(categ)
+        for unit in sorted(di['chosen_units'].keys()):
+            if di['chosen_units'][unit].get() == 1:
+                list_units.append(unit)
+
+        t0 = time()
+        for file in self.file_data.keys():
+            df = create_df_inventories(self.file_data[file]['loc'],
+                                       list_units,
+                                       list_categories,
+                                       factors_time,
+                                       regex_time,
+                                       regex_category,
+                                       regex_categ_unit,
+                                       regex_after_Decay)
+            list_df.append(df)
+            FAmass_per_file.append(float(self.file_data[file]['FAmass'].get()))
+            nFA_per_file.append(float(self.file_data[file]['nbFA'].get()))
+
+        t1 = time()
+        msg = ("Source terms times:\n\t- DataFrame(s) list creation: {}"
+               " sec".format(round(t1-t0, 1)))
+        print(msg)
+
+        # Gather the dictionaries (one per chosen file) into a single one
+        dict_df = gather_df_inventories(list_categories,
+                                        list_units,
+                                        list_df,
+                                        FAmass_per_file,
+                                        nFA_per_file)
+        t2 = time()
+        msg = ("Source terms times:\n\t- DataFrame(s) gathering: {}"
+               " sec".format(round(t2-t1, 1)))
+        print(msg)
+        #self.choice['source']['time']['gather_df'] = round(t2-t1, 1)
+
+        self.choice['source']['bool'].set(0)
+
+        return dict_df
+
+    def get_grp_ioe(self, category):
+        """Get the available groups and elements/isotopes in the source terms
+           inventories dictionary
+
+        """
+
+        dict_resu = self.choice['source']['result']
+        u0 = list(dict_resu[category].keys())[0]
+
+        return get_dict_group_ioe(dict_resu[category][u0])
+
+
+class MainPage(Tk):
+    """Main application, refered to as "controller" in the different frames"""
+
+    def __init__(self, data):
+        super().__init__()
+        Tk.wm_title(self, "POS")
+
+        # Initialize parameters (could be separated in a dedicated function)
+        title = ("Location of the folder containing your files")
+        ini_dir = os.environ['HOME']
+        working_dir = filedialog.askdirectory(title=title,
+                                              initialdir=ini_dir)
+
+        # Initialize Data object controlled by the MainWindow
+        self.data = Data(working_dir)
+        self.out_files = []
+        self.frames = {}
+
+        # We generate only if the path is correct
+        if os.path.exists(self.data.working_dir):  # Could it be not existing?
+            for file_name in os.listdir(self.data.working_dir):
+                if file_name.endswith('.out'):
+                    self.out_files.append(file_name)
+
+            # Initializing the UI in a dedicated function
+            self.init_UI()
+            self.geometry('{}x{}'.format(900, 850))
+
+    def init_UI(self):
+
+        # Create vertical and horizontal Scrollbars
+        self.SbV = Scrollbar(self, orient='vertical')
+        self.SbV.grid(row=0, column=1, sticky='N'+'S')
+        self.SbH = Scrollbar(self, orient='horizontal')
+        self.SbH.grid(row=1, column=0, sticky='E'+'W')
+
+        # Create a canvas
+        self.ca = Canvas(self,
+                         yscrollcommand=self.SbV.set,
+                         xscrollcommand=self.SbH.set)
+        self.ca.grid(row=0, column=0, sticky="news")
+
+        # Configure the Scrollbars on the Canvas
+        self.SbV.config(command=self.ca.yview)
+        self.SbH.config(command=self.ca.xview)
+
+        # Configure row index of a grid
+        self.grid_rowconfigure(0, weight=1)
+        # Configure column index of a grid
+        self.grid_columnconfigure(0, weight=1)
+
+        self.show_frame(ChooseFilesPage, self.out_files)
+
+    def show_frame(self, container, *args):
+        """Show next frame to be displayed"""
+        
+        frame = container(self.ca, self, args)
+        self.frames[container] = frame
+        self.ca.create_window(0, 0, window=frame)
+        frame.tkraise()
+        self.ca.update_idletasks()
+        self.ca.config(scrollregion=self.ca.bbox("all"))
+
+    def raise_displayer_files(self):
+        """Display the data (file names) chosen in the ChooseFilesPage. Raise
+           DisplayFilesPage
+
+        """
+
+        li = self.frames[ChooseFilesPage].lbox.curselection()
+        chosen_files = [self.frames[ChooseFilesPage].lbox.get(i) for i in li]
+        
+        self.show_frame(DisplayFilesPage, chosen_files)
+
+    def check_user_data(self):
+        """Check the data and choices provided by the user. If:
+                - choice['decay']['bool'] == 1 then decay power curve is
+                  generated first
+                - choice['source']['bool'] == 1 then source terms inventories
+                  are generated for the corresponding categories and units
+
+        """
+
+        if (not self.data.choice['decay']['bool'].get())\
+        and (not self.data.choice['source']['bool'].get()):
+
+            if type(self.data.choice['decay']['result']) == bool:
+                # If decay power curve was not generated
+                title = "Error: task selection"
+                msg = "No requested task!\nExiting..."
+                messagebox.showerror(title, msg)
+                self.destroy()
+            else:
+                # If only decay power curve generation was asked: normal end
+                title = "End of the program"
+                msg = "Normal end of the program"
+                messagebox.showinfo(title, msg)
+                self.destroy()
+        else:
+            test_error = self.data.error_input('files')
+            if test_error[0]:
+                messagebox.showerror(test_error[1][0], test_error[1][1])
+                self.destroy()
+                exit(0)
+
+        if self.data.choice['decay']['bool'].get():
+            test_error = self.data.error_input('decay')
+            if test_error[0]:
+                messagebox.showerror(test_error[1][0], test_error[1][1])
+                self.destroy()
+                exit(0)
+            self.data.choice['decay']['result'] = self.data.generate_power()
+
+            # Write the results in an Excel file
+            suffix = self.data.choice['decay']['suffix'].get()
+            result = self.data.choice['decay']['result']
+            df_info = self.data.df_info
+            list_title_msg = write_results(self.data.working_dir,
+                                           "Decay_power_curve",
+                                           suffix,
+                                           result,
+                                           df_info)
+            for tup in list_title_msg:
+                messagebox.showinfo(tup[0], tup[1])
+            
+            path_res = split("\n", list_title_msg[-1][1])[-1]
+            self.data.choice['decay']['path_res'] = path_res
+            
+            self.show_frame(DecayPowerCurvePage)
+            return  # Just leave the function
+
+        if self.data.choice['source']['bool'].get():
+            test_error = self.data.error_input('source')
+            if test_error[0]:
+                messagebox.showerror(test_error[1][0], test_error[1][1])
+                self.destroy()
+                exit(0)
+            self.data.choice['source']['result'] = self.data.generate_source()
+            if type(self.data.choice['decay']['result']) == bool:
+                # Decay power curve was not asked. The previous page is
+                # ChooseFilesPage
+                self.frames[ChooseFilesPage].destroy()
+            else:  # Here the previous page is DecayPowerCurvePage
+                self.frames[DecayPowerCurvePage].destroy()
+            self.show_frame(ChooseTimeStepsPage)
+            return  # Just leave the function
+
+    def raise_elements_isotopes(self):
+        """Raise the elements or isotopes choice page"""
+        
+        di = self.data.choice['source']
+
+        if di['chosen_categ']['Elements'].get():
+            di['di_elem'] = self.data.get_grp_ioe('Elements')
+            self.frames[ChooseTimeStepsPage].destroy()
+            self.show_frame(ElementsPage)
+            return  # Just leave the function
+
+        if di['chosen_categ']['Isotopes'].get():
+            di['di_isot'] = self.data.get_grp_ioe('Isotopes')
+            if type(di['di_elem']) == bool:
+                # Elements inventories was not asked
+                self.frames[ChooseTimeStepsPage].destroy()
+            else:
+                self.frames[ElementsPage].destroy()
+            self.show_frame(IsotopesPage)
+            return  # Just leave the function
+
+        if (not di['chosen_categ']['Isotopes'].get())\
+        and (not di['chosen_categ']['Elements'].get()):
+            title = "End of the program"
+            msg = "Normal end of the program"
+            messagebox.showinfo(title, msg)
+            self.destroy()
+            exit(0)
