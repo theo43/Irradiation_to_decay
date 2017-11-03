@@ -3,11 +3,12 @@
 """
 @author: theo43@github
 date: Sept. 2017
-POS: page for choice of files to be post-treated
+POS: page for choice of files to be post-processed
 """
 
 from tkinter import Frame, Label, StringVar, END, Listbox, ttk, Entry
 from functools import partial
+LARGE_FONT= ("Verdana", 12)
 
 
 class ChooseFilesPage(Frame):
@@ -28,38 +29,35 @@ class ChooseFilesPage(Frame):
     def init_UI(self):
         #yDefilB = Scrollbar(self, orient='vertical')
 
-        txt = "Select the file you want to display in the next page"
-        label = Label(self, text=txt)
-        label.pack()
+        txt = "Select the file(s) you want to post-process"
+        label = Label(self, text=txt, font=LARGE_FONT)
+        label.grid(row=0, columnspan=2, sticky='w')
 
-        label_entry = Label(self, text='Filter : ')
-        label_entry.pack()
+        label_entry = Label(self, text='Filter:')
+        label_entry.grid(row=1, column=0, sticky='w')
 
         self.search_var = StringVar()
         self.search_var.trace("w",
                               lambda name, index, mode: self.update_list())
         self.entry = Entry(self, textvariable=self.search_var, width=13)
-        self.entry.pack()
-
+        self.entry.grid(row=1, column=1, sticky='w')
 
         self.lbox = Listbox(self, width=45, height=15,
                             selectmode='multiple')
-        self.lbox.pack()
+        self.lbox.grid(row=2, columnspan=2)
 
-        btn_select_all = ttk.Button(self, text='Select all',
-                                    command=self.select_all)
-        btn_select_all.pack()
+        bu = ttk.Button(self, text='Select all', command=self.select_all)
+        bu.grid(row=3, columnspan=2, sticky='w')
 
-        btn_unselect_all = ttk.Button(self, text='Unselect all',
-                                      command=self.unselect_all)
-        btn_unselect_all.pack()
+        bu = ttk.Button(self, text='Unselect all', command=self.unselect_all)
+        bu.grid(row=4, columnspan=2, sticky='w')
 
-        txt = "Display selected items"
+        txt = "Display selected files"
         # Command allowing comunication to controller (Tk), calling
         # raise_displayer_files method with selected files in self.data
         cmd = partial(self.controller.raise_displayer_files)
-        self.btn_next = ttk.Button(self, text=txt, command=cmd)
-        self.btn_next.pack()
+        bu = ttk.Button(self, text=txt, command=cmd)
+        bu.grid(row=5, columnspan=2, sticky='w')
 
         # update_list needs to be called here to populate the listbox
         self.update_list()
@@ -68,6 +66,7 @@ class ChooseFilesPage(Frame):
     def update_list(self):
         """Update the list while doing the search with the filter
            Warning: the selection is reset when the listbox is updated!
+
         """
         search_term = self.search_var.get()
 
