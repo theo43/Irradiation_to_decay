@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Fri Oct 20 10:42:01 2017
-
-@author: theo.painvin@areva.com
+@author: theo43@github
 """
 
 from  sys import exit
