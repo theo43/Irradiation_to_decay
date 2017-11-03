@@ -10,6 +10,7 @@ from tkinter import Frame, Label, IntVar, Checkbutton, ttk, messagebox
 from functools import partial
 from sys import exit
 from functions import write_results
+LARGE_FONT= ("Verdana", 12)
 
 class ElementsPage(Frame):
     """Choice of the elements for source terms inventories generation"""
@@ -28,7 +29,7 @@ class ElementsPage(Frame):
 
         row = 0
         txt = "Choose the required elements for source terms inventories"
-        label = Label(self, text=txt)
+        label = Label(self, text=txt, font=LARGE_FONT)
         label.grid(row=row, columnspan=6, sticky='w')
 
         dict_grp_ioe = self.controller.data.choice['source']['di_elem']
@@ -48,13 +49,17 @@ class ElementsPage(Frame):
                                   text="Unselect all {}".format(grp.lower()),
                                   command=cmd)
             list_ch_grp.append((ch_sel, ch_unsel))
-
+            
             di[grp] = {}
+            
+            # Display the group name ("Actinides", "Fission products", ..)
+            label = Label(self, text=grp.title(), font=LARGE_FONT)
+            label.grid(row=1, column=3*i, sticky='w')
 
             (row, col) = (1, 0)
 
             for ioe in sorted(dict_grp_ioe[grp]):
-                if row <= 40:
+                if row <= 16:
                     row += 1
                 else:
                     row= 2
@@ -63,7 +68,7 @@ class ElementsPage(Frame):
                 ch = Checkbutton(self,
                                  text=ioe.title(),
                                  variable=di[grp][ioe])
-                ch.grid(row=row, column=col+5*i, sticky='w')
+                ch.grid(row=row, column=col+3*i, sticky='w')
             i += 1
 
         row = 45
@@ -92,9 +97,12 @@ class ElementsPage(Frame):
         bu.grid(row=row+1, column=4, sticky='w')
 
     def after_elements(self):
+        """Process tests, write elements inventory results and display next
+           Frame depending on user choices
+        
         """
-        """
-        self.controller.data.choice['source']['chosen_categ']['Elements'].set(0)
+        di_chosen_categ = self.controller.data.choice['source']['chosen_categ']
+        di_chosen_categ['Elements'].set(0)
         test_error = self.controller.data.error_input('Elements')
         if test_error[0]:
             messagebox.showerror(test_error[1][0], test_error[1][1])
@@ -123,8 +131,8 @@ class ElementsPage(Frame):
         self.controller.raise_elements_isotopes()
 
     def select_all(self, *args):
-        """
-        """
+        """Select all elements from all groups"""
+        
         di = self.controller.data.choice['source']['elements']
         for grp in di:
             if grp in args:
@@ -132,12 +140,13 @@ class ElementsPage(Frame):
                     di[grp][ioe].set(1)
 
     def unselect_all(self, *args):
-        """
-        """
+        """Unselect all elements from all groups"""
+        
         di = self.controller.data.choice['source']['elements']
         for grp in di:
-            for ioe in di[grp]:
-                di[grp][ioe].set(0)
+            if grp in args:
+                for ioe in di[grp]:
+                    di[grp][ioe].set(0)
 
 
 class IsotopesPage(Frame):
@@ -157,7 +166,7 @@ class IsotopesPage(Frame):
 
         row = 0
         txt = "Choose the required isotopes for source terms inventories"
-        label = Label(self, text=txt)
+        label = Label(self, text=txt, font=LARGE_FONT)
         label.grid(row=row, columnspan=6, sticky='w')
 
         dict_grp_ioe = self.controller.data.choice['source']['di_isot']
@@ -179,11 +188,15 @@ class IsotopesPage(Frame):
             list_ch_grp.append((ch_sel, ch_unsel))
 
             di[grp] = {}
+            
+            # Display the group name ("Actinides", "Fission products", ..)
+            label = Label(self, text=grp.title(), font=LARGE_FONT)
+            label.grid(row=1, column=5*i, sticky='w')
 
             (row, col) = (1, 0)
 
             for noe in sorted(dict_grp_ioe[grp]):
-                if row <= 40:
+                if row <= 43:
                     row += 1
                 else:
                     row= 2
@@ -221,9 +234,12 @@ class IsotopesPage(Frame):
 
 
     def after_isotopes(self):
+        """Process tests, write isotopes inventory results and display next
+           Frame depending on user choices
+        
         """
-        """
-        self.controller.data.choice['source']['chosen_categ']['Isotopes'].set(0)
+        di_chosen_categ = self.controller.data.choice['source']['chosen_categ']
+        di_chosen_categ['Isotopes'].set(0)
         test_error = self.controller.data.error_input('Isotopes')
         if test_error[0]:
                 messagebox.showerror(test_error[1][0], test_error[1][1])
@@ -252,8 +268,8 @@ class IsotopesPage(Frame):
         self.controller.raise_elements_isotopes()
 
     def select_all(self, *args):
-        """
-        """
+        """Select all isotopes from all groups"""
+        
         di = self.controller.data.choice['source']['isotopes']
         for grp in di:
             if grp in args:
@@ -261,9 +277,10 @@ class IsotopesPage(Frame):
                     di[grp][ioe].set(1)
 
     def unselect_all(self, *args):
-        """
-        """
+        """Unselect all isotopes from all groups"""
+        
         di = self.controller.data.choice['source']['isotopes']
         for grp in di:
-            for ioe in di[grp]:
-                di[grp][ioe].set(0)
+            if grp in args:
+                for ioe in di[grp]:
+                    di[grp][ioe].set(0)
