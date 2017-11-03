@@ -6,13 +6,19 @@ date: Sept. 2017
 POS: page for decay power curve plotting
 """
 
-from tkinter import Frame, Label, StringVar, END, Listbox, ttk, Entry
+from page_display_files import DisplayFilesPage
+import matplotlib
+matplotlib.use("TkAgg")
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,
+                                               NavigationToolbar2TkAgg)
+from matplotlib.figure import Figure
+from tkinter import Frame, Label, BOTTOM, BOTH, TOP, ttk
 from functools import partial
+LARGE_FONT= ("Verdana", 12)
 
 
 class DecayPowerCurvePage(Frame):
-    """
-    """
+    """Plotting of the decay power curves"""
 
     def __init__(self, parent, controller, *args):
         """Arguments:
@@ -21,52 +27,44 @@ class DecayPowerCurvePage(Frame):
         """
         super().__init__(parent)
         self.controller = controller
+        self.controller.frames[DisplayFilesPage].destroy()
         self.init_UI()
 
     # Create main GUI window
     def init_UI(self):
-
-        #row = 0
-        txt = "Plotting time!!!"
+        
+        txt = "Decay power curves"
+        label = Label(self, text=txt, font=LARGE_FONT)
+        label.pack(pady=10,padx=10)
+        path_res = self.controller.data.choice['decay']['path_res']
+        txt = ("You can save the figure by selecting the saving button at the "
+               "bottom of the page.\nDetailed values are provided in the "
+               "newly created following file:\n{}".format(path_res))   
         label = Label(self, text=txt)
         label.pack()
 
+        # Instanciate the Figure and 
+        fig = Figure(figsize=(6,6), dpi=100)
+        axe = fig.add_subplot(111)
 
+        # Plot of the decay power curves
+        df_total = self.controller.data.choice['decay']['result']
+        df_total = df_total.reset_index()
+        df_total = df_total.set_index(['Time steps [s]'])
+        df_total = df_total.drop(['Time steps', 'Sigma value [%]'], axis=1)
+        df_total.plot(logx=1, logy=0, grid=1, ax=axe)
+        axe.set_xlabel('Decay time [s]')
+        axe.set_ylabel('Decay power [% FP]')
+        
+        canvas = FigureCanvasTkAgg(fig, self)
+        canvas.show()
+        canvas.get_tk_widget().pack(side=BOTTOM, fill=BOTH, expand=True)
 
-
+        toolbar = NavigationToolbar2TkAgg(canvas, self)
+        toolbar.update()
+        canvas._tkcanvas.pack(side=TOP, fill=BOTH, expand=True)
+        
         txt = "Next"
         cmd = partial(self.controller.check_user_data)
         bu = ttk.Button(self, text=txt, command=cmd)
         bu.pack()
-
-        # update_list needs to be called here to populate the listbox
-        #self.update_list()
-
-
-    def after_decay(self):
-        """
-        """
-        #self.controller.data.choice['decay']['bool'].set(0)
-        self.controller.check_user_data()
-
-    def update_list(self):
-        """Update the list while doing the search with the filter
-           Warning: the selection is reset when the listbox is updated!
-        """
-        search_term = self.search_var.get()
-
-        # Generic list to populate the listbox
-        lbox_list = self.files
-
-        self.lbox.delete(0, END)
-
-        for item in lbox_list:
-            print(item)
-            if search_term.lower() in item.lower():
-                self.lbox.insert(END, item)
-
-    def select_all(self):
-        self.lbox.select_set(0, END)
-
-    def unselect_all(self):
-        self.lbox.select_clear(0, END)
