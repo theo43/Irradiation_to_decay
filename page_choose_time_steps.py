@@ -10,6 +10,9 @@ from tkinter import Frame, Label, IntVar, Checkbutton, ttk, messagebox
 from functools import partial
 from functions import convert_str_sec
 from dictionaries import factors_time
+from page_decay_power_curve import DecayPowerCurvePage
+from page_display_files import DisplayFilesPage
+LARGE_FONT= ("Verdana", 12)
 
 
 class ChooseTimeStepsPage(Frame):
@@ -23,13 +26,20 @@ class ChooseTimeStepsPage(Frame):
         super().__init__(parent)
         self.controller = controller
         self.init_UI()
+        # Destroy the previous frame
+        if type(self.controller.data.choice['decay']['result']) == bool:
+            # If decay power source was generated, previous page was
+            # DisplayFilesCurvePage
+            self.controller.frames[DisplayFilesPage].destroy()
+        else:  # Else, previous page was DecayPowerCurvePage
+            self.controller.frames[DecayPowerCurvePage].destroy()
 
-    # Create main GUI window
     def init_UI(self):
+        """Create main GUI window"""
 
         row = 0
         txt = "Choose the required time steps for source terms inventories"
-        label = Label(self, text=txt)
+        label = Label(self, text=txt, font=LARGE_FONT)
         label.grid(row=row, columnspan=6, sticky='w')
 
         dict_df = self.controller.data.choice['source']['result']
@@ -51,7 +61,6 @@ class ChooseTimeStepsPage(Frame):
             ch = Checkbutton(self, text=step, variable=var)
             ch.grid(row=row, column=col, sticky='w')
 
-
         row += 22
         bu = ttk.Button(self, text="Select all", command=self.select_all)
         bu.grid(row=row, column=0, sticky='w')
@@ -62,16 +71,17 @@ class ChooseTimeStepsPage(Frame):
         bu = ttk.Button(self, text=txt, command=cmd)
         bu.grid(row=row, column=2, sticky='w')
 
-
-
     def after_time_steps(self):
-        """
+        """After time steps choice for source terms inventories, raise the
+           page corresponding to the user choice: elements choice page then/or
+           isotopes choice page
+           
         """
 
         chosen_steps = []
         dict_steps = self.controller.data.choice['source']['times']
         for step in dict_steps.keys():
-            if dict_steps[step].get() == 1:
+            if dict_steps[step].get():
                 chosen_steps.append(step)
         if chosen_steps == []:
             title = "Error: source terms inventories time steps"
