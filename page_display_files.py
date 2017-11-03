@@ -6,10 +6,11 @@ date: Sept. 2017
 POS: page for chosen files display and corresponding data
 """
 
-from tkinter import (Frame, Label, StringVar, IntVar,ttk, Entry, messagebox,
-                     Checkbutton)
-from functools import partial
+from tkinter import (Frame, Label, StringVar, Entry, messagebox,
+                     Checkbutton, ttk)
 from os.path import join
+from page_choose_files import ChooseFilesPage
+LARGE_FONT= ("Verdana", 12)
 
 
 class DisplayFilesPage(Frame):
@@ -19,7 +20,8 @@ class DisplayFilesPage(Frame):
        Arguments:
            - parent (Frame): container Frame on the main Tk
            - controller (MainWindow): main page
-           - data ()
+           - data (Data)
+
     """
 
     def __init__(self, parent, controller, file_names):
@@ -28,10 +30,12 @@ class DisplayFilesPage(Frame):
         self.file_names = file_names[0]
 
         if self.file_names:
+            self.controller.frames[ChooseFilesPage].destroy()
             self.init_UI()
         else:  # If file_names is empty: no chosen files
-            txt = "Error: empty selection. No selected files!\nExiting..."
-            messagebox.showerror(txt)
+            title = "Error: files selection"
+            txt = "No selected files!\nExiting..."
+            messagebox.showerror(title, txt)
             self.controller.destroy()
 
     def init_UI(self):
@@ -39,14 +43,24 @@ class DisplayFilesPage(Frame):
            provided
 
         """
-        row = 0
-        la = Label(self, text="Selected files")
-        la.grid(row=row, column=0, sticky='w')
-        la = Label(self, text="Number of FA")
-        la.grid(row=row, column=1, sticky='w')
-        la = Label(self, text="FA mass (tons of U)")
-        la.grid(row=row, column=2, sticky='w')
 
+        row = 0
+        txt = "Fill in the data corresponding to the selected files"
+        la = Label(self, text=txt, font=LARGE_FONT)
+        la.grid(row=row, columnspan=3, sticky='w')
+
+        row += 1
+        la = Label(self, text="-"*150)
+        la.grid(row=row, columnspan=4, sticky='w')
+        
+        row += 1
+        la = Label(self, text="Selected files names")
+        la.grid(row=row, columnspan=2, sticky='w')
+        la = Label(self, text="Number of FA")
+        la.grid(row=row, column=2, sticky='w')
+        la = Label(self, text="FA mass (tons of U)")
+        la.grid(row=row, column=3, sticky='w')
+        
         working_dir = self.controller.data.working_dir
         for file in self.file_names:
             self.controller.data.file_data[file] = {
@@ -57,34 +71,29 @@ class DisplayFilesPage(Frame):
             # Display the file name
             row += 1
             la = Label(self, text=file)
-            la.grid(row=row, column=0, sticky='w')
+            la.grid(row=row, columnspan=2, sticky='w')
             # Field to provide corresponding number of FA
             #self.controller.data.file_data[file]['nbFA']
             var = self.controller.data.file_data[file]['nbFA']
             en = Entry(self, textvariable=var)
-            en.grid(row=row, column=1, sticky='w')
+            en.grid(row=row, column=2, sticky='w')
             # Field to provide corresponding number of FA
             var = self.controller.data.file_data[file]['FAmass']
             en = Entry(self, textvariable=var)
-            en.grid(row=row, column=2, sticky='w')
+            en.grid(row=row, column=3, sticky='w')
 
-        """btn_quit = ttk.Button(self, text='Exit',
-                              command=self.controller.destroy)
-        btn_quit.grid(row=10, column=3)"""
+        row += 1
+        la = Label(self, text="-"*150)
+        la.grid(row=row, columnspan=4, sticky='w')
 
-        """self.controller.data.choice['decay'] = {
-            'bool': IntVar(),
-            'power': StringVar(),
-            'mox': IntVar(),
-            'suffix': StringVar()
-        }"""
         row += 1
         var = self.controller.data.choice['decay']['bool']
-        ch = Checkbutton(self, text="Decay power curve", variable=var)
+        txt = "You want to generate decay power curves"
+        ch = Checkbutton(self, text=txt, variable=var)
         ch.grid(row=row, column=0, sticky='w')
 
         row += 1
-        txt = "Total thermal power (%FP): "
+        txt = "Total thermal power (MW): "
         la = Label(self, text=txt)
         la.grid(row=row, column=0, sticky='w')
         var = self.controller.data.choice['decay']['power']
@@ -106,23 +115,14 @@ class DisplayFilesPage(Frame):
         en = Entry(self, textvariable=var)
         en.grid(row=row, column=1, sticky='w')
 
-        """self.controller.data.choice['source'] = {
-            'bool': IntVar(),
-            'suffix': StringVar(),
-            'chosen_categ': {
-                'Isotopes': IntVar(),
-                'Elements': IntVar()
-            },
-            'chosen_units': {
-                'g': IntVar(),
-                'bq': IntVar(),
-                'wt': IntVar(),
-                'wg': IntVar()
-            }
-        }"""
+        row += 1
+        la = Label(self, text="-"*150)
+        la.grid(row=row, columnspan=4, sticky='w')
+
         row += 1
         var = self.controller.data.choice['source']['bool']
-        ch = Checkbutton(self, text="Source terms inventories", variable=var)
+        txt = "You want to generate source terms inventories"
+        ch = Checkbutton(self, text=txt, variable=var)
         ch.grid(row=row, column=0, sticky='w')
 
         row += 1
@@ -143,16 +143,16 @@ class DisplayFilesPage(Frame):
 
         row += 1
         var = self.controller.data.choice['source']['chosen_units']['g']
-        ch = Checkbutton(self, text="Grams", variable=var)
+        ch = Checkbutton(self, text="Gram", variable=var)
         ch.grid(row=row, column=0, sticky='w')
         var = self.controller.data.choice['source']['chosen_units']['bq']
-        ch = Checkbutton(self, text="Becquerels", variable=var)
+        ch = Checkbutton(self, text="Becquerel", variable=var)
         ch.grid(row=row, column=1, sticky='w')
         var = self.controller.data.choice['source']['chosen_units']['wt']
-        ch = Checkbutton(self, text="Watts (total)", variable=var)
+        ch = Checkbutton(self, text="Watt (total)", variable=var)
         ch.grid(row=row, column=2, sticky='w')
         var = self.controller.data.choice['source']['chosen_units']['wg']
-        ch = Checkbutton(self, text="Watts (gamma)", variable=var)
+        ch = Checkbutton(self, text="Watt (gamma)", variable=var)
         ch.grid(row=row, column=3, sticky='w')
 
         row += 1
@@ -164,24 +164,12 @@ class DisplayFilesPage(Frame):
         en = Entry(self, textvariable=var)
         en.grid(row=row, column=1, sticky='w')
 
-        # TO BE DELETED
         row += 1
-        txt = "print data"
-        # Command allowing comunication to controller (Tk)
-        cmd = partial(self.controller.print_data,
-                      self.controller.data)
-        self.bu = ttk.Button(self, text=txt, command=cmd)
-        self.bu.grid(row=row, column=2)
+        la = Label(self, text="-"*150)
+        la.grid(row=row, columnspan=4, sticky='w')
 
-        # TO BE DELETED
-        row +=1
-        txt = "Print df power"
-        cmd = partial(self.controller.print_df_power)
-        self.bu = ttk.Button(self, text=txt, command=cmd)
-        self.bu.grid(row=row, column=2)
-
-        row +=1
+        row += 1
         txt = "Next"
-        cmd = partial(self.controller.check_user_data)
-        self.bu = ttk.Button(self, text=txt, command=cmd)
-        self.bu.grid(row=row, column=2)
+        cmd = self.controller.check_user_data
+        bu = ttk.Button(self, text=txt, command=cmd)
+        bu.grid(row=row, column=2, sticky='w')
