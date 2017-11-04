@@ -6,7 +6,7 @@ This tool runs with Python v3.5 and more. To run it:
 ```
 python main.py
 ```
-A GUI application using tkinter module then lead the move.
+A GUI application using tkinter module then leads the move.
 
 ## Author
 * **theo43** - [Github](https://github.com/theo43)
