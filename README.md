@@ -1,4 +1,13 @@
-# Irradiation_to_decay
-Post-treatment of isotopes state after irradiation
+# From irradiation to decay
+This tool aims at post-processing files containing isotopes and elements irradiation and decay states, in order to generate decay power curves and source terms inventories.
 
-All the functions and dictionaries used in the main.py are stored in functions.py.
+## Getting started
+This tool runs with Python v3.5 and more. To run it:
+```
+python main.py
+```
+A GUI application using tkinter module then lead the move.
+
+## Author
+* **theo43** - [Github](https://github.com/theo43)
+
