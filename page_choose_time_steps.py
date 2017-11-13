@@ -11,7 +11,8 @@ from functions import convert_str_sec
 from dictionaries import factors_time
 from page_decay_power_curve import DecayPowerCurvePage
 from page_display_files import DisplayFilesPage
-LARGE_FONT= ("Verdana", 12)
+
+LARGE_FONT = ("Verdana", 12)
 
 
 class ChooseTimeStepsPage(Frame):
@@ -57,8 +58,8 @@ class ChooseTimeStepsPage(Frame):
                 col += 1
             self.controller.data.choice['source']['times'][step] = IntVar()
             var = self.controller.data.choice['source']['times'][step]
-            ch = Checkbutton(self, text=step, variable=var)
-            ch.grid(row=row, column=col, sticky='w')
+            checkbu = Checkbutton(self, text=step, variable=var)
+            checkbu.grid(row=row, column=col, sticky='w')
 
         row += 22
         bu = ttk.Button(self, text="Select all", command=self.select_all)
@@ -74,7 +75,7 @@ class ChooseTimeStepsPage(Frame):
         """After time steps choice for source terms inventories, raise the
            page corresponding to the user choice: elements choice page then/or
            isotopes choice page
-           
+
         """
 
         chosen_steps = []

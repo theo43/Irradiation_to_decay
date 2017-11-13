@@ -9,7 +9,8 @@ from tkinter import Frame, Label, IntVar, Checkbutton, ttk, messagebox
 from functools import partial
 from sys import exit
 from functions import write_results
-LARGE_FONT= ("Verdana", 12)
+
+LARGE_FONT = ("Verdana", 12)
 
 class ElementsPage(Frame):
     """Choice of the elements for source terms inventories generation"""
@@ -48,9 +49,9 @@ class ElementsPage(Frame):
                                   text="Unselect all {}".format(grp.lower()),
                                   command=cmd)
             list_ch_grp.append((ch_sel, ch_unsel))
-            
+
             di[grp] = {}
-            
+
             # Display the group name ("Actinides", "Fission products", ..)
             label = Label(self, text=grp.title(), font=LARGE_FONT)
             label.grid(row=1, column=3*i, sticky='w')
@@ -73,13 +74,17 @@ class ElementsPage(Frame):
         row = 45
 
         txt = "Select all elements"
-        cmd = partial(self.select_all, 'Actinides', 'Fission products',
+        cmd = partial(self.select_all,
+                      'Actinides',
+                      'Fission products',
                       'Light elements')
         bu = ttk.Button(self, text=txt, command=cmd)
         bu.grid(row=row, column=0, sticky='w')
 
         txt = "Unselect all elements"
-        cmd = partial(self.unselect_all, 'Actinides', 'Fission products',
+        cmd = partial(self.unselect_all,
+                      'Actinides',
+                      'Fission products',
                       'Light elements')
         bu = ttk.Button(self, text=txt, command=cmd)
         bu.grid(row=row+1, column=0, sticky='w')
@@ -98,7 +103,7 @@ class ElementsPage(Frame):
     def after_elements(self):
         """Process tests, write elements inventory results and display next
            Frame depending on user choices
-        
+
         """
         di_chosen_categ = self.controller.data.choice['source']['chosen_categ']
         di_chosen_categ['Elements'].set(0)
@@ -131,21 +136,21 @@ class ElementsPage(Frame):
 
     def select_all(self, *args):
         """Select all elements from all groups"""
-        
-        di = self.controller.data.choice['source']['elements']
-        for grp in di:
-            if grp in args:
-                for ioe in di[grp]:
-                    di[grp][ioe].set(1)
+
+        dictio = self.controller.data.choice['source']['elements']
+        for group in dictio:
+            if group in args:
+                for ioe in dictio[group]:
+                    dictio[group][ioe].set(1)
 
     def unselect_all(self, *args):
         """Unselect all elements from all groups"""
-        
-        di = self.controller.data.choice['source']['elements']
-        for grp in di:
-            if grp in args:
-                for ioe in di[grp]:
-                    di[grp][ioe].set(0)
+
+        dictio = self.controller.data.choice['source']['elements']
+        for group in dictio:
+            if group in args:
+                for ioe in dictio[group]:
+                    dictio[group][ioe].set(0)
 
 
 class IsotopesPage(Frame):
@@ -187,7 +192,7 @@ class IsotopesPage(Frame):
             list_ch_grp.append((ch_sel, ch_unsel))
 
             di[grp] = {}
-            
+
             # Display the group name ("Actinides", "Fission products", ..)
             label = Label(self, text=grp.title(), font=LARGE_FONT)
             label.grid(row=1, column=5*i, sticky='w')
@@ -235,7 +240,7 @@ class IsotopesPage(Frame):
     def after_isotopes(self):
         """Process tests, write isotopes inventory results and display next
            Frame depending on user choices
-        
+
         """
         di_chosen_categ = self.controller.data.choice['source']['chosen_categ']
         di_chosen_categ['Isotopes'].set(0)
@@ -268,18 +273,18 @@ class IsotopesPage(Frame):
 
     def select_all(self, *args):
         """Select all isotopes from all groups"""
-        
-        di = self.controller.data.choice['source']['isotopes']
-        for grp in di:
-            if grp in args:
-                for ioe in di[grp]:
-                    di[grp][ioe].set(1)
+
+        dictio = self.controller.data.choice['source']['isotopes']
+        for group in dictio:
+            if group in args:
+                for ioe in dictio[group]:
+                    dictio[group][ioe].set(1)
 
     def unselect_all(self, *args):
         """Unselect all isotopes from all groups"""
-        
-        di = self.controller.data.choice['source']['isotopes']
-        for grp in di:
-            if grp in args:
-                for ioe in di[grp]:
-                    di[grp][ioe].set(0)
+
+        dictio = self.controller.data.choice['source']['isotopes']
+        for group in dictio:
+            if group in args:
+                for ioe in dictio[group]:
+                    dictio[group][ioe].set(0)

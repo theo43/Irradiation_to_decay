@@ -26,7 +26,8 @@ from regular_expressions import (regex_time, regex_category, regex_categ_unit,
                                  regex_after_Decay)
 from dictionaries import (act_u9_np9_uncertainty, u9_np9_uncertainty,
                           fp_uncertainty, fuel_uncertainty, factors_time)
-LARGE_FONT= ("Verdana", 12)
+
+LARGE_FONT = ("Verdana", 12)
 
 
 class Data():
@@ -40,9 +41,9 @@ class Data():
                - nbFA (StringVar) --> number of FA for this file
                - FAmass (StringVar) --> FA mass for this file
            - choice (dict): contains information regarding user choices
-       
+
        Methods:
-           - 
+           -
     """
 
     def __init__(self, working_dir):
@@ -294,7 +295,7 @@ class Data():
                      available time steps and elements/isotopes are considered.
                      The user will later choose what time steps and elements/
                      isotopes to consider in the final inventories
-        
+
         """
 
         list_df = []
@@ -412,7 +413,7 @@ class MainPage(Tk):
 
     def show_frame(self, container, *args):
         """Show next frame to be displayed"""
-        
+
         frame = container(self.ca, self, args)
         self.frames[container] = frame
         self.ca.create_window(0, 0, window=frame)
@@ -428,7 +429,7 @@ class MainPage(Tk):
 
         li = self.frames[ChooseFilesPage].lbox.curselection()
         chosen_files = [self.frames[ChooseFilesPage].lbox.get(i) for i in li]
-        
+
         self.show_frame(DisplayFilesPage, chosen_files)
 
     def check_user_data(self):
@@ -481,10 +482,10 @@ class MainPage(Tk):
                                            df_info)
             for tup in list_title_msg:
                 messagebox.showinfo(tup[0], tup[1])
-            
+
             path_res = split("\n", list_title_msg[-1][1])[-1]
             self.data.choice['decay']['path_res'] = path_res
-            
+
             self.show_frame(DecayPowerCurvePage)
             return  # Just leave the function
 
@@ -506,7 +507,7 @@ class MainPage(Tk):
 
     def raise_elements_isotopes(self):
         """Raise the elements or isotopes choice page"""
-        
+
         di = self.data.choice['source']
 
         if di['chosen_categ']['Elements'].get():

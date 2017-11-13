@@ -9,7 +9,8 @@ from tkinter import (Frame, Label, StringVar, Entry, messagebox,
                      Checkbutton, ttk)
 from os.path import join
 from page_choose_files import ChooseFilesPage
-LARGE_FONT= ("Verdana", 12)
+
+LARGE_FONT = ("Verdana", 12)
 
 
 class DisplayFilesPage(Frame):
@@ -45,21 +46,21 @@ class DisplayFilesPage(Frame):
 
         row = 0
         txt = "Fill in the data corresponding to the selected files"
-        la = Label(self, text=txt, font=LARGE_FONT)
-        la.grid(row=row, columnspan=3, sticky='w')
+        label = Label(self, text=txt, font=LARGE_FONT)
+        label.grid(row=row, columnspan=3, sticky='w')
 
         row += 1
-        la = Label(self, text="-"*150)
-        la.grid(row=row, columnspan=4, sticky='w')
-        
+        label = Label(self, text="-"*150)
+        label.grid(row=row, columnspan=4, sticky='w')
+
         row += 1
-        la = Label(self, text="Selected files names")
-        la.grid(row=row, columnspan=2, sticky='w')
-        la = Label(self, text="Number of FA")
-        la.grid(row=row, column=2, sticky='w')
-        la = Label(self, text="FA mass (tons of U)")
-        la.grid(row=row, column=3, sticky='w')
-        
+        label = Label(self, text="Selected files names")
+        label.grid(row=row, columnspan=2, sticky='w')
+        label = Label(self, text="Number of FA")
+        label.grid(row=row, column=2, sticky='w')
+        label = Label(self, text="FA mass (tons of U)")
+        label.grid(row=row, column=3, sticky='w')
+
         working_dir = self.controller.data.working_dir
         for file in self.file_names:
             self.controller.data.file_data[file] = {
@@ -69,106 +70,106 @@ class DisplayFilesPage(Frame):
             }
             # Display the file name
             row += 1
-            la = Label(self, text=file)
-            la.grid(row=row, columnspan=2, sticky='w')
+            label = Label(self, text=file)
+            label.grid(row=row, columnspan=2, sticky='w')
             # Field to provide corresponding number of FA
             #self.controller.data.file_data[file]['nbFA']
             var = self.controller.data.file_data[file]['nbFA']
-            en = Entry(self, textvariable=var)
-            en.grid(row=row, column=2, sticky='w')
+            entry = Entry(self, textvariable=var)
+            entry.grid(row=row, column=2, sticky='w')
             # Field to provide corresponding number of FA
             var = self.controller.data.file_data[file]['FAmass']
-            en = Entry(self, textvariable=var)
-            en.grid(row=row, column=3, sticky='w')
+            entry = Entry(self, textvariable=var)
+            entry.grid(row=row, column=3, sticky='w')
 
         row += 1
-        la = Label(self, text="-"*150)
-        la.grid(row=row, columnspan=4, sticky='w')
+        label = Label(self, text="-"*150)
+        label.grid(row=row, columnspan=4, sticky='w')
 
         row += 1
         var = self.controller.data.choice['decay']['bool']
         txt = "You want to generate decay power curves"
-        ch = Checkbutton(self, text=txt, variable=var)
-        ch.grid(row=row, column=0, sticky='w')
+        checkbu = Checkbutton(self, text=txt, variable=var)
+        checkbu.grid(row=row, column=0, sticky='w')
 
         row += 1
         txt = "Total thermal power (MW): "
-        la = Label(self, text=txt)
-        la.grid(row=row, column=0, sticky='w')
+        label = Label(self, text=txt)
+        label.grid(row=row, column=0, sticky='w')
         var = self.controller.data.choice['decay']['power']
-        en = Entry(self, textvariable=var)
-        en.grid(row=row, column=1, sticky='w')
+        entry = Entry(self, textvariable=var)
+        entry.grid(row=row, column=1, sticky='w')
 
         row += 1
         txt = "Fuel contains MOX"
         var = self.controller.data.choice['decay']['mox']
-        ch = Checkbutton(self, text=txt, variable=var)
-        ch.grid(row=row, column=0, sticky='w')
+        checkbu = Checkbutton(self, text=txt, variable=var)
+        checkbu.grid(row=row, column=0, sticky='w')
 
         row += 1
         txt = ("Suffix for results file: \n(Letters, numbers or\n"
                "underscores only)")
-        la = Label(self, text=txt)
-        la.grid(row=row, column=0, sticky='w')
+        label = Label(self, text=txt)
+        label.grid(row=row, column=0, sticky='w')
         var = self.controller.data.choice['decay']['suffix']
-        en = Entry(self, textvariable=var)
-        en.grid(row=row, column=1, sticky='w')
+        entry = Entry(self, textvariable=var)
+        entry.grid(row=row, column=1, sticky='w')
 
         row += 1
-        la = Label(self, text="-"*150)
-        la.grid(row=row, columnspan=4, sticky='w')
+        label = Label(self, text="-"*150)
+        label.grid(row=row, columnspan=4, sticky='w')
 
         row += 1
         var = self.controller.data.choice['source']['bool']
         txt = "You want to generate source terms inventories"
-        ch = Checkbutton(self, text=txt, variable=var)
-        ch.grid(row=row, column=0, sticky='w')
+        checkbu = Checkbutton(self, text=txt, variable=var)
+        checkbu.grid(row=row, column=0, sticky='w')
 
         row += 1
-        la = Label(self, text="You want inventories for:")
-        la.grid(row=row, column=0, sticky='w')
+        label = Label(self, text="You want inventories for:")
+        label.grid(row=row, column=0, sticky='w')
 
         row += 1
         var = self.controller.data.choice['source']['chosen_categ']['Elements']
-        ch = Checkbutton(self, text="Elements", variable=var)
-        ch.grid(row=row, column=0, sticky='w')
+        checkbu = Checkbutton(self, text="Elements", variable=var)
+        checkbu.grid(row=row, column=0, sticky='w')
         var = self.controller.data.choice['source']['chosen_categ']['Isotopes']
-        ch = Checkbutton(self, text="Isotopes", variable=var)
-        ch.grid(row=row, column=1, sticky='w')
+        checkbu = Checkbutton(self, text="Isotopes", variable=var)
+        checkbu.grid(row=row, column=1, sticky='w')
 
         row += 1
-        la = Label(self, text="For what unit(s):")
-        la.grid(row=row, column=0, sticky='w')
+        label = Label(self, text="For what unit(s):")
+        label.grid(row=row, column=0, sticky='w')
 
         row += 1
         var = self.controller.data.choice['source']['chosen_units']['g']
-        ch = Checkbutton(self, text="Gram", variable=var)
-        ch.grid(row=row, column=0, sticky='w')
+        checkbu = Checkbutton(self, text="Gram", variable=var)
+        checkbu.grid(row=row, column=0, sticky='w')
         var = self.controller.data.choice['source']['chosen_units']['bq']
-        ch = Checkbutton(self, text="Becquerel", variable=var)
-        ch.grid(row=row, column=1, sticky='w')
+        checkbu = Checkbutton(self, text="Becquerel", variable=var)
+        checkbu.grid(row=row, column=1, sticky='w')
         var = self.controller.data.choice['source']['chosen_units']['wt']
-        ch = Checkbutton(self, text="Watt (total)", variable=var)
-        ch.grid(row=row, column=2, sticky='w')
+        checkbu = Checkbutton(self, text="Watt (total)", variable=var)
+        checkbu.grid(row=row, column=2, sticky='w')
         var = self.controller.data.choice['source']['chosen_units']['wg']
-        ch = Checkbutton(self, text="Watt (gamma)", variable=var)
-        ch.grid(row=row, column=3, sticky='w')
+        checkbu = Checkbutton(self, text="Watt (gamma)", variable=var)
+        checkbu.grid(row=row, column=3, sticky='w')
 
         row += 1
         txt = ("Suffix for results file: \n(Letters, numbers or\n"
                "underscores only)")
-        la = Label(self, text=txt)
-        la.grid(row=row, column=0, sticky='w')
+        label = Label(self, text=txt)
+        label.grid(row=row, column=0, sticky='w')
         var = self.controller.data.choice['source']['suffix']
-        en = Entry(self, textvariable=var)
-        en.grid(row=row, column=1, sticky='w')
+        entry = Entry(self, textvariable=var)
+        entry.grid(row=row, column=1, sticky='w')
 
         row += 1
-        la = Label(self, text="-"*150)
-        la.grid(row=row, columnspan=4, sticky='w')
+        label = Label(self, text="-"*150)
+        label.grid(row=row, columnspan=4, sticky='w')
 
         row += 1
         txt = "Next"
         cmd = self.controller.check_user_data
-        bu = ttk.Button(self, text=txt, command=cmd)
-        bu.grid(row=row, column=2, sticky='w')
+        button = ttk.Button(self, text=txt, command=cmd)
+        button.grid(row=row, column=2, sticky='w')

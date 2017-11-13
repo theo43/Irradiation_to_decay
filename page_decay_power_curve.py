@@ -13,7 +13,8 @@ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,
 from matplotlib.figure import Figure
 from tkinter import Frame, Label, BOTTOM, BOTH, TOP, ttk
 from functools import partial
-LARGE_FONT= ("Verdana", 12)
+
+LARGE_FONT = ("Verdana", 12)
 
 
 class DecayPowerCurvePage(Frame):
@@ -31,19 +32,19 @@ class DecayPowerCurvePage(Frame):
 
     # Create main GUI window
     def init_UI(self):
-        
+
         txt = "Decay power curves"
         label = Label(self, text=txt, font=LARGE_FONT)
         label.pack(pady=10,padx=10)
         path_res = self.controller.data.choice['decay']['path_res']
         txt = ("You can save the figure by selecting the saving button at the "
                "bottom of the page.\nDetailed values are provided in the "
-               "newly created following file:\n{}".format(path_res))   
+               "newly created following file:\n{}".format(path_res))
         label = Label(self, text=txt)
         label.pack()
 
-        # Instanciate the Figure and 
-        fig = Figure(figsize=(6,6), dpi=100)
+        # Instanciate the Figure and
+        fig = Figure(figsize=(6, 6), dpi=100)
         axe = fig.add_subplot(111)
 
         # Plot of the decay power curves
@@ -54,7 +55,7 @@ class DecayPowerCurvePage(Frame):
         df_total.plot(logx=1, logy=0, grid=1, ax=axe)
         axe.set_xlabel('Decay time [s]')
         axe.set_ylabel('Decay power [% FP]')
-        
+
         canvas = FigureCanvasTkAgg(fig, self)
         canvas.show()
         canvas.get_tk_widget().pack(side=BOTTOM, fill=BOTH, expand=True)
@@ -62,8 +63,8 @@ class DecayPowerCurvePage(Frame):
         toolbar = NavigationToolbar2TkAgg(canvas, self)
         toolbar.update()
         canvas._tkcanvas.pack(side=TOP, fill=BOTH, expand=True)
-        
+
         txt = "Next"
         cmd = partial(self.controller.check_user_data)
-        bu = ttk.Button(self, text=txt, command=cmd)
-        bu.pack()
+        button = ttk.Button(self, text=txt, command=cmd)
+        button.pack()

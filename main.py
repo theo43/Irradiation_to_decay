@@ -13,6 +13,6 @@ def main():
     app = MainPage(Data)
     app.mainloop()
     return 0
-    
+
 if __name__ == '__main__':
     exit(main())

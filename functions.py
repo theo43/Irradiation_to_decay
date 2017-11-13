@@ -20,7 +20,7 @@ def find_group(line):
            'Actinides'
     """
     from re import search
-    group='NA'
+    group ='NA'
     if search("fission products", line):
         group = "Fission products"
     if search("actinides", line):
@@ -92,7 +92,7 @@ def find_times(line):
 
     """
     from re import findall
-    time_steps = findall("[a-z]+|\d+\.\d{,2}\s?[secdhryr]{1,3}", line)
+    time_steps = findall(r"[a-z]+|\d+\.\d{,2}\s?[secdhryr]{1,3}", line)
     return time_steps
 
 
@@ -113,7 +113,7 @@ def find_results(line):
 
     """
     from re import findall
-    results = findall("[a-z]{1,6}\s{,2}\d{,3}m?|\d\.\d{2}E[+-]\d{2}", line)
+    results = findall(r"[a-z]{1,6}\s{,2}\d{,3}m?|\d\.\d{2}E[+-]\d{2}", line)
     for i, r in enumerate(results[1:]):
         results[i+1] = float(r)
 
@@ -167,7 +167,7 @@ def create_df_decay_power(file_path,
 
     for i, line in enumerate(read_file):
 
-        if search("^\s+Decay ", line) and\
+        if search(r"^\s+Decay ", line) and\
         (search(regex_after_Decay, line)):
             readblock = 1
             # Search the group of nuclides or elements
@@ -221,7 +221,8 @@ def create_df_decay_power(file_path,
     df = df.groupby(df.index).sum()
     del df['initial']
     del df['charge']
-    columns = sorted(df.columns,key=lambda x: convert_str_sec(x, factors_time))
+    columns = sorted(df.columns,
+                     key=lambda x: convert_str_sec(x, factors_time))
     df = df.reindex(columns=columns)
     df = df.T
     df['Total (BE)'] = df['Actinides']+df['Fission products']
@@ -229,11 +230,11 @@ def create_df_decay_power(file_path,
     return df
 
 
-def gather_df_decay_power(list_batch_df,            FAmass_per_file,
-                          nFA_per_file,             core_power,
-                          mox,                      act_u9_np9_uncertainty,
-                          u9_np9_uncertainty,       fp_uncertainty,
-                          fuel_uncertainty,         factors_time):
+def gather_df_decay_power(list_batch_df, FAmass_per_file,
+                          nFA_per_file, core_power,
+                          mox, act_u9_np9_uncertainty,
+                          u9_np9_uncertainty, fp_uncertainty,
+                          fuel_uncertainty, factors_time):
     """Gather the DataFrames listed in list_batch_df, taking into account the
        number of FA per batch and the FA mass in each batch.
        Calculate the resulting Best-Estimate power (%FP), sigma value (%), and
@@ -270,9 +271,9 @@ def gather_df_decay_power(list_batch_df,            FAmass_per_file,
     df['Best-estimate'] = df['Total (BE)']         / (core_power*1000000)
 
     df['act_u9_np9_unc'] = nan
-    df['u9_np9_unc']     = nan
-    df['fp_unc']         = nan
-    df['sig_uo2']        = nan
+    df['u9_np9_unc'] = nan
+    df['fp_unc'] = nan
+    df['sig_uo2'] = nan
 
     if mox == 1:
         df['sig_mox'] = nan
@@ -317,9 +318,12 @@ def gather_df_decay_power(list_batch_df,            FAmass_per_file,
         list_time_sec.append(convert_str_sec(t_str, factors_time))
     df['Time steps [s]'] = list_time_sec
 
-    columns_final = ['Time steps [s]'   ,  'Best-estimate',
-                     'Sigma value [%]'  ,  '1.645 sigma'  ,
-                     '2 sigma'          ,  '3 sigma'       ]
+    columns_final = ['Time steps [s]',
+                     'Best-estimate',
+                     'Sigma value [%]',
+                     '1.645 sigma',
+                     '2 sigma',
+                     '3 sigma']
 
     df = df.reindex(columns=columns_final)
 
@@ -334,10 +338,14 @@ def gather_df_decay_power(list_batch_df,            FAmass_per_file,
 
 
 
-def create_df_inventories(file_path,        list_units,
-                          list_categories,  factors_time,
-                          regex_time,       regex_category,
-                          regex_categ_unit, regex_after_Decay):
+def create_df_inventories(file_path,
+                          list_units,
+                          list_categories,
+                          factors_time,
+                          regex_time,
+                          regex_category,
+                          regex_categ_unit,
+                          regex_after_Decay):
     """Read a single .out file and create a dictionary containing the stored
        data with pandas DataFrames. The dictionary keys represent:
            - 1st key: category ('Elements' or 'Isotopes')
@@ -383,7 +391,7 @@ def create_df_inventories(file_path,        list_units,
 
     for i, line in enumerate(read_file):
 
-        if (search("^\s+Decay ", line)) and\
+        if (search(r"^\s+Decay ", line)) and\
         (search(regex_after_Decay, line)):
             readblock = 1
             # Search the group of nuclides or elements
@@ -391,12 +399,12 @@ def create_df_inventories(file_path,        list_units,
             group = find_group(line)
             bloc_res = []
 
-        if readblock == 1 and search(regex_categ_unit, line):
+        if readblock and search(regex_categ_unit, line):
             # Search the category ('elements' or 'nuclides')
             category, unit = find_category_unit(line)
             regex_noe = regex_category[category]
 
-        if readblock == 1 and search(regex_time, line):
+        if readblock and search(regex_time, line):
             # Read the block of data only if " Decay " has been read
             time_steps = find_times(line)
             for i, t in enumerate(time_steps):
@@ -404,7 +412,7 @@ def create_df_inventories(file_path,        list_units,
             columns_df = ['Group', sub("s$", "", category)]
             columns_df.extend(time_steps)
 
-        if readblock == 1 and regex_noe != None:
+        if readblock and regex_noe != None:
 
             if search(regex_noe, line) and (unit in list_units) and\
             (category in list_categories):
@@ -412,7 +420,7 @@ def create_df_inventories(file_path,        list_units,
                 # results[0]: name of the nuclide or element
                 # results[i!=0]: result for the corresponding unit and time
                 results = find_results(line)
-                results[0] = sub("\s+", "", results[0]).title()
+                results[0] = sub(r"\s+", "", results[0]).title()
                 if results[0] == "Totals":
                     results[0] = "Total"
 
@@ -426,7 +434,7 @@ def create_df_inventories(file_path,        list_units,
                 row_res.extend(results)
                 bloc_res.append(row_res)
 
-        if (search("^\x0c", line)) and (readblock == 1):
+        if (search("^\x0c", line)) and readblock:
             # Detect the special font at the end of the bloc of data
             # caractherizing the bloc's end: stops data reading
             readblock = 0
@@ -454,8 +462,10 @@ def create_df_inventories(file_path,        list_units,
     return inv
 
 
-def gather_df_inventories(list_categories, list_units,
-                          list_batch_df, FAmass_per_file,
+def gather_df_inventories(list_categories,
+                          list_units,
+                          list_batch_df,
+                          FAmass_per_file,
                           nFA_per_file):
     """Gather the pandas DataFrames created by create_df_inventories with the
        corresponding FA mass and number of FA per batch. Create a dictionary
@@ -517,7 +527,7 @@ def convert_str_sec(word, factors_time):
     if word == 'discharge':
         sec = 0.0
     else:
-        sec = float(findall("\d+\.\d+", word)[0]) *\
+        sec = float(findall(r"\d+\.\d+", word)[0]) *\
               factors_time[findall("[a-z]+", word)[0]]
 
     return sec
@@ -635,6 +645,7 @@ def get_state_IntVar(dictionary, factors_time):
                     key=lambda x: convert_str_sec(x, factors_time)):
         if dictionary[k].get() == 1:
             list_IntVar1.append(k)
+
     return list_IntVar1
 
 

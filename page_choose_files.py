@@ -7,7 +7,8 @@ POS: page for choice of files to be post-processed
 
 from tkinter import Frame, Label, StringVar, END, Listbox, ttk, Entry
 from functools import partial
-LARGE_FONT= ("Verdana", 12)
+
+LARGE_FONT = ("Verdana", 12)
 
 
 class ChooseFilesPage(Frame):
