@@ -12,6 +12,7 @@ A GUI application using tkinter module then leads the move.
 Two kind of tests have been implemented:
 - unit tests within the docstrings of the elementary functions in functions.py
 - global tests checking the good behaviour of the entire tool
+
 The tests can be run with the following command:
 ```
 py.test --doctest-module -v
