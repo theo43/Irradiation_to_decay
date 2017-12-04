@@ -9,15 +9,17 @@ from tkinter import Frame, Label, IntVar, Checkbutton, ttk, messagebox
 from functools import partial
 from sys import exit
 from functions import write_results
-LARGE_FONT= ("Verdana", 12)
+from dictionaries import factors_time
+LARGE_FONT = ("Verdana", 12)
 
 class ElementsPage(Frame):
     """Choice of the elements for source terms inventories generation"""
 
     def __init__(self, parent, controller, *args):
-        """Arguments:
-               - parent (Frame)
-               - controller (Tk)
+        """
+            Arguments:
+                - parent (Frame)
+                - controller (Tk)
         """
         super().__init__(parent)
         self.controller = controller
@@ -96,9 +98,9 @@ class ElementsPage(Frame):
         bu.grid(row=row+1, column=4, sticky='w')
 
     def after_elements(self):
-        """Process tests, write elements inventory results and display next
-           Frame depending on user choices
-        
+        """
+            Process tests, write elements inventory results and display next
+            Frame depending on user choices
         """
         di_chosen_categ = self.controller.data.choice['source']['chosen_categ']
         di_chosen_categ['Elements'].set(0)
@@ -122,10 +124,11 @@ class ElementsPage(Frame):
                                        df_info,
                                        index_group_ioe=index_group_ioe,
                                        time_steps=time_steps,
-                                       category="Elements")
+                                       category="Elements",
+                                       factors_time=factors_time)
 
         for tup in list_title_msg:
-                messagebox.showinfo(tup[0], tup[1])
+            messagebox.showinfo(tup[0], tup[1])
 
         self.controller.raise_elements_isotopes()
 
@@ -152,9 +155,10 @@ class IsotopesPage(Frame):
     """Choice of the isotopes for source terms inventories generation"""
 
     def __init__(self, parent, controller, *args):
-        """Arguments:
-               - parent (Frame)
-               - controller (Tk)
+        """
+            Arguments:
+                - parent (Frame)
+                - controller (Tk)
         """
         super().__init__(parent)
         self.controller = controller
@@ -233,17 +237,17 @@ class IsotopesPage(Frame):
 
 
     def after_isotopes(self):
-        """Process tests, write isotopes inventory results and display next
-           Frame depending on user choices
-        
+        """
+            Process tests, write isotopes inventory results and display next
+            Frame depending on user choices
         """
         di_chosen_categ = self.controller.data.choice['source']['chosen_categ']
         di_chosen_categ['Isotopes'].set(0)
         test_error = self.controller.data.error_input('Isotopes')
         if test_error[0]:
-                messagebox.showerror(test_error[1][0], test_error[1][1])
-                self.destroy()
-                exit(0)
+            messagebox.showerror(test_error[1][0], test_error[1][1])
+            self.destroy()
+            exit(0)
 
         # Write the results in an Excel file
         suffix = self.controller.data.choice['source']['suffix'].get()
@@ -259,7 +263,8 @@ class IsotopesPage(Frame):
                                        df_info,
                                        index_group_ioe=index_group_ioe,
                                        time_steps=time_steps,
-                                       category="Isotopes")
+                                       category="Isotopes",
+                                       factors_time=factors_time)
 
         for tup in list_title_msg:
                 messagebox.showinfo(tup[0], tup[1])
