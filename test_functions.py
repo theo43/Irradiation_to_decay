@@ -21,7 +21,7 @@ def test_decay_power_generation():
     """Test for decay power curve generation"""
 
     # Import the test DataFrame
-    df_test = pd.read_excel('input_tests/Decay_power_curve.xlsx',
+    df_test = pd.read_excel('input_tests/Decay_power_curve_test.xlsx',
                             sheetname='decay_power_curve',
                             index_col = 0)
 
@@ -59,8 +59,8 @@ def test_source_terms_generation():
     """Test for source terms generation"""
 
     # Import the test DataFrames
-    PATH_DF_ELEMENTS = 'input_tests/Source_terms_elements.xlsx'
-    PATH_DF_ISOTOPES = 'input_tests/Source_terms_isotopes.xlsx'
+    PATH_DF_ELEMENTS = 'input_tests/Source_terms_elements_test.xlsx'
+    PATH_DF_ISOTOPES = 'input_tests/Source_terms_isotopes_test.xlsx'
 
     df_test_elem = pd.read_excel(PATH_DF_ELEMENTS,
                                  sheetname=['grams', 'becquerels',

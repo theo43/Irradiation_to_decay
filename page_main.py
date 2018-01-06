@@ -31,19 +31,22 @@ LARGE_FONT = ("Verdana", 12)
 
 
 class Data():
-    """Object containing all the gathered user data
+    """
+    Object containing all the gathered user data
 
-       Attributes:
-           - working_dir (str): location of the folder of the files
-           - file_data (dict): keys are chosen file names, whose values are
-             dictionaries whose keys once provided in DisplayFilesPage are
-               - loc (str) --> absolute path of the file
-               - nbFA (StringVar) --> number of FA for this file
-               - FAmass (StringVar) --> FA mass for this file
-           - choice (dict): contains information regarding user choices
-
-       Methods:
-           -
+    Attributes:
+        working_dir (str):
+            location of the folder of the files
+        
+        file_data (dict):
+            keys are chosen file names, whose values are dictionaries whose
+            keys once provided in DisplayFilesPage are
+                - loc (str): absolute path of the file
+                - nbFA (StringVar): number of FA for this file
+                - FAmass (StringVar): FA mass for this file
+                
+        choice (dict):
+            contains information regarding user choices
     """
 
     def __init__(self, working_dir):
@@ -82,17 +85,18 @@ class Data():
         }
 
     def error_input(self, user_choice):
-        """Check if input data errors were made in DisplayFilesPage
+        """
+        Check if input data errors were made in DisplayFilesPage
 
-           Arguments:
-               user_choice (str): 'decay' for decay power curve generation, or
-               'source' for source terms inventories generation
+        Arguments:
+            user_choice (str):
+                'decay' for decay power curve generation, or 'source' for
+                source terms inventories generation
 
-           Returns:
-               (error, msg) (tuple):
-                   - error (bool): True if an error is detected
-                   - msg: error message to be printed in the message box
-
+        Returns:
+            (error, msg) (tuple):
+                - error (bool): True if an error is detected
+                - msg (str): error message to be printed in the message box
         """
 
         error = False  # Bool switching to True if an input error is detected
@@ -237,13 +241,13 @@ class Data():
 
 
     def generate_power(self):
-        """Generate decay power curve
+        """
+        Generate decay power curve
 
-           Returns:
-               df (pandas.DataFrame): contains the resulting decay power values
-               for all the available time steps and the following sigma values:
-               [0, 1.645, 2, 3]
-
+        Returns:
+            df (pandas.DataFrame):
+                contains the resulting decay power values for all the available
+                time steps and the following sigma values: [0, 1.645, 2, 3]
         """
 
         list_df = []
@@ -284,18 +288,18 @@ class Data():
         return df
 
     def generate_source(self):
-        """Generate source terms inventories
+        """
+        Generate source terms inventories
 
-           Returns:
-               dict_df (dict):
-                   - 1st key (str): categories ('Elements' or 'Isotopes')
-                   - 2nd key (str): units ('g', 'bq', 'wt', 'wg')
-                   - 2nd key values (pandas.DataFrame): source terms
-                     inventories for the corresponding category, unit. All the
-                     available time steps and elements/isotopes are considered.
-                     The user will later choose what time steps and elements/
-                     isotopes to consider in the final inventories
-
+        Returns:
+            dict_df (dict):
+                - 1st key (str): categories ('Elements' or 'Isotopes')
+                - 2nd key (str): units ('g', 'bq', 'wt', 'wg')
+                - 2nd key values (pandas.DataFrame): source terms inventories
+                  for the corresponding category, unit. All the available time
+                  steps and elements/isotopes are considered. The user will
+                  later choose what time steps and elements/isotopes to
+                  consider in the final inventories
         """
 
         list_df = []
@@ -347,9 +351,18 @@ class Data():
         return dict_df
 
     def get_grp_ioe(self, category):
-        """Get the available groups and elements/isotopes in the source terms
-           inventories dictionary
-
+        """
+        Get the available groups and elements/isotopes in the source terms
+        inventories dictionary for the corresponding `category`
+        
+        Arguments:
+            category (str):
+                "Elements" or "Isotopes"
+        
+        Returns:
+            get_dict_group_ioe (dict):
+                dictionary whose keys are the contained group, and values are
+                the sorted list of isotopes or elements contained in this group
         """
 
         dict_resu = self.choice['source']['result']
@@ -377,7 +390,7 @@ class MainPage(Tk):
         self.frames = {}
 
         # We generate only if the path is correct
-        if os.path.exists(self.data.working_dir):  # Could it be not existing?
+        if os.path.exists(self.data.working_dir):
             for file_name in os.listdir(self.data.working_dir):
                 if file_name.endswith('.out'):
                     self.out_files.append(file_name)
@@ -422,9 +435,9 @@ class MainPage(Tk):
         self.ca.config(scrollregion=self.ca.bbox("all"))
 
     def raise_displayer_files(self):
-        """Display the data (file names) chosen in the ChooseFilesPage. Raise
-           DisplayFilesPage
-
+        """
+        Display the data (file names) chosen in the ChooseFilesPage. Raise
+        DisplayFilesPage
         """
 
         li = self.frames[ChooseFilesPage].lbox.curselection()
@@ -433,12 +446,12 @@ class MainPage(Tk):
         self.show_frame(DisplayFilesPage, chosen_files)
 
     def check_user_data(self):
-        """Check the data and choices provided by the user. If:
-                - choice['decay']['bool'] == 1 then decay power curve is
-                  generated first
-                - choice['source']['bool'] == 1 then source terms inventories
-                  are generated for the corresponding categories and units
-
+        """
+        Check the data and choices provided by the user. If:
+            - `choice['decay']['bool'] == 1` then decay power curve is
+              generated first
+            - `choice['source']['bool'] == 1` then source terms inventories
+              are generated for the corresponding categories and units
         """
 
         if (not self.data.choice['decay']['bool'].get())\

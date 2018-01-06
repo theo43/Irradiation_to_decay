@@ -7,21 +7,24 @@ POS: functions
 
 def find_group(line):
     """
-        Post-process the name of the group of nuclides or elements
-        ("actinides", "fission products" or "light elements")
+    Post-process the name of the group of nuclides or elements ("actinides",
+    "fission products" or "light elements")
 
-        Argument:
-            line (string): line of a .out file to post-process
+    Argument:
+        line (str):
+            line of a .out file to post-process
 
-        Returns:
-            group (string): group of the isotope or element
+    Returns:
+        group (str):
+            group of the isotope or element
 
-        Example:
-            >>> find_group("  Decay from 11 h to 20 h    actinides  page  533")
-            'Actinides'
-            >>> find_group("Decay from 200 s to 1800 s fission products  page")
-            'Fission products'
+    Example:
+        >>> find_group("  Decay from 11 h to 20 h    actinides  page  533")
+        'Actinides'
+        >>> find_group("Decay from 200 s to 1800 s fission products  page")
+        'Fission products'
     """
+
     from re import search
     group ='NA'
     if search("fission products", line):
@@ -36,24 +39,27 @@ def find_group(line):
 
 def find_category_unit(line):
     """
-        Post-process the category of results: "nuclides" or "elements" and the
-        unit of the results:
-            - "g" for mass in grams
-            - "bq" for radioactivity in Bq (1 Cu = 3.7x10^10 Bq)
-              (Curies results given in .out files are converted in Bq)
-            - "wt" for total thermal power in watts
-            - "wg" for gamma contribution in total power, in watts
+    Post-process the category of results: "nuclides" or "elements" and the
+    unit of the results:
+        - "g" for mass in grams
+        - "bq" for radioactivity in Bq (1 Cu = 3.7E10 Bq)
+          Curies results given in .out files are finally converted in Bq
+        - "wt" for total thermal power in watts
+        - "wg" for gamma contribution in total power, in watts
 
-        Argument:
-            line (string): line of a .out file to post-process
+    Arguments:
+        line (str):
+            line of a .out file to post-process
 
-        Returns:
-            tup (tuple): contains the category (tup[0]) and the unit (tup[1])
+    Returns:
+        tup (tuple):
+            contains the category (tup[0]) and the unit (tup[1])
 
-        Example:
-            >>> find_category_unit("      element thermal power, watts  ")
-            ('Elements', 'wt')
+    Example:
+        >>> find_category_unit("      element thermal power, watts  ")
+        ('Elements', 'wt')
     """
+
     from re import search
     if search("concentrations, grams", line):
         unit = "g"
@@ -74,26 +80,29 @@ def find_category_unit(line):
 
 def find_times(line):
     """
-        Post-process the time steps of the block of data being read. Time steps
-        are given with the following form: "float"+"unit". If the time step
-        value is given in:
-             - Seconds: no space between the float and "sec"
-             - Minutes: to be completed
-             - Hours: one space between the float and "hr"
-             - Days: one space between the float and "d"
-             - Months: to be completed
-             - Years: one space between the float and "yr"
+    Post-process the time steps of the block of data being read. Time steps
+    are given with the following form: "float"+"unit". If the time step value
+    is given in:
+        - Seconds: no space between the float and "sec"
+        - Minutes: to be completed
+        - Hours: one space between the float and "hr"
+        - Days: one space between the float and "d"
+        - Months: to be completed
+        - Years: one space between the float and "yr"
 
-        Argument:
-            line (string): line of a .out file to post-process
+    Argument:
+        line (str):
+            line of a .out file to post-process
 
-        Returns:
-            time_steps (list): split of the line containing the time steps
+    Returns:
+        time_steps (list):
+            split of the line containing the time steps
 
-        Example:
-            >>> find_times("             initial   11.0 hr   12.0 hr ")
-            ['initial', '11.0 hr', '12.0 hr']
+    Example:
+        >>> find_times("             initial   11.0 hr   12.0 hr ")
+        ['initial', '11.0 hr', '12.0 hr']
     """
+
     from re import findall
     time_steps = findall(r"[a-z]+|\d+\.\d{,2}\s?[secdhryr]{1,3}", line)
     return time_steps
@@ -101,20 +110,23 @@ def find_times(line):
 
 def find_results(line):
     """
-        Post-process the results in [unit] of a block of data being read
+    Post-process the results in [unit] of a block of data being read
 
-        Argument:
-            line (string): line of a .out file to post-process
+    Argument:
+        line (str):
+            line of a .out file to post-process
 
-        Returns:
-            - results (list): split of the line containing the results. The
-              first element of the list is the isotope or element name
-              (string), the rest is the resulting contribution (float)
+    Returns:
+        results (list):
+            split of the line containing the results. The first element of the
+            list is the isotope or element name (str), the rest is the
+            resulting contribution (float)
 
-        Example:
-            >>> find_results("    am239   2.90E-18  4.44E-09  4.44E-09  ")
-            ['am239', 2.9e-18, 4.44e-09, 4.44e-09]
+    Example:
+        >>> find_results("    am239   2.90E-18  4.44E-09  4.44E-09  ")
+        ['am239', 2.9e-18, 4.44e-09, 4.44e-09]
     """
+
     from re import findall
     results = findall(r"[a-z]{1,6}\s{,2}\d{,3}m?|\d\.\d{2}E[+-]\d{2}", line)
     for i, r in enumerate(results[1:]):
@@ -130,23 +142,29 @@ def create_df_decay_power(file_path,
                           regex_categ_unit,
                           regex_after_Decay):
     """
-        Read a single .out file and create a pandas DataFrame containing the
-        power results (in Watts total) for every detected time steps, for
-        following contribution:
-            - Total decay power (best-estimate)
-            - Actinides (without 239U and 239Np)
-            - 239U and 239 Np
-            - Fission products
+    Read a single .out file and create a pandas DataFrame containing the
+    power results (in Watts total) for every detected time steps, for
+    following contribution:
+        - Total decay power (best-estimate)
+        - Actinides (without 239U and 239Np)
+        - 239U and 239 Np
+        - Fission products
 
-        Arguments:
-            - file_path (string): absolute location of the file
-            - factors_time (dict): correspondence in seconds for different time
-              units
-            - regex_* (string): regular expressions
+    Arguments:
+        file_path (str):
+            absolute location of the file
 
-        Returns:
-            df (pandas.DataFrame)
+        factors_time (dict):
+            correspondence in seconds for different time units
+
+        regex_* (str):
+            regular expressions used to post-process
+
+    Returns:
+        df (pandas.DataFrame):
+            Decay power values for `file_path`
     """
+
     from re import search
     from pandas import DataFrame, Series
 
@@ -238,25 +256,38 @@ def gather_df_decay_power(list_batch_df,            FAmass_per_file,
                           u9_np9_uncertainty,       fp_uncertainty,
                           fuel_uncertainty,         factors_time):
     """
-        Gather the DataFrames listed in list_batch_df, taking into account the
-        number of FA per batch and the FA mass in each batch.
-        Calculate the resulting Best-Estimate power (%FP), sigma value (%),
-        and the power value with 1.645, 2.0, 3.0 sigma (%FP).
+    Gather the DataFrames listed in list_batch_df, taking into account the
+    number of FA per batch and the FA mass in each batch.
+    Calculate the resulting Best-Estimate power (%FP), sigma value (%),
+    and the power value with 1.645, 2.0, 3.0 sigma (%FP).
 
-        Arguments:
-            - list_batch_df (list): pandas DataFrames containing decay power
-              data
-            - FAmass_per_file (list): corresponding FA masses per DataFrame
-            - nFA_per_file (list): corresponding numbers of FA per DataFrame
-            - core_power (float): power used to normalize the decay power curve
-            - mox (bool): if the core contains mox or not
-            - *_uncertainty (dict): uncertainties corresponding to decay times
-            - factors_time (dict): correspondence in seconds for different time
-              units
+    Arguments:
+        list_batch_df (list):
+            pandas DataFrames containing decay power data
 
-        Returns:
-            df (pandas.DataFrame)
+        FAmass_per_file (list):
+            corresponding FA masses per DataFrame
+
+        nFA_per_file (list):
+            corresponding numbers of FA per DataFrame
+
+        core_power (float):
+            power used to normalize the decay power curve
+        
+        mox (bool):
+            if the core contains mox or not
+            
+        *_uncertainty (dict):
+            uncertainties corresponding to decay times
+            
+        factors_time (dict):
+            correspondence in seconds for different time units
+
+    Returns:
+        df (pandas.DataFrame):
+            Gathered decay power curve values for each available time step
     """
+
     from pandas import DataFrame
     from numpy import nan, sqrt
 
@@ -343,27 +374,36 @@ def create_df_inventories(file_path,        list_units,
                           regex_time,       regex_category,
                           regex_categ_unit, regex_after_Decay):
     """
-        Read a single .out file and create a dictionary containing the stored
-        data with pandas DataFrames. The dictionary keys represent:
-            - 1st key: category ('Elements' or 'Isotopes')
-            - 2nd key: unit ('g' for mass, 'Bq' for activity, 'W' for total
-              power, 'W_gamma' for gamma power)
-        The value of a second key is a pandas DataFrame containing the results
-        for every detected time steps and for every detected elements or
-        isotopes
+    Read a single .out file and create a dictionary containing the stored
+    data with pandas DataFrames. The dictionary keys represent:
+        - 1st key: category ('Elements' or 'Isotopes')
+        - 2nd key: unit ('g' for mass, 'Bq' for activity, 'W' for total
+          power, 'W_gamma' for gamma power)
+    The value of a second key is a pandas DataFrame containing the results
+    for every detected time steps and for every detected elements or
+    isotopes
 
-        Arguments:
-            - file_path (string): absolute location of the file
-            - list_units (list): units chosen by the user
-            - list_categories (list): categories ('elements' or 'isotopes')
-              chosen by the user
-            - factors_time (dict): correspondence in seconds for different time
-              units
-            - regex_* (string): regular expressions
+    Arguments:
+        file_path (str):
+            absolute location of the file
 
-        Returns:
-            inv (dict)
+        list_units (list):
+            units chosen by the user
+        
+        list_categories (list):
+            categories ('elements' or 'isotopes') chosen by the user
+        
+        factors_time (dict):
+            correspondence in seconds for different time units
+        
+        regex_* (str):
+            regular expressions used during files post-processing
+
+    Returns:
+        inv (dict):
+            Source terms inventories for `file_path`
     """
+
     from re import search, sub
     import pandas as pd
     inv = {}
@@ -464,23 +504,33 @@ def gather_df_inventories(list_categories,
                           FAmass_per_file,
                           nFA_per_file):
     """
-        Gather the pandas DataFrames created by create_df_inventories with the
-        corresponding FA mass and number of FA per batch. Create a dictionary
-        whose:
-            - 1st key is the chosen category(ies): 'Elements' or 'Isotopes'
-            - 2nd key is the chosen unit(s)
+    Gather the pandas DataFrames created by create_df_inventories with the
+    corresponding FA mass and number of FA per batch. Create a dictionary
+    whose:
+        - 1st key is the chosen category(ies): 'Elements' or 'Isotopes'
+        - 2nd key is the chosen unit(s)
 
-        Arguments:
-            - list_category (list): categories chosen by the user
-            - list_units (list): units chosen by the user
-            - list_batch_df (list): list of dictionaries returned by
-              create_df_inventories
-            - FAmass_per_file (list): FA masses chosen by the user per batch
-            - nFA_per_file (list): number of FA chosen by the user per batch
+    Arguments:
+        list_category (list):
+            categories chosen by the user
+        
+        list_units (list):
+            units chosen by the user
+        
+        list_batch_df (list):
+            list of dictionaries returned by create_df_inventories
+        
+        FAmass_per_file (list):
+            FA masses chosen by the user per batch
+        
+        nFA_per_file (list):
+            number of FA chosen by the user per batch
 
-        Returns:
-            dinv (dict)
+    Returns:
+        dinv (dict):
+            Gathered source terms inventories 
     """
+
     dinv = {}
 
     for c in list_categories:
@@ -504,21 +554,25 @@ def gather_df_inventories(list_categories,
 
 def convert_str_sec(word, factors_time):
     """
-        Convert a time step given in a string into a number of seconds.
+    Convert a time step given in a string into a number of seconds
 
      Arguments:
-         - word (string): time step to convert
-         - factors_time (dict): correspondence in seconds for different time
-           units
+         word (str):
+             time step to convert
+         
+        factors_time (dict):
+            correspondence in seconds for different time units
 
      Returns:
-         sec (float): corresponding time in seconds
+         sec (float):
+             corresponding time in seconds
 
      Example:
          >>> from dictionaries import factors_time
          >>> convert_str_sec("2.0hr", factors_time)
          7200.0
     """
+
     from re import findall
     if word == 'discharge':
         sec = 0.0
@@ -530,11 +584,12 @@ def convert_str_sec(word, factors_time):
 
 
 def test_df_consistency(list_df):
-    """Return True is all the DataFrames in list_df have the same indexes and
+    """
+    Return True is all the DataFrames in list_df have the same indexes and
     columns.
     NOT USED YET BUT SHOULD.
-
     """
+
     df0 = list_df[0]
     ind0 = df0.index
     col0 = df0.columns
@@ -552,26 +607,31 @@ def test_df_consistency(list_df):
 
 def find_unc(time_str, dictionary, factors_time):
     """
-        Find the uncertainty value to be used, depending on the time step. If
-        time_str (converted from string to float in sec with convert_str_sec)
-        does not match any keys in dictionary, the maximum value between the
-        two closest keys values is returned
+    Find the uncertainty value to be used, depending on the time step. If
+    `time_str` (converted from string to float in sec with è convert_str_sec`)
+    does not match any keys in `dictionary`, the maximum value between the
+    two closest keys values is returned
 
-        Arguments:
-            - time_str (string): time step of the form "float"+"time_unit"
-            - dictionary (dict): uncertainty values corresponding to different
-              decay time steps
-            - factors_time (dict): correspondence in seconds for different time
-              units
+    Arguments:
+        time_str (str):
+            Time step of the form "float"+"time_unit"
+        
+        dictionary (dict):
+            Uncertainty values corresponding to different decay time steps
+        
+        factors_time (dict):
+            Correspondence in seconds for different time units
 
-        Returns:
-            uncertainty (float): uncertainty value to be used
+    Returns:
+        uncertainty (float):
+            Uncertainty value to be used
 
-        Example:
-            >>> from dictionaries import fp_uncertainty, factors_time
-            >>> find_unc('1.5d', fp_uncertainty, factors_time)
-            0.03
+    Example:
+        >>> from dictionaries import fp_uncertainty, factors_time
+        >>> find_unc('1.5d', fp_uncertainty, factors_time)
+        0.03
     """
+
     time_sec = convert_str_sec(time_str, factors_time)
     L = sorted(dictionary.keys(), key=lambda x: convert_str_sec(x,
                                                                 factors_time))
@@ -592,19 +652,21 @@ def find_unc(time_str, dictionary, factors_time):
 
 def get_dict_group_ioe(df):
     """
-        Analyze a pandas Dataframe having a two levels index:
-            - 1st level: group of isotope or element ("Actinides", "Fission
-              products", ..)
-            - 2nd level: names of the isotopes or elements
+    Analyze a pandas Dataframe having a two levels index:
+        - 1st level: group of isotope or element ("Actinides", "Fission 
+          products", ..)
+        - 2nd level: names of the isotopes or elements
 
-        Argument:
-            df (pandas.DataFrame): the two levels indexed DataFrame
+    Arguments:
+        df (pandas.DataFrame):
+            Two levels indexed DataFrame
 
-        Returns:
-            di (dict): dictionary whose keys are the contained group, and
-            values are the sorted list of isotopes or elements contained in
-            this group
+    Returns:
+        di (dict):
+            Dictionary whose keys are the contained group, and values are the
+            sorted list of isotopes or elements contained in this group
     """
+
     di = {}
     L0 = df.index.get_level_values(0)
     L1 = df.index.get_level_values(1)
@@ -625,17 +687,18 @@ def get_dict_group_ioe(df):
 
 def get_state_IntVar(dictionary, factors_time):
     """
-        Get the state of IntVar instances stored in a dictionary
+    Get the state of IntVar instances stored in a dictionary
 
-        Arguments:
-            - dictionary (dict): keys are string instances whose values are 0
-              or 1
-            - factors_time (dict): correspondence in seconds for different time
-              units
+    Arguments:
+        dictionary (dict):
+            Keys are string instances whose values are 0 or 1
+        
+        factors_time (dict):
+            Correspondence in seconds for different time units
 
-        Returns:
-            list_IntVar1 (list): list of the dictionary's keys whose values
-            equal to 1
+    Returns:
+        list_IntVar1 (list):
+            List of the dictionary's keys whose values equal to 1
     """
 
     list_IntVar1 = []
@@ -649,22 +712,26 @@ def get_state_IntVar(dictionary, factors_time):
 
 def check_input_output(in_loc, out_loc):
     """
-        Check if ../Input and ../Output folders exist, and get all the available
-        .out files in ../Input folder
+    Check if input and output folders exist, and get all the available .out
+    files in input folder
 
-        Arguments:
-            - in_loc (string): absolute location of ../Input folder
-            - out_loc (string): absolute location of ../Output folder
+    Arguments:
+        in_loc (str):
+            Absolute location of input folder
+        
+        out_loc (str):
+            Absolute location of output folder
 
-        Returns:
-            list_in_files (list): absolute location of available .out files in
-            ../Input folder
+    Returns:
+        list_in_files (list):
+            Absolute location of available .out files in "../Input" folder
     """
+
     from os import mkdir, path
     import glob
     import sys
 
-    # Check if 'Input' folder exists
+    # Check if 'Input' folder exists - useless now
     if path.isdir(in_loc):
         list_in_files = [f for f in glob.glob(path.join(in_loc, '*.out'))]
 
@@ -697,16 +764,18 @@ def check_input_output(in_loc, out_loc):
 
 def create_df_info(**kwargs):
     """
-        Build a list containing the information chosen by the user to be
-        inserted in a Dataframe
+    Build a list containing the information chosen by the user to be
+    inserted in a Dataframe
 
-        Arguments:
-            **kwargs (dict): information concerning post-processed files and
-            corresponding data
+    Arguments:
+        **kwargs (dict):
+            Information concerning post-processed files and corresponding data
 
-        Returns:
-            df_info (pandas.DataFrame)
+    Returns:
+        df_info (pandas.DataFrame):
+            User informations stored in a DataFrame
     """
+
     from os import path
     from pandas import DataFrame
 
@@ -733,36 +802,45 @@ def write_results(output_location,
                   df_user_data,
                   **kwargs):
     """
-        Check if the sub-folder corresponding to the required results type
-        exists, and create it if it does not. Create the results file
+    Check if the sub-folder corresponding to the required results type
+    exists, and create it if it does not. Create the results file
 
-        Arguments:
-            - output_location (str):
-            - results_type (str): name of the sub-folder for results
-              ("Decay_power_curve" or "Source_terms")
-            - suffix (str): suffix of the results file name
-              asked by the user appended to results file name
-            - dict_results (dict): contains the pandas DataFrames to be
-              printed in the result file:
-                  * 1st key: results_type
-                  * 2nd key: categories (only for source terms)
-                  * 3rd key: units (only for source terms)
-              For decay power curve generation: dict_results is directly a
-              pandas.DataFrame
-            - df_user_data (pandas.DataFrame): data provided by the user in
-              UserData
-            - **kwargs (dict): only for source terms results
-                  * index_group_ioe (list): tuples containing (group, isotope
-                    or element) names for source terms result file indexing
-                  * time_steps (list): time steps names for columns indexing
-                  * category (str): category for source terms results
-                  * factors_time (dict): amount of seconds in different units
-                    of time
+    Arguments:
+        output_location (str):
 
-        Returns:
-            list_title_msg (list): tuple(s) of title (str), msg (str) to be
-            displayed in a messagebox
+        results_type (str):
+            Name of the sub-folder for results ("Decay_power_curve" or
+            "Source_terms")
+        
+        suffix (str):
+            Suffix of the results file name asked by the user appended to
+            results file name
+        
+        dict_results (dict):
+            Contains the pandas DataFrames to be printed in the result file:
+                - 1st key: results_type
+                - 2nd key: categories (only for source terms)
+                - 3rd key: units (only for source terms)
+            For decay power curve generation: dict_results is directly a
+            pandas.DataFrame
+        
+        df_user_data (pandas.DataFrame):
+            Data provided by the user in UserData
+        
+        **kwargs (dict):
+            Only for source terms results:
+                - index_group_ioe (list): tuples containing (group, isotope or
+                  element) names for source terms result file indexing
+                - time_steps (list): time steps names for columns indexing
+                - category (str): category for source terms results
+                - factors_time (dict): amount of seconds in different units
+                  of time
+
+    Returns:
+        list_title_msg (list):
+            tuple(s) of title (str), msg (str) to be displayed in a messagebox
     """
+
     from pandas import ExcelWriter
     from os import path, mkdir
 
