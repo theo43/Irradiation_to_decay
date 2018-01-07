@@ -31,10 +31,12 @@ The tests can be run with the following command:
 Sphinx documentation
 ********************
 
-The documentation is automated with Sphinx. To generate the documentation, go to the `sphinx` folder, and run:
+## Sphinx documentation
+The documentation can be generated with Sphinx. To automatically generate it, go to the `doc` folder, and run:
 
 ``make html``
 
-This generated the `build/html/index.html' file which can be displayed with the following command:
+This created the `build/html/index.html` file which can be displayed with the following command:
 
 ``firefox index.html``
+
