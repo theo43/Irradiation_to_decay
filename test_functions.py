@@ -1,9 +1,8 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-@author: theo43@github
-date: Nov. 2017
-POS: global tests of the tool - decay power curve and source terms generation
+This ``test_functions`` module aims at testing the global good behavior of the
+code by comparing the results with the ones stored in `input_tests/*.xlsx`.
 """
 
 import pandas as pd

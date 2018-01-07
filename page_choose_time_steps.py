@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@author: theo43@github
-date: Sept. 2017
-POS: page for choice time steps (source terms inventories)
+Page displaying all the available time steps for source terms inventories.
 """
 
 from tkinter import Frame, Label, IntVar, Checkbutton, ttk, messagebox
@@ -19,9 +17,14 @@ class ChooseTimeStepsPage(Frame):
     """Choice of the time steps for source terms inventories generation"""
 
     def __init__(self, parent, controller, *args):
-        """Arguments:
-               - parent (Frame)
-               - controller (Tk)
+        """
+        Arguments:
+            `parent` (Frame):
+                Parent page
+
+            `controller` (Tk):
+                Main controller page
+
         """
         super().__init__(parent)
         self.controller = controller
@@ -72,9 +75,10 @@ class ChooseTimeStepsPage(Frame):
         bu.grid(row=row, column=2, sticky='w')
 
     def after_time_steps(self):
-        """After time steps choice for source terms inventories, raise the
-           page corresponding to the user choice: elements choice page then/or
-           isotopes choice page
+        """
+        After time steps choice for source terms inventories, raise the
+        page corresponding to the user choice: elements choice page then/or
+        isotopes choice page
 
         """
 

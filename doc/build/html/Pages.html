@@ -1,0 +1,413 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Pages displayed by the program &#8212; Irradiec 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Functions" href="Functions.html" />
+    <link rel="prev" title="Presentation of the program" href="Presentation.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="pages-displayed-by-the-program">
+<h1>Pages displayed by the program<a class="headerlink" href="#pages-displayed-by-the-program" title="Permalink to this headline">¶</a></h1>
+<p>This chapter show all the pages displayed by the program. All the pages are managed by a controller, a <code class="docutils literal"><span class="pre">tkinter.Tk</span></code> instance.</p>
+<div class="section" id="module-page_main">
+<span id="module-page-main"></span><h2>Module <cite>page_main</cite><a class="headerlink" href="#module-page_main" title="Permalink to this headline">¶</a></h2>
+<p>Page definition for the main <cite>controller</cite> page (<cite>Tk</cite> instance) controlling all
+the other Frames. Also defines the <cite>Data</cite> class which contains all the data
+provided by the user, and the program results.</p>
+<dl class="class">
+<dt id="page_main.Data">
+<em class="property">class </em><code class="descclassname">page_main.</code><code class="descname">Data</code><span class="sig-paren">(</span><em>working_dir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/page_main.html#Data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#page_main.Data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object containing all the gathered user data</p>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>working_dir</cite> (str):</dt>
+<dd>Location of the folder of the files</dd>
+<dt><cite>file_data</cite> (dict):</dt>
+<dd><p class="first">Keys are chosen file names, whose values are dictionaries whose
+keys once provided in DisplayFilesPage are</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>loc (str): absolute path of the file</li>
+<li>nbFA (StringVar): number of FA for this file</li>
+<li>FAmass (StringVar): FA mass for this file</li>
+</ul>
+</div></blockquote>
+</dd>
+<dt><cite>choice</cite> (dict):</dt>
+<dd>Contains information regarding user choices</dd>
+</dl>
+</dd>
+</dl>
+<dl class="method">
+<dt id="page_main.Data.error_input">
+<code class="descname">error_input</code><span class="sig-paren">(</span><em>user_choice</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/page_main.html#Data.error_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#page_main.Data.error_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if input data errors were made in DisplayFilesPage</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>user_choice</cite> (str):</dt>
+<dd>&#8216;decay&#8217; for decay power curve generation, or &#8216;source&#8217; for
+source terms inventories generation</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>(error, msg)</cite> (tuple):</dt>
+<dd><ul class="first last simple">
+<li>error (bool): True if an error is detected</li>
+<li>msg (str): error message to be printed in the message box</li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="page_main.Data.generate_power">
+<code class="descname">generate_power</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/page_main.html#Data.generate_power"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#page_main.Data.generate_power" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate decay power curve</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>df</cite> (pandas.DataFrame):</dt>
+<dd>Contains the resulting decay power values for all the available
+time steps and the following sigma values: [0, 1.645, 2, 3]</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="page_main.Data.generate_source">
+<code class="descname">generate_source</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/page_main.html#Data.generate_source"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#page_main.Data.generate_source" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate source terms inventories</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>dict_df</cite> (dict):</dt>
+<dd><ul class="first last simple">
+<li>1st key (str): categories (&#8216;Elements&#8217; or &#8216;Isotopes&#8217;)</li>
+<li>2nd key (str): units (&#8216;g&#8217;, &#8216;bq&#8217;, &#8216;wt&#8217;, &#8216;wg&#8217;)</li>
+<li>2nd key values (pandas.DataFrame): source terms inventories
+for the corresponding category, unit. All the available time
+steps and elements/isotopes are considered. The user will
+later choose what time steps and elements/isotopes to
+consider in the final inventories</li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="page_main.Data.get_grp_ioe">
+<code class="descname">get_grp_ioe</code><span class="sig-paren">(</span><em>category</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/page_main.html#Data.get_grp_ioe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#page_main.Data.get_grp_ioe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the available groups and elements/isotopes in the source terms
+inventories dictionary for the corresponding <cite>category</cite></p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>category</cite> (str):</dt>
+<dd>&#8220;Elements&#8221; or &#8220;Isotopes&#8221;</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>get_dict_group_ioe</cite> (dict):</dt>
+<dd>Dictionary whose keys are the contained group, and values are
+the sorted list of isotopes or elements contained in this group</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="page_main.MainPage">
+<em class="property">class </em><code class="descclassname">page_main.</code><code class="descname">MainPage</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/page_main.html#MainPage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#page_main.MainPage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main application, refered to as <cite>controller</cite> in the different frames</p>
+<dl class="method">
+<dt id="page_main.MainPage.check_user_data">
+<code class="descname">check_user_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/page_main.html#MainPage.check_user_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#page_main.MainPage.check_user_data" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Check the data and choices provided by the user. If:</dt>
+<dd><ul class="first last simple">
+<li><cite>choice[&#8216;decay&#8217;][&#8216;bool&#8217;] == 1</cite> then decay power curve is
+generated first</li>
+<li><cite>choice[&#8216;source&#8217;][&#8216;bool&#8217;] == 1</cite> then source terms inventories
+are generated for the corresponding categories and units</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="page_main.MainPage.raise_displayer_files">
+<code class="descname">raise_displayer_files</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/page_main.html#MainPage.raise_displayer_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#page_main.MainPage.raise_displayer_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display the data (file names) chosen in the ChooseFilesPage. Raise
+DisplayFilesPage</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="page_main.MainPage.raise_elements_isotopes">
+<code class="descname">raise_elements_isotopes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/page_main.html#MainPage.raise_elements_isotopes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#page_main.MainPage.raise_elements_isotopes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise the elements or isotopes choice page</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="page_main.MainPage.show_frame">
+<code class="descname">show_frame</code><span class="sig-paren">(</span><em>container</em>, <em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/page_main.html#MainPage.show_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#page_main.MainPage.show_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show next frame to be displayed</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-page_choose_files">
+<span id="module-page-choose-files"></span><h2>Module <cite>page_choose_files</cite><a class="headerlink" href="#module-page_choose_files" title="Permalink to this headline">¶</a></h2>
+<p>Page for files to post-process choice.</p>
+<dl class="class">
+<dt id="page_choose_files.ChooseFilesPage">
+<em class="property">class </em><code class="descclassname">page_choose_files.</code><code class="descname">ChooseFilesPage</code><span class="sig-paren">(</span><em>parent</em>, <em>controller</em>, <em>*files</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/page_choose_files.html#ChooseFilesPage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#page_choose_files.ChooseFilesPage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Page for output files choice</p>
+<dl class="method">
+<dt id="page_choose_files.ChooseFilesPage.select_all">
+<code class="descname">select_all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/page_choose_files.html#ChooseFilesPage.select_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#page_choose_files.ChooseFilesPage.select_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select all the file names</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="page_choose_files.ChooseFilesPage.unselect_all">
+<code class="descname">unselect_all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/page_choose_files.html#ChooseFilesPage.unselect_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#page_choose_files.ChooseFilesPage.unselect_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unselect all the file names</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="page_choose_files.ChooseFilesPage.update_list">
+<code class="descname">update_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/page_choose_files.html#ChooseFilesPage.update_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#page_choose_files.ChooseFilesPage.update_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the list while doing the search with the filter Warning: the
+selection is reset when the listbox is updated!</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-page_display_files">
+<span id="module-page-display-files"></span><h2>Module <cite>page_display_files</cite><a class="headerlink" href="#module-page_display_files" title="Permalink to this headline">¶</a></h2>
+<p>Page displaying the files chosen by the user, and enables giving the data
+needed for each file post-processing.</p>
+<dl class="class">
+<dt id="page_display_files.DisplayFilesPage">
+<em class="property">class </em><code class="descclassname">page_display_files.</code><code class="descname">DisplayFilesPage</code><span class="sig-paren">(</span><em>parent</em>, <em>controller</em>, <em>file_names</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/page_display_files.html#DisplayFilesPage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#page_display_files.DisplayFilesPage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display the files chosen in ChooseFilesPage, and ask the user the data to
+be used with each file</p>
+<dl class="method">
+<dt id="page_display_files.DisplayFilesPage.init_UI">
+<code class="descname">init_UI</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/page_display_files.html#DisplayFilesPage.init_UI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#page_display_files.DisplayFilesPage.init_UI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create GUI for the chosen files and its corresponding data to be
+provided</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-page_decay_power_curve">
+<span id="module-page-decay-power-curve"></span><h2>Module <cite>page_decay_power_curve</cite><a class="headerlink" href="#module-page_decay_power_curve" title="Permalink to this headline">¶</a></h2>
+<p>Page for decay power curve plotting. The user can visualize the best-estimate
+decay power curve with the curves penalized with 1.645, 2 and 3 sigma
+uncertainty values for all the available time steps. The user can zoom and save
+images.</p>
+<dl class="class">
+<dt id="page_decay_power_curve.DecayPowerCurvePage">
+<em class="property">class </em><code class="descclassname">page_decay_power_curve.</code><code class="descname">DecayPowerCurvePage</code><span class="sig-paren">(</span><em>parent</em>, <em>controller</em>, <em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/page_decay_power_curve.html#DecayPowerCurvePage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#page_decay_power_curve.DecayPowerCurvePage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plotting of the decay power curves</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-page_choose_time_steps">
+<span id="module-page-choose-time-steps"></span><h2>Module <cite>page_choose_time_steps</cite><a class="headerlink" href="#module-page_choose_time_steps" title="Permalink to this headline">¶</a></h2>
+<p>Page displaying all the available time steps for source terms inventories.</p>
+<dl class="class">
+<dt id="page_choose_time_steps.ChooseTimeStepsPage">
+<em class="property">class </em><code class="descclassname">page_choose_time_steps.</code><code class="descname">ChooseTimeStepsPage</code><span class="sig-paren">(</span><em>parent</em>, <em>controller</em>, <em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/page_choose_time_steps.html#ChooseTimeStepsPage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#page_choose_time_steps.ChooseTimeStepsPage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Choice of the time steps for source terms inventories generation</p>
+<dl class="method">
+<dt id="page_choose_time_steps.ChooseTimeStepsPage.after_time_steps">
+<code class="descname">after_time_steps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/page_choose_time_steps.html#ChooseTimeStepsPage.after_time_steps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#page_choose_time_steps.ChooseTimeStepsPage.after_time_steps" title="Permalink to this definition">¶</a></dt>
+<dd><p>After time steps choice for source terms inventories, raise the
+page corresponding to the user choice: elements choice page then/or
+isotopes choice page</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="page_choose_time_steps.ChooseTimeStepsPage.init_UI">
+<code class="descname">init_UI</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/page_choose_time_steps.html#ChooseTimeStepsPage.init_UI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#page_choose_time_steps.ChooseTimeStepsPage.init_UI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create main GUI window</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pages_elements_isotopes_choice">
+<span id="module-pages-elements-isotopes-choice"></span><h2>Module <cite>pages_elements_isotopes_choice</cite><a class="headerlink" href="#module-pages_elements_isotopes_choice" title="Permalink to this headline">¶</a></h2>
+<p>Pages for choice of elements and isotopes for source terms inventories.</p>
+<dl class="class">
+<dt id="pages_elements_isotopes_choice.ElementsPage">
+<em class="property">class </em><code class="descclassname">pages_elements_isotopes_choice.</code><code class="descname">ElementsPage</code><span class="sig-paren">(</span><em>parent</em>, <em>controller</em>, <em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pages_elements_isotopes_choice.html#ElementsPage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pages_elements_isotopes_choice.ElementsPage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Choice of the elements for source terms inventories generation</p>
+<dl class="method">
+<dt id="pages_elements_isotopes_choice.ElementsPage.after_elements">
+<code class="descname">after_elements</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pages_elements_isotopes_choice.html#ElementsPage.after_elements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pages_elements_isotopes_choice.ElementsPage.after_elements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process tests, write elements inventory results and display next Frame
+depending on user choices</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pages_elements_isotopes_choice.ElementsPage.select_all">
+<code class="descname">select_all</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pages_elements_isotopes_choice.html#ElementsPage.select_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pages_elements_isotopes_choice.ElementsPage.select_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select all elements from all groups</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pages_elements_isotopes_choice.ElementsPage.unselect_all">
+<code class="descname">unselect_all</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pages_elements_isotopes_choice.html#ElementsPage.unselect_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pages_elements_isotopes_choice.ElementsPage.unselect_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unselect all elements from all groups</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pages_elements_isotopes_choice.IsotopesPage">
+<em class="property">class </em><code class="descclassname">pages_elements_isotopes_choice.</code><code class="descname">IsotopesPage</code><span class="sig-paren">(</span><em>parent</em>, <em>controller</em>, <em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pages_elements_isotopes_choice.html#IsotopesPage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pages_elements_isotopes_choice.IsotopesPage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Choice of the isotopes for source terms inventories generation</p>
+<dl class="method">
+<dt id="pages_elements_isotopes_choice.IsotopesPage.after_isotopes">
+<code class="descname">after_isotopes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pages_elements_isotopes_choice.html#IsotopesPage.after_isotopes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pages_elements_isotopes_choice.IsotopesPage.after_isotopes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process tests, write isotopes inventory results and display next Frame
+depending on user choices</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pages_elements_isotopes_choice.IsotopesPage.select_all">
+<code class="descname">select_all</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pages_elements_isotopes_choice.html#IsotopesPage.select_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pages_elements_isotopes_choice.IsotopesPage.select_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select all isotopes from all groups</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pages_elements_isotopes_choice.IsotopesPage.unselect_all">
+<code class="descname">unselect_all</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pages_elements_isotopes_choice.html#IsotopesPage.unselect_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pages_elements_isotopes_choice.IsotopesPage.unselect_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unselect all isotopes from all groups</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Pages displayed by the program</a><ul>
+<li><a class="reference internal" href="#module-page_main">Module <cite>page_main</cite></a></li>
+<li><a class="reference internal" href="#module-page_choose_files">Module <cite>page_choose_files</cite></a></li>
+<li><a class="reference internal" href="#module-page_display_files">Module <cite>page_display_files</cite></a></li>
+<li><a class="reference internal" href="#module-page_decay_power_curve">Module <cite>page_decay_power_curve</cite></a></li>
+<li><a class="reference internal" href="#module-page_choose_time_steps">Module <cite>page_choose_time_steps</cite></a></li>
+<li><a class="reference internal" href="#module-pages_elements_isotopes_choice">Module <cite>pages_elements_isotopes_choice</cite></a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="Presentation.html" title="previous chapter">Presentation of the program</a></li>
+      <li>Next: <a href="Functions.html" title="next chapter">Functions</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/Pages.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Theo Painvin.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/Pages.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

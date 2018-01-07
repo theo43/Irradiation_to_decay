@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-@author: theo43@github
-date: Sept. 2017
-POS: page for chosen files display and corresponding data
+Page displaying the files chosen by the user, and enables giving the data
+needed for each file post-processing.
+
 """
 
 from tkinter import (Frame, Label, StringVar, Entry, messagebox,
@@ -14,17 +14,25 @@ LARGE_FONT = ("Verdana", 12)
 
 
 class DisplayFilesPage(Frame):
-    """Display the files chosen in ChooseFilesPage, and ask the user the data
-       to be used with each file
-
-       Arguments:
-           - parent (Frame): container Frame on the main Tk
-           - controller (MainWindow): main page
-           - data (Data)
+    """
+    Display the files chosen in ChooseFilesPage, and ask the user the data to
+    be used with each file
 
     """
 
     def __init__(self, parent, controller, file_names):
+        """
+        Arguments:
+            `parent` (Frame):
+                Parent page
+
+            `controller` (Tk):
+                Main controller page
+            
+            `file_names` (list):
+                Chosen file names
+
+        """
         super().__init__(parent)
         self.controller = controller
         self.file_names = file_names[0]
@@ -39,8 +47,9 @@ class DisplayFilesPage(Frame):
             self.controller.destroy()
 
     def init_UI(self):
-        """Create GUI for the chosen files and its corresponding data to be
-           provided
+        """
+        Create GUI for the chosen files and its corresponding data to be
+        provided
 
         """
 

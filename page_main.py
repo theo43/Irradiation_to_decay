@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-@author: theo43@github
-date: Sept. 2017
-POS: page for main window
+Page definition for the main `controller` page (`Tk` instance) controlling all
+the other Frames. Also defines the `Data` class which contains all the data
+provided by the user, and the program results.
 """
 
 from tkinter import (messagebox, Tk, filedialog, Scrollbar, Canvas,
@@ -32,21 +32,22 @@ LARGE_FONT = ("Verdana", 12)
 
 class Data():
     """
-    Object containing all the gathered user data
+    Object containing all the gathered user data and the results
 
     Attributes:
-        working_dir (str):
-            location of the folder of the files
+        `working_dir` (str):
+            Location of the folder of the files
         
-        file_data (dict):
-            keys are chosen file names, whose values are dictionaries whose
+        `file_data` (dict):
+            Keys are chosen file names, whose values are dictionaries whose
             keys once provided in DisplayFilesPage are
                 - loc (str): absolute path of the file
                 - nbFA (StringVar): number of FA for this file
                 - FAmass (StringVar): FA mass for this file
                 
-        choice (dict):
-            contains information regarding user choices
+        `choice` (dict):
+            Contains information regarding user choices
+
     """
 
     def __init__(self, working_dir):
@@ -89,14 +90,15 @@ class Data():
         Check if input data errors were made in DisplayFilesPage
 
         Arguments:
-            user_choice (str):
+            `user_choice` (str):
                 'decay' for decay power curve generation, or 'source' for
                 source terms inventories generation
 
         Returns:
-            (error, msg) (tuple):
+            `(error, msg)` (tuple):
                 - error (bool): True if an error is detected
                 - msg (str): error message to be printed in the message box
+
         """
 
         error = False  # Bool switching to True if an input error is detected
@@ -245,9 +247,10 @@ class Data():
         Generate decay power curve
 
         Returns:
-            df (pandas.DataFrame):
-                contains the resulting decay power values for all the available
+            `df` (pandas.DataFrame):
+                Contains the resulting decay power values for all the available
                 time steps and the following sigma values: [0, 1.645, 2, 3]
+
         """
 
         list_df = []
@@ -292,7 +295,7 @@ class Data():
         Generate source terms inventories
 
         Returns:
-            dict_df (dict):
+            `dict_df` (dict):
                 - 1st key (str): categories ('Elements' or 'Isotopes')
                 - 2nd key (str): units ('g', 'bq', 'wt', 'wg')
                 - 2nd key values (pandas.DataFrame): source terms inventories
@@ -300,6 +303,7 @@ class Data():
                   steps and elements/isotopes are considered. The user will
                   later choose what time steps and elements/isotopes to
                   consider in the final inventories
+
         """
 
         list_df = []
@@ -356,13 +360,14 @@ class Data():
         inventories dictionary for the corresponding `category`
         
         Arguments:
-            category (str):
+            `category` (str):
                 "Elements" or "Isotopes"
         
         Returns:
-            get_dict_group_ioe (dict):
-                dictionary whose keys are the contained group, and values are
+            `get_dict_group_ioe` (dict):
+                Dictionary whose keys are the contained group, and values are
                 the sorted list of isotopes or elements contained in this group
+
         """
 
         dict_resu = self.choice['source']['result']
@@ -372,11 +377,18 @@ class Data():
 
 
 class MainPage(Tk):
-    """Main application, refered to as "controller" in the different frames"""
+    """Main application, refered to as `controller` in the different frames"""
 
     def __init__(self, data):
+        """
+        Arguments:
+            `data` (Data):
+                Object containing all the data provided by the user and the
+                results
+
+        """
         super().__init__()
-        Tk.wm_title(self, "POS")
+        Tk.wm_title(self, "Irradec")
 
         # Initialize parameters (could be separated in a dedicated function)
         title = ("Location of the folder containing your files")
@@ -438,6 +450,7 @@ class MainPage(Tk):
         """
         Display the data (file names) chosen in the ChooseFilesPage. Raise
         DisplayFilesPage
+
         """
 
         li = self.frames[ChooseFilesPage].lbox.curselection()
@@ -452,6 +465,7 @@ class MainPage(Tk):
               generated first
             - `choice['source']['bool'] == 1` then source terms inventories
               are generated for the corresponding categories and units
+
         """
 
         if (not self.data.choice['decay']['bool'].get())\

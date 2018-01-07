@@ -1,0 +1,394 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pages_elements_isotopes_choice &#8212; Irradiec 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pages_elements_isotopes_choice</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Pages for choice of elements and isotopes for source terms inventories.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">tkinter</span> <span class="k">import</span> <span class="n">Frame</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span> <span class="n">IntVar</span><span class="p">,</span> <span class="n">Checkbutton</span><span class="p">,</span> <span class="n">ttk</span><span class="p">,</span> <span class="n">messagebox</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">sys</span> <span class="k">import</span> <span class="n">exit</span>
+<span class="kn">from</span> <span class="nn">functions</span> <span class="k">import</span> <span class="n">write_results</span>
+<span class="kn">from</span> <span class="nn">dictionaries</span> <span class="k">import</span> <span class="n">factors_time</span>
+<span class="n">LARGE_FONT</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Verdana&quot;</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ElementsPage"><a class="viewcode-back" href="../Pages.html#pages_elements_isotopes_choice.ElementsPage">[docs]</a><span class="k">class</span> <span class="nc">ElementsPage</span><span class="p">(</span><span class="n">Frame</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Choice of the elements for source terms inventories generation&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">controller</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Arguments:</span>
+<span class="sd">            `parent` (Frame):</span>
+<span class="sd">                Parent page</span>
+
+<span class="sd">            `controller` (Tk):</span>
+<span class="sd">                Main controller page</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">controller</span> <span class="o">=</span> <span class="n">controller</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_UI</span><span class="p">()</span>
+
+    <span class="c1"># Create main GUI window</span>
+    <span class="k">def</span> <span class="nf">init_UI</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">row</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="s2">&quot;Choose the required elements for source terms inventories&quot;</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">txt</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="n">LARGE_FONT</span><span class="p">)</span>
+        <span class="n">label</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">columnspan</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
+        <span class="n">dict_grp_ioe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;di_elem&#39;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;elements&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">di</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;elements&#39;</span><span class="p">]</span>
+
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">list_ch_grp</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">grp</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dict_grp_ioe</span><span class="p">):</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">select_all</span><span class="p">,</span> <span class="n">grp</span><span class="p">)</span>
+            <span class="n">ch_sel</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Select all </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">grp</span><span class="o">.</span><span class="n">lower</span><span class="p">()),</span>
+                                <span class="n">command</span><span class="o">=</span><span class="n">cmd</span><span class="p">)</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unselect_all</span><span class="p">,</span> <span class="n">grp</span><span class="p">)</span>
+            <span class="n">ch_unsel</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                  <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Unselect all </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">grp</span><span class="o">.</span><span class="n">lower</span><span class="p">()),</span>
+                                  <span class="n">command</span><span class="o">=</span><span class="n">cmd</span><span class="p">)</span>
+            <span class="n">list_ch_grp</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ch_sel</span><span class="p">,</span> <span class="n">ch_unsel</span><span class="p">))</span>
+
+            <span class="n">di</span><span class="p">[</span><span class="n">grp</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+            <span class="c1"># Display the group name (&quot;Actinides&quot;, &quot;Fission products&quot;, ..)</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">grp</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span> <span class="n">font</span><span class="o">=</span><span class="n">LARGE_FONT</span><span class="p">)</span>
+            <span class="n">label</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">3</span><span class="o">*</span><span class="n">i</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
+            <span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">ioe</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dict_grp_ioe</span><span class="p">[</span><span class="n">grp</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="n">row</span> <span class="o">&lt;=</span> <span class="mi">16</span><span class="p">:</span>
+                    <span class="n">row</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">row</span><span class="o">=</span> <span class="mi">2</span>
+                    <span class="n">col</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">di</span><span class="p">[</span><span class="n">grp</span><span class="p">][</span><span class="n">ioe</span><span class="p">]</span> <span class="o">=</span> <span class="n">IntVar</span><span class="p">()</span>
+                <span class="n">ch</span> <span class="o">=</span> <span class="n">Checkbutton</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                 <span class="n">text</span><span class="o">=</span><span class="n">ioe</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span>
+                                 <span class="n">variable</span><span class="o">=</span><span class="n">di</span><span class="p">[</span><span class="n">grp</span><span class="p">][</span><span class="n">ioe</span><span class="p">])</span>
+                <span class="n">ch</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="n">col</span><span class="o">+</span><span class="mi">3</span><span class="o">*</span><span class="n">i</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">row</span> <span class="o">=</span> <span class="mi">45</span>
+
+        <span class="n">txt</span> <span class="o">=</span> <span class="s2">&quot;Select all elements&quot;</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">select_all</span><span class="p">,</span>
+                      <span class="s1">&#39;Actinides&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;Fission products&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;Light elements&#39;</span><span class="p">)</span>
+        <span class="n">bu</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">txt</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="n">bu</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
+        <span class="n">txt</span> <span class="o">=</span> <span class="s2">&quot;Unselect all elements&quot;</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unselect_all</span><span class="p">,</span>
+                      <span class="s1">&#39;Actinides&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;Fission products&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;Light elements&#39;</span><span class="p">)</span>
+        <span class="n">bu</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">txt</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="n">bu</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
+        <span class="n">co</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">list_ch_grp</span><span class="p">:</span>  <span class="c1"># List containing tuples of Buttons</span>
+            <span class="n">tup</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="n">co</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+            <span class="n">tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="n">co</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+            <span class="n">co</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">txt</span> <span class="o">=</span> <span class="s2">&quot;Next&quot;</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">after_elements</span><span class="p">)</span>
+        <span class="n">bu</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">txt</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="n">bu</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ElementsPage.after_elements"><a class="viewcode-back" href="../Pages.html#pages_elements_isotopes_choice.ElementsPage.after_elements">[docs]</a>    <span class="k">def</span> <span class="nf">after_elements</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Process tests, write elements inventory results and display next Frame</span>
+<span class="sd">        depending on user choices</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">di_chosen_categ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;chosen_categ&#39;</span><span class="p">]</span>
+        <span class="n">di_chosen_categ</span><span class="p">[</span><span class="s1">&#39;Elements&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">test_error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">error_input</span><span class="p">(</span><span class="s1">&#39;Elements&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">test_error</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">messagebox</span><span class="o">.</span><span class="n">showerror</span><span class="p">(</span><span class="n">test_error</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">test_error</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+            <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Write the results in an Excel file</span>
+        <span class="n">suffix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;suffix&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;result&#39;</span><span class="p">]</span>
+        <span class="n">df_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">df_info</span>
+        <span class="n">time_steps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;time_steps&#39;</span><span class="p">]</span>
+        <span class="n">index_group_ioe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;elements&#39;</span><span class="p">]</span>
+        <span class="n">index_group_ioe</span> <span class="o">=</span> <span class="n">index_group_ioe</span><span class="p">[</span><span class="s1">&#39;group_ioe&#39;</span><span class="p">]</span>
+        <span class="n">list_title_msg</span> <span class="o">=</span> <span class="n">write_results</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">working_dir</span><span class="p">,</span>
+                                       <span class="s2">&quot;Source_terms&quot;</span><span class="p">,</span>
+                                       <span class="n">suffix</span><span class="p">,</span>
+                                       <span class="n">result</span><span class="p">,</span>
+                                       <span class="n">df_info</span><span class="p">,</span>
+                                       <span class="n">index_group_ioe</span><span class="o">=</span><span class="n">index_group_ioe</span><span class="p">,</span>
+                                       <span class="n">time_steps</span><span class="o">=</span><span class="n">time_steps</span><span class="p">,</span>
+                                       <span class="n">category</span><span class="o">=</span><span class="s2">&quot;Elements&quot;</span><span class="p">,</span>
+                                       <span class="n">factors_time</span><span class="o">=</span><span class="n">factors_time</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">list_title_msg</span><span class="p">:</span>
+            <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">tup</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tup</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">raise_elements_isotopes</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ElementsPage.select_all"><a class="viewcode-back" href="../Pages.html#pages_elements_isotopes_choice.ElementsPage.select_all">[docs]</a>    <span class="k">def</span> <span class="nf">select_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Select all elements from all groups&quot;&quot;&quot;</span>
+
+        <span class="n">dictio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;elements&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">dictio</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">ioe</span> <span class="ow">in</span> <span class="n">dictio</span><span class="p">[</span><span class="n">group</span><span class="p">]:</span>
+                    <span class="n">dictio</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">ioe</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ElementsPage.unselect_all"><a class="viewcode-back" href="../Pages.html#pages_elements_isotopes_choice.ElementsPage.unselect_all">[docs]</a>    <span class="k">def</span> <span class="nf">unselect_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Unselect all elements from all groups&quot;&quot;&quot;</span>
+
+        <span class="n">dictio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;elements&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">dictio</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">ioe</span> <span class="ow">in</span> <span class="n">dictio</span><span class="p">[</span><span class="n">group</span><span class="p">]:</span>
+                    <span class="n">dictio</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">ioe</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="IsotopesPage"><a class="viewcode-back" href="../Pages.html#pages_elements_isotopes_choice.IsotopesPage">[docs]</a><span class="k">class</span> <span class="nc">IsotopesPage</span><span class="p">(</span><span class="n">Frame</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Choice of the isotopes for source terms inventories generation&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">controller</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Arguments:</span>
+<span class="sd">            `parent` (Frame):</span>
+<span class="sd">                Parent page</span>
+
+<span class="sd">            `controller` (Tk):</span>
+<span class="sd">                Main controller page</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">controller</span> <span class="o">=</span> <span class="n">controller</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_UI</span><span class="p">()</span>
+
+    <span class="c1"># Create main GUI window</span>
+    <span class="k">def</span> <span class="nf">init_UI</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">row</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="s2">&quot;Choose the required isotopes for source terms inventories&quot;</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">txt</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="n">LARGE_FONT</span><span class="p">)</span>
+        <span class="n">label</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">columnspan</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
+        <span class="n">dict_grp_ioe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;di_isot&#39;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;isotopes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">di</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;isotopes&#39;</span><span class="p">]</span>
+
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">list_ch_grp</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">grp</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dict_grp_ioe</span><span class="p">):</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">select_all</span><span class="p">,</span> <span class="n">grp</span><span class="p">)</span>
+            <span class="n">ch_sel</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Select all </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">grp</span><span class="o">.</span><span class="n">lower</span><span class="p">()),</span>
+                                <span class="n">command</span><span class="o">=</span><span class="n">cmd</span><span class="p">)</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unselect_all</span><span class="p">,</span> <span class="n">grp</span><span class="p">)</span>
+            <span class="n">ch_unsel</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                  <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Unselect all </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">grp</span><span class="o">.</span><span class="n">lower</span><span class="p">()),</span>
+                                  <span class="n">command</span><span class="o">=</span><span class="n">cmd</span><span class="p">)</span>
+            <span class="n">list_ch_grp</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ch_sel</span><span class="p">,</span> <span class="n">ch_unsel</span><span class="p">))</span>
+
+            <span class="n">di</span><span class="p">[</span><span class="n">grp</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+            <span class="c1"># Display the group name (&quot;Actinides&quot;, &quot;Fission products&quot;, ..)</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">Label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">grp</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span> <span class="n">font</span><span class="o">=</span><span class="n">LARGE_FONT</span><span class="p">)</span>
+            <span class="n">label</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">5</span><span class="o">*</span><span class="n">i</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
+            <span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">noe</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dict_grp_ioe</span><span class="p">[</span><span class="n">grp</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="n">row</span> <span class="o">&lt;=</span> <span class="mi">43</span><span class="p">:</span>
+                    <span class="n">row</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">row</span><span class="o">=</span> <span class="mi">2</span>
+                    <span class="n">col</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">di</span><span class="p">[</span><span class="n">grp</span><span class="p">][</span><span class="n">noe</span><span class="p">]</span> <span class="o">=</span> <span class="n">IntVar</span><span class="p">()</span>
+                <span class="n">ch</span> <span class="o">=</span> <span class="n">Checkbutton</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">noe</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span>
+                                 <span class="n">variable</span><span class="o">=</span><span class="n">di</span><span class="p">[</span><span class="n">grp</span><span class="p">][</span><span class="n">noe</span><span class="p">])</span>
+                <span class="n">ch</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="n">col</span><span class="o">+</span><span class="mi">5</span><span class="o">*</span><span class="n">i</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">row</span> <span class="o">=</span> <span class="mi">45</span>
+
+        <span class="n">txt</span> <span class="o">=</span> <span class="s2">&quot;Select all isotopes&quot;</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">select_all</span><span class="p">,</span> <span class="s1">&#39;Actinides&#39;</span><span class="p">,</span> <span class="s1">&#39;Fission products&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;Light elements&#39;</span><span class="p">)</span>
+        <span class="n">bu</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">txt</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="n">bu</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
+        <span class="n">txt</span> <span class="o">=</span> <span class="s2">&quot;Unselect all isotopes&quot;</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unselect_all</span><span class="p">,</span> <span class="s1">&#39;Actinides&#39;</span><span class="p">,</span> <span class="s1">&#39;Fission products&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;Light elements&#39;</span><span class="p">)</span>
+        <span class="n">bu</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">txt</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="n">bu</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
+        <span class="n">co</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">list_ch_grp</span><span class="p">:</span>  <span class="c1"># List containing tuples of Buttons</span>
+            <span class="n">tup</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="n">co</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+            <span class="n">tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="n">co</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+            <span class="n">co</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">txt</span> <span class="o">=</span> <span class="s2">&quot;Next&quot;</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">after_isotopes</span><span class="p">)</span>
+        <span class="n">bu</span> <span class="o">=</span> <span class="n">ttk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">txt</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="n">bu</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="IsotopesPage.after_isotopes"><a class="viewcode-back" href="../Pages.html#pages_elements_isotopes_choice.IsotopesPage.after_isotopes">[docs]</a>    <span class="k">def</span> <span class="nf">after_isotopes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Process tests, write isotopes inventory results and display next Frame</span>
+<span class="sd">        depending on user choices</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">di_chosen_categ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;chosen_categ&#39;</span><span class="p">]</span>
+        <span class="n">di_chosen_categ</span><span class="p">[</span><span class="s1">&#39;Isotopes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">test_error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">error_input</span><span class="p">(</span><span class="s1">&#39;Isotopes&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">test_error</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">messagebox</span><span class="o">.</span><span class="n">showerror</span><span class="p">(</span><span class="n">test_error</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">test_error</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+            <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Write the results in an Excel file</span>
+        <span class="n">suffix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;suffix&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;result&#39;</span><span class="p">]</span>
+        <span class="n">df_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">df_info</span>
+        <span class="n">time_steps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;time_steps&#39;</span><span class="p">]</span>
+        <span class="n">index_group_ioe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;isotopes&#39;</span><span class="p">]</span>
+        <span class="n">index_group_ioe</span> <span class="o">=</span> <span class="n">index_group_ioe</span><span class="p">[</span><span class="s1">&#39;group_ioe&#39;</span><span class="p">]</span>
+        <span class="n">list_title_msg</span> <span class="o">=</span> <span class="n">write_results</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">working_dir</span><span class="p">,</span>
+                                       <span class="s2">&quot;Source_terms&quot;</span><span class="p">,</span>
+                                       <span class="n">suffix</span><span class="p">,</span>
+                                       <span class="n">result</span><span class="p">,</span>
+                                       <span class="n">df_info</span><span class="p">,</span>
+                                       <span class="n">index_group_ioe</span><span class="o">=</span><span class="n">index_group_ioe</span><span class="p">,</span>
+                                       <span class="n">time_steps</span><span class="o">=</span><span class="n">time_steps</span><span class="p">,</span>
+                                       <span class="n">category</span><span class="o">=</span><span class="s2">&quot;Isotopes&quot;</span><span class="p">,</span>
+                                       <span class="n">factors_time</span><span class="o">=</span><span class="n">factors_time</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">list_title_msg</span><span class="p">:</span>
+                <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">tup</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tup</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">raise_elements_isotopes</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="IsotopesPage.select_all"><a class="viewcode-back" href="../Pages.html#pages_elements_isotopes_choice.IsotopesPage.select_all">[docs]</a>    <span class="k">def</span> <span class="nf">select_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Select all isotopes from all groups&quot;&quot;&quot;</span>
+
+        <span class="n">dictio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;isotopes&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">dictio</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">ioe</span> <span class="ow">in</span> <span class="n">dictio</span><span class="p">[</span><span class="n">group</span><span class="p">]:</span>
+                    <span class="n">dictio</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">ioe</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IsotopesPage.unselect_all"><a class="viewcode-back" href="../Pages.html#pages_elements_isotopes_choice.IsotopesPage.unselect_all">[docs]</a>    <span class="k">def</span> <span class="nf">unselect_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Unselect all isotopes from all groups&quot;&quot;&quot;</span>
+
+        <span class="n">dictio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;isotopes&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">dictio</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">ioe</span> <span class="ow">in</span> <span class="n">dictio</span><span class="p">[</span><span class="n">group</span><span class="p">]:</span>
+                    <span class="n">dictio</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">ioe</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Theo Painvin.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

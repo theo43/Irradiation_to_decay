@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@author: theo43@github
-date: Sept. 2017
-POS: pages for choice of elements or isotopes (source terms inventories)
+Pages for choice of elements and isotopes for source terms inventories.
 """
 
 from tkinter import Frame, Label, IntVar, Checkbutton, ttk, messagebox
@@ -17,10 +15,15 @@ class ElementsPage(Frame):
 
     def __init__(self, parent, controller, *args):
         """
-            Arguments:
-                - parent (Frame)
-                - controller (Tk)
+        Arguments:
+            `parent` (Frame):
+                Parent page
+
+            `controller` (Tk):
+                Main controller page
+
         """
+
         super().__init__(parent)
         self.controller = controller
         self.init_UI()
@@ -103,9 +106,11 @@ class ElementsPage(Frame):
 
     def after_elements(self):
         """
-            Process tests, write elements inventory results and display next
-            Frame depending on user choices
+        Process tests, write elements inventory results and display next Frame
+        depending on user choices
+
         """
+
         di_chosen_categ = self.controller.data.choice['source']['chosen_categ']
         di_chosen_categ['Elements'].set(0)
         test_error = self.controller.data.error_input('Elements')
@@ -160,10 +165,15 @@ class IsotopesPage(Frame):
 
     def __init__(self, parent, controller, *args):
         """
-            Arguments:
-                - parent (Frame)
-                - controller (Tk)
+        Arguments:
+            `parent` (Frame):
+                Parent page
+
+            `controller` (Tk):
+                Main controller page
+
         """
+
         super().__init__(parent)
         self.controller = controller
         self.init_UI()
@@ -242,9 +252,11 @@ class IsotopesPage(Frame):
 
     def after_isotopes(self):
         """
-            Process tests, write isotopes inventory results and display next
-            Frame depending on user choices
+        Process tests, write isotopes inventory results and display next Frame
+        depending on user choices
+
         """
+
         di_chosen_categ = self.controller.data.choice['source']['chosen_categ']
         di_chosen_categ['Isotopes'].set(0)
         test_error = self.controller.data.error_input('Isotopes')

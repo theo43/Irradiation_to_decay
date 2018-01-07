@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@author: theo43@github
-date: Sept. 2017
-POS: Dictionaries
+Dictionaries used for post-processing.
 """
 
 # Conversion factors between time units and seconds

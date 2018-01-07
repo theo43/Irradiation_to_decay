@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@author: theo43@github
-date: Sept. 2017
-POS: Regular expressions
+Regular expressions used for post-processing.
 """
 
 # Regular expressions allowing getting time steps and results in blocks

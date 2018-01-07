@@ -1,0 +1,596 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Functions &#8212; Irradiec 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Pages displayed by the program" href="Pages.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-functions">
+<span id="functions"></span><h1>Functions<a class="headerlink" href="#module-functions" title="Permalink to this headline">¶</a></h1>
+<p>This <code class="docutils literal"><span class="pre">functions</span></code> module provides all the functions used in the code. These
+functions can be used in class methods definitions.</p>
+<dl class="function">
+<dt id="functions.check_input_output">
+<code class="descclassname">functions.</code><code class="descname">check_input_output</code><span class="sig-paren">(</span><em>in_loc</em>, <em>out_loc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functions.html#check_input_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functions.check_input_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if input and output folders exist, and get all the available .out
+files in input folder</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>in_loc</cite> (str):</dt>
+<dd>Absolute location of input folder</dd>
+<dt><cite>out_loc</cite> (str):</dt>
+<dd>Absolute location of output folder</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>list_in_files</cite> (list):</dt>
+<dd>Absolute location of available .out files in &#8221;../Input&#8221; folder</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="functions.convert_str_sec">
+<code class="descclassname">functions.</code><code class="descname">convert_str_sec</code><span class="sig-paren">(</span><em>word</em>, <em>factors_time</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functions.html#convert_str_sec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functions.convert_str_sec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a time step given in a string into a number of seconds</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>word</cite> (str):</dt>
+<dd>Time step to convert</dd>
+<dt><cite>factors_time</cite> (dict):</dt>
+<dd>Correspondence in seconds for different time units</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>sec</cite> (float):</dt>
+<dd>Corresponding time in seconds</dd>
+</dl>
+</dd>
+<dt>Example:</dt>
+<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dictionaries</span> <span class="k">import</span> <span class="n">factors_time</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">convert_str_sec</span><span class="p">(</span><span class="s2">&quot;2.0hr&quot;</span><span class="p">,</span> <span class="n">factors_time</span><span class="p">)</span>
+<span class="go">7200.0</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="functions.create_df_decay_power">
+<code class="descclassname">functions.</code><code class="descname">create_df_decay_power</code><span class="sig-paren">(</span><em>file_path</em>, <em>factors_time</em>, <em>regex_time</em>, <em>regex_category</em>, <em>regex_categ_unit</em>, <em>regex_after_Decay</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functions.html#create_df_decay_power"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functions.create_df_decay_power" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a single .out file and create a pandas DataFrame containing the
+power results (in Watts total) for every detected time steps, for
+following contribution:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Total decay power (best-estimate)</li>
+<li>Actinides (without 239U and 239Np)</li>
+<li>239U and 239 Np</li>
+<li>Fission products</li>
+</ul>
+</div></blockquote>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>file_path</cite> (str):</dt>
+<dd>Absolute location of the file</dd>
+<dt><cite>factors_time</cite> (dict):</dt>
+<dd>Correspondence in seconds for different time units</dd>
+<dt><cite>regex_*</cite> (str):</dt>
+<dd>Regular expressions used to post-process</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>df</cite> (pandas.DataFrame):</dt>
+<dd>Decay power values for <cite>file_path</cite></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="functions.create_df_info">
+<code class="descclassname">functions.</code><code class="descname">create_df_info</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functions.html#create_df_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functions.create_df_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build a list containing the information chosen by the user to be
+inserted in a Dataframe</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>kwargs</cite> (dict):</dt>
+<dd>Information concerning post-processed files and corresponding data</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>df_info</cite> (pandas.DataFrame):</dt>
+<dd>User informations stored in a DataFrame</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="functions.create_df_inventories">
+<code class="descclassname">functions.</code><code class="descname">create_df_inventories</code><span class="sig-paren">(</span><em>file_path</em>, <em>list_units</em>, <em>list_categories</em>, <em>factors_time</em>, <em>regex_time</em>, <em>regex_category</em>, <em>regex_categ_unit</em>, <em>regex_after_Decay</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functions.html#create_df_inventories"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functions.create_df_inventories" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a single .out file and create a dictionary containing the stored
+data with pandas DataFrames. The dictionary keys represent:</p>
+<blockquote>
+<div><ul class="simple">
+<li>1st key: category (&#8216;Elements&#8217; or &#8216;Isotopes&#8217;)</li>
+<li>2nd key: unit (&#8216;g&#8217; for mass, &#8216;Bq&#8217; for activity, &#8216;W&#8217; for total
+power, &#8216;W_gamma&#8217; for gamma power)</li>
+</ul>
+</div></blockquote>
+<p>The value of a second key is a pandas DataFrame containing the results
+for every detected time steps and for every detected elements or
+isotopes</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>file_path</cite> (str):</dt>
+<dd>Absolute location of the file</dd>
+<dt><cite>list_units</cite> (list):</dt>
+<dd>Units chosen by the user</dd>
+<dt><cite>list_categories</cite> (list):</dt>
+<dd>Categories (&#8216;elements&#8217; or &#8216;isotopes&#8217;) chosen by the user</dd>
+<dt><cite>factors_time</cite> (dict):</dt>
+<dd>Correspondence in seconds for different time units</dd>
+<dt><cite>regex_*</cite> (str):</dt>
+<dd>Regular expressions used during files post-processing</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>inv</cite> (dict):</dt>
+<dd>Source terms inventories for <cite>file_path</cite></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="functions.find_category_unit">
+<code class="descclassname">functions.</code><code class="descname">find_category_unit</code><span class="sig-paren">(</span><em>line</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functions.html#find_category_unit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functions.find_category_unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Post-process the category of results: &#8220;nuclides&#8221; or &#8220;elements&#8221; and the
+unit of the results:</p>
+<blockquote>
+<div><ul class="simple">
+<li>&#8220;g&#8221; for mass in grams</li>
+<li>&#8220;bq&#8221; for radioactivity in Bq (1 Cu = 3.7E10 Bq)
+Curies results given in .out files are finally converted in Bq</li>
+<li>&#8220;wt&#8221; for total thermal power in watts</li>
+<li>&#8220;wg&#8221; for gamma contribution in total power, in watts</li>
+</ul>
+</div></blockquote>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>line</cite> (str):</dt>
+<dd>Line of a .out file to post-process</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>tup</cite> (tuple):</dt>
+<dd>Contains the category (tup[0]) and the unit (tup[1])</dd>
+</dl>
+</dd>
+<dt>Example:</dt>
+<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">find_category_unit</span><span class="p">(</span><span class="s2">&quot;      element thermal power, watts  &quot;</span><span class="p">)</span>
+<span class="go">(&#39;Elements&#39;, &#39;wt&#39;)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="functions.find_group">
+<code class="descclassname">functions.</code><code class="descname">find_group</code><span class="sig-paren">(</span><em>line</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functions.html#find_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functions.find_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Post-process the name of the group of nuclides or elements (&#8220;actinides&#8221;,
+&#8220;fission products&#8221; or &#8220;light elements&#8221;)</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>line</cite> (str):</dt>
+<dd>Line of a .out file to post-process</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>group</cite> (str):</dt>
+<dd>Group of the isotope or element</dd>
+</dl>
+</dd>
+<dt>Example:</dt>
+<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">find_group</span><span class="p">(</span><span class="s2">&quot;  Decay from 11 h to 20 h    actinides  page  533&quot;</span><span class="p">)</span>
+<span class="go">&#39;Actinides&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">find_group</span><span class="p">(</span><span class="s2">&quot;Decay from 200 s to 1800 s fission products  page&quot;</span><span class="p">)</span>
+<span class="go">&#39;Fission products&#39;</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="functions.find_results">
+<code class="descclassname">functions.</code><code class="descname">find_results</code><span class="sig-paren">(</span><em>line</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functions.html#find_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functions.find_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Post-process the results in [unit] of a block of data being read</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>line</cite> (str):</dt>
+<dd>Line of a .out file to post-process</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>results</cite> (list):</dt>
+<dd>Split of the line containing the results. The first element of the
+list is the isotope or element name (str), the rest is the
+resulting contribution (float)</dd>
+</dl>
+</dd>
+<dt>Example:</dt>
+<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">find_results</span><span class="p">(</span><span class="s2">&quot;    am239   2.90E-18  4.44E-09  4.44E-09  &quot;</span><span class="p">)</span>
+<span class="go">[&#39;am239&#39;, 2.9e-18, 4.44e-09, 4.44e-09]</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="functions.find_times">
+<code class="descclassname">functions.</code><code class="descname">find_times</code><span class="sig-paren">(</span><em>line</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functions.html#find_times"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functions.find_times" title="Permalink to this definition">¶</a></dt>
+<dd><p>Post-process the time steps of the block of data being read. Time steps
+are given with the following form: &#8220;float&#8221;+&#8221;unit&#8221;. If the time step value
+is given in:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Seconds: no space between the float and &#8220;sec&#8221;</li>
+<li>Minutes: to be completed</li>
+<li>Hours: one space between the float and &#8220;hr&#8221;</li>
+<li>Days: one space between the float and &#8220;d&#8221;</li>
+<li>Months: to be completed</li>
+<li>Years: one space between the float and &#8220;yr&#8221;</li>
+</ul>
+</div></blockquote>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>line</cite> (str):</dt>
+<dd>Line of a .out file to post-process</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>time_steps</cite> (list):</dt>
+<dd>Split of the line containing the time steps</dd>
+</dl>
+</dd>
+<dt>Example:</dt>
+<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">find_times</span><span class="p">(</span><span class="s2">&quot;             initial   11.0 hr   12.0 hr &quot;</span><span class="p">)</span>
+<span class="go">[&#39;initial&#39;, &#39;11.0 hr&#39;, &#39;12.0 hr&#39;]</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="functions.find_unc">
+<code class="descclassname">functions.</code><code class="descname">find_unc</code><span class="sig-paren">(</span><em>time_str</em>, <em>dictionary</em>, <em>factors_time</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functions.html#find_unc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functions.find_unc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the uncertainty value to be used, depending on the time step. If
+<cite>time_str</cite> (converted from string to float in sec with <cite>convert_str_sec</cite>)
+does not match any keys in <cite>dictionary</cite>, the maximum value between the
+two closest keys values is returned</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>time_str</cite> (str):</dt>
+<dd>Time step of the form &#8220;float&#8221;+&#8221;time_unit&#8221;</dd>
+<dt><cite>dictionary</cite> (dict):</dt>
+<dd>Uncertainty values corresponding to different decay time steps</dd>
+<dt><cite>factors_time</cite> (dict):</dt>
+<dd>Correspondence in seconds for different time units</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>uncertainty</cite> (float):</dt>
+<dd>Uncertainty value to be used</dd>
+</dl>
+</dd>
+<dt>Example:</dt>
+<dd><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dictionaries</span> <span class="k">import</span> <span class="n">fp_uncertainty</span><span class="p">,</span> <span class="n">factors_time</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">find_unc</span><span class="p">(</span><span class="s1">&#39;1.5d&#39;</span><span class="p">,</span> <span class="n">fp_uncertainty</span><span class="p">,</span> <span class="n">factors_time</span><span class="p">)</span>
+<span class="go">0.03</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="functions.gather_df_decay_power">
+<code class="descclassname">functions.</code><code class="descname">gather_df_decay_power</code><span class="sig-paren">(</span><em>list_batch_df</em>, <em>FAmass_per_file</em>, <em>nFA_per_file</em>, <em>core_power</em>, <em>mox</em>, <em>act_u9_np9_uncertainty</em>, <em>u9_np9_uncertainty</em>, <em>fp_uncertainty</em>, <em>fuel_uncertainty</em>, <em>factors_time</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functions.html#gather_df_decay_power"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functions.gather_df_decay_power" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gather the DataFrames listed in list_batch_df, taking into account the
+number of FA per batch and the FA mass in each batch.
+Calculate the resulting Best-Estimate power (%FP), sigma value (%),
+and the power value with 1.645, 2.0, 3.0 sigma (%FP).</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>list_batch_df</cite> (list):</dt>
+<dd>DataFrames containing decay power data</dd>
+<dt><cite>FAmass_per_file</cite> (list):</dt>
+<dd>Corresponding FA masses per DataFrame</dd>
+<dt><cite>nFA_per_file</cite> (list):</dt>
+<dd>Corresponding numbers of FA per DataFrame</dd>
+<dt><cite>core_power</cite> (float):</dt>
+<dd>Power used to normalize the decay power curve</dd>
+<dt><cite>mox</cite> (bool):</dt>
+<dd>If the core contains mox or not</dd>
+<dt><cite>*_uncertainty</cite> (dict):</dt>
+<dd>Uncertainties corresponding to decay times</dd>
+<dt><cite>factors_time</cite> (dict):</dt>
+<dd>Correspondence in seconds for different time units</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>df</cite> (pandas.DataFrame):</dt>
+<dd>Gathered decay power curve values for each available time step</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="functions.gather_df_inventories">
+<code class="descclassname">functions.</code><code class="descname">gather_df_inventories</code><span class="sig-paren">(</span><em>list_categories</em>, <em>list_units</em>, <em>list_batch_df</em>, <em>FAmass_per_file</em>, <em>nFA_per_file</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functions.html#gather_df_inventories"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functions.gather_df_inventories" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gather the DataFrames created by <cite>create_df_inventories</cite> with the
+corresponding FA mass and number of FA per batch. Create a dictionary
+whose:</p>
+<blockquote>
+<div><ul class="simple">
+<li>1st key is the chosen category(ies): &#8216;Elements&#8217; or &#8216;Isotopes&#8217;</li>
+<li>2nd key is the chosen unit(s)</li>
+</ul>
+</div></blockquote>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>list_category</cite> (list):</dt>
+<dd>Categories chosen by the user</dd>
+<dt><cite>list_units</cite> (list):</dt>
+<dd>Units chosen by the user</dd>
+<dt><cite>list_batch_df</cite> (list):</dt>
+<dd>List of dictionaries returned by create_df_inventories</dd>
+<dt><cite>FAmass_per_file</cite> (list):</dt>
+<dd>FA masses chosen by the user per batch</dd>
+<dt><cite>nFA_per_file</cite> (list):</dt>
+<dd>Number of FA chosen by the user per batch</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>dinv</cite> (dict):</dt>
+<dd>Gathered source terms inventories</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="functions.get_dict_group_ioe">
+<code class="descclassname">functions.</code><code class="descname">get_dict_group_ioe</code><span class="sig-paren">(</span><em>df</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functions.html#get_dict_group_ioe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functions.get_dict_group_ioe" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Analyze a pandas Dataframe having a two levels index:</dt>
+<dd><ul class="first last simple">
+<li>1st level: group of isotope or element (&#8220;Actinides&#8221;, &#8220;Fission 
+products&#8221;, ..)</li>
+<li>2nd level: names of the isotopes or elements</li>
+</ul>
+</dd>
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>df</cite> (pandas.DataFrame):</dt>
+<dd>Two levels indexed DataFrame</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>di</cite> (dict):</dt>
+<dd>Dictionary whose keys are the contained group, and values are the
+sorted list of isotopes or elements contained in this group</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="functions.get_state_IntVar">
+<code class="descclassname">functions.</code><code class="descname">get_state_IntVar</code><span class="sig-paren">(</span><em>dictionary</em>, <em>factors_time</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functions.html#get_state_IntVar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functions.get_state_IntVar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the state of IntVar instances stored in a dictionary</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>dictionary</cite> (dict):</dt>
+<dd>Keys are string instances whose values are 0 or 1</dd>
+<dt><cite>factors_time</cite> (dict):</dt>
+<dd>Correspondence in seconds for different time units</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>list_IntVar1</cite> (list):</dt>
+<dd>List of the dictionary&#8217;s keys whose values equal to 1</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="functions.test_df_consistency">
+<code class="descclassname">functions.</code><code class="descname">test_df_consistency</code><span class="sig-paren">(</span><em>list_df</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functions.html#test_df_consistency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functions.test_df_consistency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True is all the DataFrames in list_df have the same indexes and
+columns.
+NOT USED YET BUT SHOULD.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="functions.write_results">
+<code class="descclassname">functions.</code><code class="descname">write_results</code><span class="sig-paren">(</span><em>output_location</em>, <em>results_type</em>, <em>suffix</em>, <em>dict_results</em>, <em>df_user_data</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functions.html#write_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functions.write_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the sub-folder corresponding to the required results type
+exists, and create it if it does not. Create the results file</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><p class="first"><cite>output_location</cite> (str):</p>
+<dl class="last docutils">
+<dt><cite>results_type</cite> (str):</dt>
+<dd>Name of the sub-folder for results (&#8220;Decay_power_curve&#8221; or
+&#8220;Source_terms&#8221;)</dd>
+<dt><cite>suffix</cite> (str):</dt>
+<dd>Suffix of the results file name asked by the user appended to
+results file name</dd>
+<dt><cite>dict_results</cite> (dict):</dt>
+<dd><dl class="first docutils">
+<dt>Contains the DataFrame to be printed in the result file:</dt>
+<dd><ul class="first last simple">
+<li>1st key: results_type</li>
+<li>2nd key: categories (only for source terms)</li>
+<li>3rd key: units (only for source terms)</li>
+</ul>
+</dd>
+</dl>
+<p class="last">For decay power curve generation: <cite>dict_results</cite> is directly a
+pandas.DataFrame</p>
+</dd>
+<dt><cite>df_user_data</cite> (pandas.DataFrame):</dt>
+<dd>Data provided by the user in UserData</dd>
+<dt><cite>kwargs</cite> (dict):</dt>
+<dd><dl class="first last docutils">
+<dt>Only for source terms results:</dt>
+<dd><ul class="first last simple">
+<li>index_group_ioe (list): tuples containing (group, isotope or
+element) names for source terms result file indexing</li>
+<li>time_steps (list): time steps names for columns indexing</li>
+<li>category (str): category for source terms results</li>
+<li>factors_time (dict): amount of seconds in different units
+of time</li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt><cite>list_title_msg</cite> (list):</dt>
+<dd>tuple(s) of title (str), msg (str) to be displayed in a messagebox</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="Pages.html" title="previous chapter">Pages displayed by the program</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/Functions.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Theo Painvin.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/Functions.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

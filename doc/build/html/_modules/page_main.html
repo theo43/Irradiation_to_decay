@@ -1,0 +1,650 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>page_main &#8212; Irradiec 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for page_main</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Page definition for the main `controller` page (`Tk` instance) controlling all</span>
+<span class="sd">the other Frames. Also defines the `Data` class which contains all the data</span>
+<span class="sd">provided by the user, and the program results.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">tkinter</span> <span class="k">import</span> <span class="p">(</span><span class="n">messagebox</span><span class="p">,</span> <span class="n">Tk</span><span class="p">,</span> <span class="n">filedialog</span><span class="p">,</span> <span class="n">Scrollbar</span><span class="p">,</span> <span class="n">Canvas</span><span class="p">,</span>
+                     <span class="n">IntVar</span><span class="p">,</span> <span class="n">StringVar</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">re</span> <span class="k">import</span> <span class="n">match</span><span class="p">,</span> <span class="n">split</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="k">import</span> <span class="n">time</span>
+<span class="kn">from</span> <span class="nn">sys</span> <span class="k">import</span> <span class="n">exit</span>
+<span class="kn">from</span> <span class="nn">page_choose_files</span> <span class="k">import</span> <span class="n">ChooseFilesPage</span>
+<span class="kn">from</span> <span class="nn">page_display_files</span> <span class="k">import</span> <span class="n">DisplayFilesPage</span>
+<span class="kn">from</span> <span class="nn">page_decay_power_curve</span> <span class="k">import</span> <span class="n">DecayPowerCurvePage</span>
+<span class="kn">from</span> <span class="nn">page_choose_time_steps</span> <span class="k">import</span> <span class="n">ChooseTimeStepsPage</span>
+<span class="kn">from</span> <span class="nn">pages_elements_isotopes_choice</span> <span class="k">import</span> <span class="n">ElementsPage</span><span class="p">,</span> <span class="n">IsotopesPage</span>
+<span class="kn">from</span> <span class="nn">functions</span> <span class="k">import</span> <span class="p">(</span><span class="n">create_df_decay_power</span><span class="p">,</span> <span class="n">gather_df_decay_power</span><span class="p">,</span>
+                       <span class="n">create_df_inventories</span><span class="p">,</span>
+                       <span class="n">gather_df_inventories</span><span class="p">,</span>
+                       <span class="n">get_dict_group_ioe</span><span class="p">,</span>
+                       <span class="n">write_results</span><span class="p">,</span>
+                       <span class="n">create_df_info</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">regular_expressions</span> <span class="k">import</span> <span class="p">(</span><span class="n">regex_time</span><span class="p">,</span> <span class="n">regex_category</span><span class="p">,</span> <span class="n">regex_categ_unit</span><span class="p">,</span>
+                                 <span class="n">regex_after_Decay</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">dictionaries</span> <span class="k">import</span> <span class="p">(</span><span class="n">act_u9_np9_uncertainty</span><span class="p">,</span> <span class="n">u9_np9_uncertainty</span><span class="p">,</span>
+                          <span class="n">fp_uncertainty</span><span class="p">,</span> <span class="n">fuel_uncertainty</span><span class="p">,</span> <span class="n">factors_time</span><span class="p">)</span>
+
+<span class="n">LARGE_FONT</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Verdana&quot;</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Data"><a class="viewcode-back" href="../Pages.html#page_main.Data">[docs]</a><span class="k">class</span> <span class="nc">Data</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Object containing all the gathered user data</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        `working_dir` (str):</span>
+<span class="sd">            Location of the folder of the files</span>
+<span class="sd">        </span>
+<span class="sd">        `file_data` (dict):</span>
+<span class="sd">            Keys are chosen file names, whose values are dictionaries whose</span>
+<span class="sd">            keys once provided in DisplayFilesPage are</span>
+<span class="sd">                - loc (str): absolute path of the file</span>
+<span class="sd">                - nbFA (StringVar): number of FA for this file</span>
+<span class="sd">                - FAmass (StringVar): FA mass for this file</span>
+<span class="sd">                </span>
+<span class="sd">        `choice` (dict):</span>
+<span class="sd">            Contains information regarding user choices</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">working_dir</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">working_dir</span> <span class="o">=</span> <span class="n">working_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">choice</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;decay&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="c1"># Switches to a DataFrame when decay power curve is generated</span>
+                <span class="s1">&#39;result&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s1">&#39;path_res&#39;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>  <span class="c1"># Path to &#39;result&#39;</span>
+                <span class="s1">&#39;bool&#39;</span><span class="p">:</span> <span class="n">IntVar</span><span class="p">(),</span>  <span class="c1"># For decay power curve generation</span>
+                <span class="s1">&#39;mox&#39;</span><span class="p">:</span> <span class="n">IntVar</span><span class="p">(),</span>  <span class="c1"># If fuel contains MOX</span>
+                <span class="s1">&#39;suffix&#39;</span><span class="p">:</span> <span class="n">StringVar</span><span class="p">(),</span>  <span class="c1"># Suffix name for result file</span>
+                <span class="c1"># Total thermal power in MW for normalization</span>
+                <span class="s1">&#39;power&#39;</span><span class="p">:</span> <span class="n">StringVar</span><span class="p">(),</span>
+
+            <span class="p">},</span>
+            <span class="s1">&#39;source&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;bool&#39;</span><span class="p">:</span> <span class="n">IntVar</span><span class="p">(),</span>  <span class="c1"># For source terms generation</span>
+                <span class="s1">&#39;suffix&#39;</span><span class="p">:</span> <span class="n">StringVar</span><span class="p">(),</span>  <span class="c1"># Suffix name for result file</span>
+                <span class="s1">&#39;chosen_categ&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;Isotopes&#39;</span><span class="p">:</span> <span class="n">IntVar</span><span class="p">(),</span>  <span class="c1"># For isotopes source terms</span>
+                    <span class="s1">&#39;Elements&#39;</span><span class="p">:</span> <span class="n">IntVar</span><span class="p">(),</span>  <span class="c1"># For elements source terms</span>
+                <span class="p">},</span>
+                <span class="s1">&#39;chosen_units&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;g&#39;</span><span class="p">:</span> <span class="n">IntVar</span><span class="p">(),</span>  <span class="c1"># For source terms in grams</span>
+                    <span class="s1">&#39;bq&#39;</span><span class="p">:</span> <span class="n">IntVar</span><span class="p">(),</span>  <span class="c1"># For source terms in Becquerels</span>
+                    <span class="s1">&#39;wt&#39;</span><span class="p">:</span> <span class="n">IntVar</span><span class="p">(),</span>  <span class="c1"># For source terms in Watts (total)</span>
+                    <span class="s1">&#39;wg&#39;</span><span class="p">:</span> <span class="n">IntVar</span><span class="p">(),</span>  <span class="c1"># For source terms in Watts (gamma)</span>
+                <span class="p">},</span>
+                <span class="c1"># Switches to a dict when inventories are generated</span>
+                <span class="s1">&#39;result&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>  <span class="c1"># Available groups, elements/isotopes, units</span>
+                <span class="s1">&#39;di_elem&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>  <span class="c1"># Available groups and elements in &#39;result&#39;</span>
+                <span class="s1">&#39;di_isot&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>  <span class="c1"># Available groups and isotopes in &#39;result&#39;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="Data.error_input"><a class="viewcode-back" href="../Pages.html#page_main.Data.error_input">[docs]</a>    <span class="k">def</span> <span class="nf">error_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_choice</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if input data errors were made in DisplayFilesPage</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            `user_choice` (str):</span>
+<span class="sd">                &#39;decay&#39; for decay power curve generation, or &#39;source&#39; for</span>
+<span class="sd">                source terms inventories generation</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            `(error, msg)` (tuple):</span>
+<span class="sd">                - error (bool): True if an error is detected</span>
+<span class="sd">                - msg (str): error message to be printed in the message box</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">error</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Bool switching to True if an input error is detected</span>
+
+        <span class="k">if</span> <span class="n">user_choice</span> <span class="o">==</span> <span class="s1">&#39;files&#39;</span><span class="p">:</span>  <span class="c1"># Check if data attached to files are ok</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Error: files data&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">FAmass_per_file</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">nFA_per_file</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">chosen_files</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_data</span><span class="p">):</span>
+                <span class="c1"># Are &#39;nbFA&#39; and &#39;FAmass&#39; numbers</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">FAmass</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_data</span><span class="p">[</span><span class="n">file</span><span class="p">][</span><span class="s1">&#39;FAmass&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+                    <span class="n">FAmass_per_file</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FAmass</span><span class="p">)</span>
+                    <span class="n">nFA</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_data</span><span class="p">[</span><span class="n">file</span><span class="p">][</span><span class="s1">&#39;nbFA&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+                    <span class="n">nFA_per_file</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nFA</span><span class="p">)</span>
+                    <span class="n">location</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">working_dir</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+                    <span class="n">chosen_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">location</span><span class="p">)</span>
+
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Number of FA and/or FA mass provided for file </span><span class="si">{}</span><span class="s2"> &quot;</span>
+                           <span class="s2">&quot;not a number!</span><span class="se">\n</span><span class="s2">Exiting...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">file</span><span class="p">))</span>
+                    <span class="k">return</span> <span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
+                <span class="c1"># Are they &gt; 0</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_data</span><span class="p">[</span><span class="n">file</span><span class="p">][</span><span class="s1">&#39;nbFA&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">())</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span>\
+                <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_data</span><span class="p">[</span><span class="n">file</span><span class="p">][</span><span class="s1">&#39;FAmass&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">())</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
+                    <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Number of FA and/or FA mass provided for file </span><span class="si">{}</span><span class="s2"> &quot;</span>
+                           <span class="s2">&quot;must be strictly positive!&quot;</span>
+                           <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Exiting...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">file</span><span class="p">))</span>
+                    <span class="k">return</span> <span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">df_info</span> <span class="o">=</span> <span class="n">create_df_info</span><span class="p">(</span><span class="n">chosen_files</span><span class="o">=</span><span class="n">chosen_files</span><span class="p">,</span>
+                                          <span class="n">nFA_per_file</span><span class="o">=</span><span class="n">nFA_per_file</span><span class="p">,</span>
+                                          <span class="n">FAmass_per_file</span><span class="o">=</span><span class="n">FAmass_per_file</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>  <span class="c1"># No error detected</span>
+
+        <span class="k">if</span> <span class="n">user_choice</span> <span class="o">==</span> <span class="s1">&#39;decay&#39;</span><span class="p">:</span>  <span class="c1"># Decay power curve generation asked</span>
+            <span class="n">di</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="n">user_choice</span><span class="p">]</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Error: decay power curve data&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="c1"># Check if the provided total thermal power is a number</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">float</span><span class="p">(</span><span class="n">di</span><span class="p">[</span><span class="s1">&#39;power&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Total thermal power must be a number!</span><span class="se">\n</span><span class="s2">&quot;</span>
+                       <span class="s2">&quot;Exiting...&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">di</span><span class="p">[</span><span class="s1">&#39;power&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">())</span> <span class="o">&lt;=</span> <span class="mf">0.</span><span class="p">:</span>  <span class="c1"># Check if power is &gt; 0</span>
+                <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Total thermal power must be strictly positive!</span><span class="se">\n</span><span class="s2">&quot;</span>
+                        <span class="s2">&quot;Exiting...&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
+
+            <span class="n">suffix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;decay&#39;</span><span class="p">][</span><span class="s1">&#39;suffix&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">suffix</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\w&quot;</span><span class="p">,</span> <span class="n">char</span><span class="p">):</span>  <span class="c1"># \w represents [a-zA-Z0-9_]</span>
+                    <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;The provided suffix contains a forbidden &quot;</span>
+                           <span class="s2">&quot;character!</span><span class="se">\n</span><span class="s2">Only letters, numbers and underscores&quot;</span>
+                           <span class="s2">&quot; are accepted</span><span class="se">\n</span><span class="s2">Exiting...&quot;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
+
+            <span class="k">return</span> <span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>  <span class="c1"># No error detected</span>
+
+        <span class="k">if</span> <span class="n">user_choice</span> <span class="o">==</span> <span class="s1">&#39;source&#39;</span><span class="p">:</span>  <span class="c1"># Source terms generation asked</span>
+            <span class="n">di</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="n">user_choice</span><span class="p">]</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Error: source terms inventories data&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="c1"># Check if a category has been selected</span>
+            <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">di</span><span class="p">[</span><span class="s1">&#39;chosen_categ&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">di</span><span class="p">[</span><span class="s1">&#39;chosen_categ&#39;</span><span class="p">][</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">():</span>
+                    <span class="n">error</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">break</span>
+            <span class="k">if</span> <span class="n">error</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;No selected category of source terms!</span><span class="se">\n</span><span class="s2">&quot;</span>
+                       <span class="s2">&quot;(Elements or isotopes)</span><span class="se">\n</span><span class="s2">Exiting...&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
+            <span class="c1"># Check if a unit has been selected</span>
+            <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">di</span><span class="p">[</span><span class="s1">&#39;chosen_units&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">di</span><span class="p">[</span><span class="s1">&#39;chosen_units&#39;</span><span class="p">][</span><span class="n">u</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">():</span>
+                    <span class="n">error</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">break</span>
+            <span class="k">if</span> <span class="n">error</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;No selected unit!</span><span class="se">\n</span><span class="s2">Exiting...&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
+
+            <span class="k">return</span> <span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>  <span class="c1"># No error detected</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">user_choice</span> <span class="o">==</span> <span class="s1">&#39;Elements&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">user_choice</span> <span class="o">==</span> <span class="s1">&#39;Isotopes&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">user_choice</span> <span class="o">==</span> <span class="s1">&#39;Elements&#39;</span><span class="p">):</span>
+                <span class="n">category</span> <span class="o">=</span> <span class="s1">&#39;Elements&#39;</span>
+                <span class="n">di</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;elements&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">category</span> <span class="o">=</span> <span class="s1">&#39;Isotopes&#39;</span>
+                <span class="n">di</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;isotopes&#39;</span><span class="p">]</span>
+
+            <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Error: </span><span class="si">{}</span><span class="s2"> selection&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">category</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">di</span><span class="p">[</span><span class="s1">&#39;group_ioe&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># List of (group, ioe) to be printed</span>
+
+            <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">di</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">group</span> <span class="o">!=</span> <span class="s1">&#39;group_ioe&#39;</span><span class="p">:</span>  <span class="c1"># ioe: isotope or element</span>
+                    <span class="c1"># Creation of a sorted list of ioe for source terms</span>
+                    <span class="n">list_ioe</span> <span class="o">=</span> <span class="p">[</span><span class="n">ioe</span> <span class="k">for</span> <span class="n">ioe</span> <span class="ow">in</span> <span class="n">di</span><span class="p">[</span><span class="n">group</span><span class="p">]</span> <span class="k">if</span> <span class="n">ioe</span> <span class="o">!=</span> <span class="s2">&quot;Total&quot;</span><span class="p">]</span>
+                    <span class="n">list_ioe</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">list_ioe</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">category</span> <span class="o">==</span> <span class="s1">&#39;Elements&#39;</span><span class="p">:</span>
+                        <span class="c1"># &quot;Total&quot; only available for elements</span>
+                        <span class="n">list_ioe</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Total&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">pass</span>
+
+                    <span class="k">for</span> <span class="n">ioe</span> <span class="ow">in</span> <span class="n">list_ioe</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">di</span><span class="p">[</span><span class="n">group</span><span class="p">][</span><span class="n">ioe</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">():</span>
+                            <span class="n">di</span><span class="p">[</span><span class="s1">&#39;group_ioe&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">group</span><span class="p">,</span> <span class="n">ioe</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">pass</span>
+
+            <span class="k">if</span> <span class="n">di</span><span class="p">[</span><span class="s1">&#39;group_ioe&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[]:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;No selected </span><span class="si">{}</span><span class="s2">!</span><span class="se">\n</span><span class="s2">Exiting...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">category</span><span class="o">.</span><span class="n">lower</span><span class="p">()))</span>
+                <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
+
+            <span class="n">suffix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;suffix&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">suffix</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\w&quot;</span><span class="p">,</span> <span class="n">char</span><span class="p">):</span>  <span class="c1"># \w represents [a-zA-Z0-9_]</span>
+                    <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;The provided suffix contains a forbidden &quot;</span>
+                           <span class="s2">&quot;character!</span><span class="se">\n</span><span class="s2">Only letters, numbers and underscores&quot;</span>
+                           <span class="s2">&quot; are accepted</span><span class="se">\n</span><span class="s2">Exiting...&quot;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
+
+            <span class="k">return</span> <span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>  <span class="c1"># No error detected</span></div>
+
+
+<div class="viewcode-block" id="Data.generate_power"><a class="viewcode-back" href="../Pages.html#page_main.Data.generate_power">[docs]</a>    <span class="k">def</span> <span class="nf">generate_power</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate decay power curve</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            `df` (pandas.DataFrame):</span>
+<span class="sd">                Contains the resulting decay power values for all the available</span>
+<span class="sd">                time steps and the following sigma values: [0, 1.645, 2, 3]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">list_df</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">FAmass_per_file</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">nFA_per_file</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">core_power</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;decay&#39;</span><span class="p">][</span><span class="s1">&#39;power&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+        <span class="n">mox</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;decay&#39;</span><span class="p">][</span><span class="s1">&#39;mox&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+
+        <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">create_df_decay_power</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_data</span><span class="p">[</span><span class="n">file</span><span class="p">][</span><span class="s1">&#39;loc&#39;</span><span class="p">],</span>
+                                       <span class="n">factors_time</span><span class="p">,</span>
+                                       <span class="n">regex_time</span><span class="p">,</span>
+                                       <span class="n">regex_category</span><span class="p">,</span>
+                                       <span class="n">regex_categ_unit</span><span class="p">,</span>
+                                       <span class="n">regex_after_Decay</span><span class="p">)</span>
+            <span class="n">list_df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+            <span class="n">FAmass_per_file</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_data</span><span class="p">[</span><span class="n">file</span><span class="p">][</span><span class="s1">&#39;FAmass&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>
+            <span class="n">nFA_per_file</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_data</span><span class="p">[</span><span class="n">file</span><span class="p">][</span><span class="s1">&#39;nbFA&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>
+
+        <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Decay power curve times:</span><span class="se">\n\t</span><span class="s2">- DataFrame(s) list creation: </span><span class="si">{}</span><span class="s2">&quot;</span>
+               <span class="s2">&quot; sec&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">t1</span><span class="o">-</span><span class="n">t0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">gather_df_decay_power</span><span class="p">(</span><span class="n">list_df</span><span class="p">,</span>            <span class="n">FAmass_per_file</span><span class="p">,</span>
+                                   <span class="n">nFA_per_file</span><span class="p">,</span>       <span class="n">core_power</span><span class="p">,</span>
+                                   <span class="n">mox</span><span class="p">,</span>                <span class="n">act_u9_np9_uncertainty</span><span class="p">,</span>
+                                   <span class="n">u9_np9_uncertainty</span><span class="p">,</span> <span class="n">fp_uncertainty</span><span class="p">,</span>
+                                   <span class="n">fuel_uncertainty</span><span class="p">,</span>   <span class="n">factors_time</span><span class="p">)</span>
+        <span class="n">t2</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Decay power curve times:</span><span class="se">\n\t</span><span class="s2">- DataFrame(s) gathering: </span><span class="si">{}</span><span class="s2">&quot;</span>
+               <span class="s2">&quot; sec&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">t2</span><span class="o">-</span><span class="n">t1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;decay&#39;</span><span class="p">][</span><span class="s1">&#39;bool&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">df</span></div>
+
+<div class="viewcode-block" id="Data.generate_source"><a class="viewcode-back" href="../Pages.html#page_main.Data.generate_source">[docs]</a>    <span class="k">def</span> <span class="nf">generate_source</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate source terms inventories</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            `dict_df` (dict):</span>
+<span class="sd">                - 1st key (str): categories (&#39;Elements&#39; or &#39;Isotopes&#39;)</span>
+<span class="sd">                - 2nd key (str): units (&#39;g&#39;, &#39;bq&#39;, &#39;wt&#39;, &#39;wg&#39;)</span>
+<span class="sd">                - 2nd key values (pandas.DataFrame): source terms inventories</span>
+<span class="sd">                  for the corresponding category, unit. All the available time</span>
+<span class="sd">                  steps and elements/isotopes are considered. The user will</span>
+<span class="sd">                  later choose what time steps and elements/isotopes to</span>
+<span class="sd">                  consider in the final inventories</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">list_df</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">FAmass_per_file</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">nFA_per_file</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">list_categories</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">list_units</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">di</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">categ</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">di</span><span class="p">[</span><span class="s1">&#39;chosen_categ&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">di</span><span class="p">[</span><span class="s1">&#39;chosen_categ&#39;</span><span class="p">][</span><span class="n">categ</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">list_categories</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">categ</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">unit</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">di</span><span class="p">[</span><span class="s1">&#39;chosen_units&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">di</span><span class="p">[</span><span class="s1">&#39;chosen_units&#39;</span><span class="p">][</span><span class="n">unit</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">list_units</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
+
+        <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">create_df_inventories</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_data</span><span class="p">[</span><span class="n">file</span><span class="p">][</span><span class="s1">&#39;loc&#39;</span><span class="p">],</span>
+                                       <span class="n">list_units</span><span class="p">,</span>
+                                       <span class="n">list_categories</span><span class="p">,</span>
+                                       <span class="n">factors_time</span><span class="p">,</span>
+                                       <span class="n">regex_time</span><span class="p">,</span>
+                                       <span class="n">regex_category</span><span class="p">,</span>
+                                       <span class="n">regex_categ_unit</span><span class="p">,</span>
+                                       <span class="n">regex_after_Decay</span><span class="p">)</span>
+            <span class="n">list_df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+            <span class="n">FAmass_per_file</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_data</span><span class="p">[</span><span class="n">file</span><span class="p">][</span><span class="s1">&#39;FAmass&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>
+            <span class="n">nFA_per_file</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_data</span><span class="p">[</span><span class="n">file</span><span class="p">][</span><span class="s1">&#39;nbFA&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>
+
+        <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Source terms times:</span><span class="se">\n\t</span><span class="s2">- DataFrame(s) list creation: </span><span class="si">{}</span><span class="s2">&quot;</span>
+               <span class="s2">&quot; sec&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">t1</span><span class="o">-</span><span class="n">t0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="c1"># Gather the dictionaries (one per chosen file) into a single one</span>
+        <span class="n">dict_df</span> <span class="o">=</span> <span class="n">gather_df_inventories</span><span class="p">(</span><span class="n">list_categories</span><span class="p">,</span>
+                                        <span class="n">list_units</span><span class="p">,</span>
+                                        <span class="n">list_df</span><span class="p">,</span>
+                                        <span class="n">FAmass_per_file</span><span class="p">,</span>
+                                        <span class="n">nFA_per_file</span><span class="p">)</span>
+        <span class="n">t2</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Source terms times:</span><span class="se">\n\t</span><span class="s2">- DataFrame(s) gathering: </span><span class="si">{}</span><span class="s2">&quot;</span>
+               <span class="s2">&quot; sec&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">t2</span><span class="o">-</span><span class="n">t1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="c1">#self.choice[&#39;source&#39;][&#39;time&#39;][&#39;gather_df&#39;] = round(t2-t1, 1)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;bool&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">dict_df</span></div>
+
+<div class="viewcode-block" id="Data.get_grp_ioe"><a class="viewcode-back" href="../Pages.html#page_main.Data.get_grp_ioe">[docs]</a>    <span class="k">def</span> <span class="nf">get_grp_ioe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the available groups and elements/isotopes in the source terms</span>
+<span class="sd">        inventories dictionary for the corresponding `category`</span>
+<span class="sd">        </span>
+<span class="sd">        Arguments:</span>
+<span class="sd">            `category` (str):</span>
+<span class="sd">                &quot;Elements&quot; or &quot;Isotopes&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            `get_dict_group_ioe` (dict):</span>
+<span class="sd">                Dictionary whose keys are the contained group, and values are</span>
+<span class="sd">                the sorted list of isotopes or elements contained in this group</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">dict_resu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;result&#39;</span><span class="p">]</span>
+        <span class="n">u0</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dict_resu</span><span class="p">[</span><span class="n">category</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">get_dict_group_ioe</span><span class="p">(</span><span class="n">dict_resu</span><span class="p">[</span><span class="n">category</span><span class="p">][</span><span class="n">u0</span><span class="p">])</span></div></div>
+
+
+<div class="viewcode-block" id="MainPage"><a class="viewcode-back" href="../Pages.html#page_main.MainPage">[docs]</a><span class="k">class</span> <span class="nc">MainPage</span><span class="p">(</span><span class="n">Tk</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Main application, refered to as `controller` in the different frames&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Arguments:</span>
+<span class="sd">            `data` (Data):</span>
+<span class="sd">                Object containing all the data provided by the user and the</span>
+<span class="sd">                results</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">Tk</span><span class="o">.</span><span class="n">wm_title</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;Irradec&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Initialize parameters (could be separated in a dedicated function)</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Location of the folder containing your files&quot;</span><span class="p">)</span>
+        <span class="n">ini_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;HOME&#39;</span><span class="p">]</span>
+        <span class="n">working_dir</span> <span class="o">=</span> <span class="n">filedialog</span><span class="o">.</span><span class="n">askdirectory</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+                                              <span class="n">initialdir</span><span class="o">=</span><span class="n">ini_dir</span><span class="p">)</span>
+
+        <span class="c1"># Initialize Data object controlled by the MainWindow</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">Data</span><span class="p">(</span><span class="n">working_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out_files</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frames</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># We generate only if the path is correct</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">working_dir</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">file_name</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">working_dir</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">file_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.out&#39;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">out_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+
+            <span class="c1"># Initializing the UI in a dedicated function</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init_UI</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">geometry</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">x</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">900</span><span class="p">,</span> <span class="mi">850</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">init_UI</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="c1"># Create vertical and horizontal Scrollbars</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SbV</span> <span class="o">=</span> <span class="n">Scrollbar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SbV</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="s1">&#39;N&#39;</span><span class="o">+</span><span class="s1">&#39;S&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SbH</span> <span class="o">=</span> <span class="n">Scrollbar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;horizontal&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SbH</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="s1">&#39;E&#39;</span><span class="o">+</span><span class="s1">&#39;W&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Create a canvas</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ca</span> <span class="o">=</span> <span class="n">Canvas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                         <span class="n">yscrollcommand</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">SbV</span><span class="o">.</span><span class="n">set</span><span class="p">,</span>
+                         <span class="n">xscrollcommand</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">SbH</span><span class="o">.</span><span class="n">set</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ca</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sticky</span><span class="o">=</span><span class="s2">&quot;news&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Configure the Scrollbars on the Canvas</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SbV</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">command</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ca</span><span class="o">.</span><span class="n">yview</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SbH</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">command</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ca</span><span class="o">.</span><span class="n">xview</span><span class="p">)</span>
+
+        <span class="c1"># Configure row index of a grid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid_rowconfigure</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Configure column index of a grid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid_columnconfigure</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">show_frame</span><span class="p">(</span><span class="n">ChooseFilesPage</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_files</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MainPage.show_frame"><a class="viewcode-back" href="../Pages.html#page_main.MainPage.show_frame">[docs]</a>    <span class="k">def</span> <span class="nf">show_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">container</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Show next frame to be displayed&quot;&quot;&quot;</span>
+
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">container</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ca</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="n">container</span><span class="p">]</span> <span class="o">=</span> <span class="n">frame</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ca</span><span class="o">.</span><span class="n">create_window</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="n">frame</span><span class="p">)</span>
+        <span class="n">frame</span><span class="o">.</span><span class="n">tkraise</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ca</span><span class="o">.</span><span class="n">update_idletasks</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ca</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">scrollregion</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ca</span><span class="o">.</span><span class="n">bbox</span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="MainPage.raise_displayer_files"><a class="viewcode-back" href="../Pages.html#page_main.MainPage.raise_displayer_files">[docs]</a>    <span class="k">def</span> <span class="nf">raise_displayer_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Display the data (file names) chosen in the ChooseFilesPage. Raise</span>
+<span class="sd">        DisplayFilesPage</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">li</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="n">ChooseFilesPage</span><span class="p">]</span><span class="o">.</span><span class="n">lbox</span><span class="o">.</span><span class="n">curselection</span><span class="p">()</span>
+        <span class="n">chosen_files</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="n">ChooseFilesPage</span><span class="p">]</span><span class="o">.</span><span class="n">lbox</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">li</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">show_frame</span><span class="p">(</span><span class="n">DisplayFilesPage</span><span class="p">,</span> <span class="n">chosen_files</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MainPage.check_user_data"><a class="viewcode-back" href="../Pages.html#page_main.MainPage.check_user_data">[docs]</a>    <span class="k">def</span> <span class="nf">check_user_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check the data and choices provided by the user. If:</span>
+<span class="sd">            - `choice[&#39;decay&#39;][&#39;bool&#39;] == 1` then decay power curve is</span>
+<span class="sd">              generated first</span>
+<span class="sd">            - `choice[&#39;source&#39;][&#39;bool&#39;] == 1` then source terms inventories</span>
+<span class="sd">              are generated for the corresponding categories and units</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;decay&#39;</span><span class="p">][</span><span class="s1">&#39;bool&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>\
+        <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;bool&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()):</span>
+
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;decay&#39;</span><span class="p">][</span><span class="s1">&#39;result&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">:</span>
+                <span class="c1"># If decay power curve was not generated</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Error: task selection&quot;</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;No requested task!</span><span class="se">\n</span><span class="s2">Exiting...&quot;</span>
+                <span class="n">messagebox</span><span class="o">.</span><span class="n">showerror</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># If only decay power curve generation was asked: normal end</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;End of the program&quot;</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Normal end of the program&quot;</span>
+                <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">test_error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">error_input</span><span class="p">(</span><span class="s1">&#39;files&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">test_error</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">messagebox</span><span class="o">.</span><span class="n">showerror</span><span class="p">(</span><span class="n">test_error</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">test_error</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+                <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;decay&#39;</span><span class="p">][</span><span class="s1">&#39;bool&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">():</span>
+            <span class="n">test_error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">error_input</span><span class="p">(</span><span class="s1">&#39;decay&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">test_error</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">messagebox</span><span class="o">.</span><span class="n">showerror</span><span class="p">(</span><span class="n">test_error</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">test_error</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+                <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;decay&#39;</span><span class="p">][</span><span class="s1">&#39;result&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">generate_power</span><span class="p">()</span>
+
+            <span class="c1"># Write the results in an Excel file</span>
+            <span class="n">suffix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;decay&#39;</span><span class="p">][</span><span class="s1">&#39;suffix&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;decay&#39;</span><span class="p">][</span><span class="s1">&#39;result&#39;</span><span class="p">]</span>
+            <span class="n">df_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">df_info</span>
+            <span class="n">list_title_msg</span> <span class="o">=</span> <span class="n">write_results</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">working_dir</span><span class="p">,</span>
+                                           <span class="s2">&quot;Decay_power_curve&quot;</span><span class="p">,</span>
+                                           <span class="n">suffix</span><span class="p">,</span>
+                                           <span class="n">result</span><span class="p">,</span>
+                                           <span class="n">df_info</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">list_title_msg</span><span class="p">:</span>
+                <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">tup</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tup</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+            <span class="n">path_res</span> <span class="o">=</span> <span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">list_title_msg</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;decay&#39;</span><span class="p">][</span><span class="s1">&#39;path_res&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">path_res</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">show_frame</span><span class="p">(</span><span class="n">DecayPowerCurvePage</span><span class="p">)</span>
+            <span class="k">return</span>  <span class="c1"># Just leave the function</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;bool&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">():</span>
+            <span class="n">test_error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">error_input</span><span class="p">(</span><span class="s1">&#39;source&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">test_error</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">messagebox</span><span class="o">.</span><span class="n">showerror</span><span class="p">(</span><span class="n">test_error</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">test_error</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+                <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">][</span><span class="s1">&#39;result&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">generate_source</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;decay&#39;</span><span class="p">][</span><span class="s1">&#39;result&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">:</span>
+                <span class="c1"># Decay power curve was not asked. The previous page is</span>
+                <span class="c1"># ChooseFilesPage</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="n">ChooseFilesPage</span><span class="p">]</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># Here the previous page is DecayPowerCurvePage</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="n">DecayPowerCurvePage</span><span class="p">]</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">show_frame</span><span class="p">(</span><span class="n">ChooseTimeStepsPage</span><span class="p">)</span>
+            <span class="k">return</span>  <span class="c1"># Just leave the function</span></div>
+
+<div class="viewcode-block" id="MainPage.raise_elements_isotopes"><a class="viewcode-back" href="../Pages.html#page_main.MainPage.raise_elements_isotopes">[docs]</a>    <span class="k">def</span> <span class="nf">raise_elements_isotopes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Raise the elements or isotopes choice page&quot;&quot;&quot;</span>
+
+        <span class="n">di</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">choice</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">di</span><span class="p">[</span><span class="s1">&#39;chosen_categ&#39;</span><span class="p">][</span><span class="s1">&#39;Elements&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">():</span>
+            <span class="n">di</span><span class="p">[</span><span class="s1">&#39;di_elem&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_grp_ioe</span><span class="p">(</span><span class="s1">&#39;Elements&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="n">ChooseTimeStepsPage</span><span class="p">]</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">show_frame</span><span class="p">(</span><span class="n">ElementsPage</span><span class="p">)</span>
+            <span class="k">return</span>  <span class="c1"># Just leave the function</span>
+
+        <span class="k">if</span> <span class="n">di</span><span class="p">[</span><span class="s1">&#39;chosen_categ&#39;</span><span class="p">][</span><span class="s1">&#39;Isotopes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">():</span>
+            <span class="n">di</span><span class="p">[</span><span class="s1">&#39;di_isot&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_grp_ioe</span><span class="p">(</span><span class="s1">&#39;Isotopes&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">di</span><span class="p">[</span><span class="s1">&#39;di_elem&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">:</span>
+                <span class="c1"># Elements inventories was not asked</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="n">ChooseTimeStepsPage</span><span class="p">]</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="n">ElementsPage</span><span class="p">]</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">show_frame</span><span class="p">(</span><span class="n">IsotopesPage</span><span class="p">)</span>
+            <span class="k">return</span>  <span class="c1"># Just leave the function</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">di</span><span class="p">[</span><span class="s1">&#39;chosen_categ&#39;</span><span class="p">][</span><span class="s1">&#39;Isotopes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>\
+        <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">di</span><span class="p">[</span><span class="s1">&#39;chosen_categ&#39;</span><span class="p">][</span><span class="s1">&#39;Elements&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()):</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;End of the program&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Normal end of the program&quot;</span>
+            <span class="n">messagebox</span><span class="o">.</span><span class="n">showinfo</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+            <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Theo Painvin.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

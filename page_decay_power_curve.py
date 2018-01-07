@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-@author: theo43@github
-date: Sept. 2017
-POS: page for decay power curve plotting
+Page for decay power curve plotting. The user can visualize the best-estimate
+decay power curve with the curves penalized with 1.645, 2 and 3 sigma
+uncertainty values for all the available time steps. The user can zoom and save
+images.
 """
 
 from page_display_files import DisplayFilesPage
@@ -21,9 +22,14 @@ class DecayPowerCurvePage(Frame):
     """Plotting of the decay power curves"""
 
     def __init__(self, parent, controller, *args):
-        """Arguments:
-               - parent (Frame)
-               - controller (Tk)
+        """
+        Arguments:
+            `parent` (Frame):
+                Parent page
+
+            `controller` (Tk):
+                Main controller page
+
         """
         super().__init__(parent)
         self.controller = controller

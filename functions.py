@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-@author: theo43@github
-date: Sept. 2017
-POS: functions
+This ``functions`` module provides all the functions used in the code. These
+functions can be used in class methods definitions.
 """
 
 def find_group(line):
@@ -10,19 +9,20 @@ def find_group(line):
     Post-process the name of the group of nuclides or elements ("actinides",
     "fission products" or "light elements")
 
-    Argument:
-        line (str):
-            line of a .out file to post-process
+    Arguments:
+        `line` (str):
+            Line of a .out file to post-process
 
     Returns:
-        group (str):
-            group of the isotope or element
+        `group` (str):
+            Group of the isotope or element
 
     Example:
         >>> find_group("  Decay from 11 h to 20 h    actinides  page  533")
         'Actinides'
         >>> find_group("Decay from 200 s to 1800 s fission products  page")
         'Fission products'
+
     """
 
     from re import search
@@ -48,16 +48,17 @@ def find_category_unit(line):
         - "wg" for gamma contribution in total power, in watts
 
     Arguments:
-        line (str):
-            line of a .out file to post-process
+        `line` (str):
+            Line of a .out file to post-process
 
     Returns:
-        tup (tuple):
-            contains the category (tup[0]) and the unit (tup[1])
+        `tup` (tuple):
+            Contains the category (tup[0]) and the unit (tup[1])
 
     Example:
         >>> find_category_unit("      element thermal power, watts  ")
         ('Elements', 'wt')
+
     """
 
     from re import search
@@ -91,16 +92,17 @@ def find_times(line):
         - Years: one space between the float and "yr"
 
     Argument:
-        line (str):
-            line of a .out file to post-process
+        `line` (str):
+            Line of a .out file to post-process
 
     Returns:
-        time_steps (list):
-            split of the line containing the time steps
+        `time_steps` (list):
+            Split of the line containing the time steps
 
     Example:
         >>> find_times("             initial   11.0 hr   12.0 hr ")
         ['initial', '11.0 hr', '12.0 hr']
+
     """
 
     from re import findall
@@ -113,18 +115,19 @@ def find_results(line):
     Post-process the results in [unit] of a block of data being read
 
     Argument:
-        line (str):
-            line of a .out file to post-process
+        `line` (str):
+            Line of a .out file to post-process
 
     Returns:
-        results (list):
-            split of the line containing the results. The first element of the
+        `results` (list):
+            Split of the line containing the results. The first element of the
             list is the isotope or element name (str), the rest is the
             resulting contribution (float)
 
     Example:
         >>> find_results("    am239   2.90E-18  4.44E-09  4.44E-09  ")
         ['am239', 2.9e-18, 4.44e-09, 4.44e-09]
+
     """
 
     from re import findall
@@ -151,18 +154,19 @@ def create_df_decay_power(file_path,
         - Fission products
 
     Arguments:
-        file_path (str):
-            absolute location of the file
+        `file_path` (str):
+            Absolute location of the file
 
-        factors_time (dict):
-            correspondence in seconds for different time units
+        `factors_time` (dict):
+            Correspondence in seconds for different time units
 
-        regex_* (str):
-            regular expressions used to post-process
+        `regex_*` (str):
+            Regular expressions used to post-process
 
     Returns:
-        df (pandas.DataFrame):
+        `df` (pandas.DataFrame):
             Decay power values for `file_path`
+
     """
 
     from re import search
@@ -262,30 +266,31 @@ def gather_df_decay_power(list_batch_df,            FAmass_per_file,
     and the power value with 1.645, 2.0, 3.0 sigma (%FP).
 
     Arguments:
-        list_batch_df (list):
-            pandas DataFrames containing decay power data
+        `list_batch_df` (list):
+            DataFrames containing decay power data
 
-        FAmass_per_file (list):
-            corresponding FA masses per DataFrame
+        `FAmass_per_file` (list):
+            Corresponding FA masses per DataFrame
 
-        nFA_per_file (list):
-            corresponding numbers of FA per DataFrame
+        `nFA_per_file` (list):
+            Corresponding numbers of FA per DataFrame
 
-        core_power (float):
-            power used to normalize the decay power curve
+        `core_power` (float):
+            Power used to normalize the decay power curve
         
-        mox (bool):
-            if the core contains mox or not
+        `mox` (bool):
+            If the core contains mox or not
             
-        *_uncertainty (dict):
-            uncertainties corresponding to decay times
+        `*_uncertainty` (dict):
+            Uncertainties corresponding to decay times
             
-        factors_time (dict):
-            correspondence in seconds for different time units
+        `factors_time` (dict):
+            Correspondence in seconds for different time units
 
     Returns:
-        df (pandas.DataFrame):
+        `df` (pandas.DataFrame):
             Gathered decay power curve values for each available time step
+
     """
 
     from pandas import DataFrame
@@ -384,24 +389,25 @@ def create_df_inventories(file_path,        list_units,
     isotopes
 
     Arguments:
-        file_path (str):
-            absolute location of the file
+        `file_path` (str):
+            Absolute location of the file
 
-        list_units (list):
-            units chosen by the user
+        `list_units` (list):
+            Units chosen by the user
         
-        list_categories (list):
-            categories ('elements' or 'isotopes') chosen by the user
+        `list_categories` (list):
+            Categories ('elements' or 'isotopes') chosen by the user
         
-        factors_time (dict):
-            correspondence in seconds for different time units
+        `factors_time` (dict):
+            Correspondence in seconds for different time units
         
-        regex_* (str):
-            regular expressions used during files post-processing
+        `regex_*` (str):
+            Regular expressions used during files post-processing
 
     Returns:
-        inv (dict):
+        `inv` (dict):
             Source terms inventories for `file_path`
+
     """
 
     from re import search, sub
@@ -504,31 +510,32 @@ def gather_df_inventories(list_categories,
                           FAmass_per_file,
                           nFA_per_file):
     """
-    Gather the pandas DataFrames created by create_df_inventories with the
+    Gather the DataFrames created by `create_df_inventories` with the
     corresponding FA mass and number of FA per batch. Create a dictionary
     whose:
         - 1st key is the chosen category(ies): 'Elements' or 'Isotopes'
         - 2nd key is the chosen unit(s)
 
     Arguments:
-        list_category (list):
-            categories chosen by the user
+        `list_category` (list):
+            Categories chosen by the user
         
-        list_units (list):
-            units chosen by the user
+        `list_units` (list):
+            Units chosen by the user
         
-        list_batch_df (list):
-            list of dictionaries returned by create_df_inventories
+        `list_batch_df` (list):
+            List of dictionaries returned by create_df_inventories
         
-        FAmass_per_file (list):
+        `FAmass_per_file` (list):
             FA masses chosen by the user per batch
         
-        nFA_per_file (list):
-            number of FA chosen by the user per batch
+        `nFA_per_file` (list):
+            Number of FA chosen by the user per batch
 
     Returns:
-        dinv (dict):
-            Gathered source terms inventories 
+        `dinv` (dict):
+            Gathered source terms inventories
+
     """
 
     dinv = {}
@@ -556,21 +563,22 @@ def convert_str_sec(word, factors_time):
     """
     Convert a time step given in a string into a number of seconds
 
-     Arguments:
-         word (str):
-             time step to convert
+    Arguments:
+        `word` (str):
+            Time step to convert
          
-        factors_time (dict):
-            correspondence in seconds for different time units
+        `factors_time` (dict):
+            Correspondence in seconds for different time units
 
-     Returns:
-         sec (float):
-             corresponding time in seconds
+    Returns:
+        `sec` (float):
+            Corresponding time in seconds
 
-     Example:
-         >>> from dictionaries import factors_time
-         >>> convert_str_sec("2.0hr", factors_time)
-         7200.0
+    Example:
+        >>> from dictionaries import factors_time
+        >>> convert_str_sec("2.0hr", factors_time)
+        7200.0
+
     """
 
     from re import findall
@@ -583,53 +591,32 @@ def convert_str_sec(word, factors_time):
     return sec
 
 
-def test_df_consistency(list_df):
-    """
-    Return True is all the DataFrames in list_df have the same indexes and
-    columns.
-    NOT USED YET BUT SHOULD.
-    """
-
-    df0 = list_df[0]
-    ind0 = df0.index
-    col0 = df0.columns
-    for i, df in enumerate(list_df[1:]):
-        ind = df.index
-        col = df.columns
-        if False in ind0 == ind:
-            return False
-            continue
-        if False in col0 == col:
-            return False
-            continue
-        return True
-
-
 def find_unc(time_str, dictionary, factors_time):
     """
     Find the uncertainty value to be used, depending on the time step. If
-    `time_str` (converted from string to float in sec with è convert_str_sec`)
+    `time_str` (converted from string to float in sec with `convert_str_sec`)
     does not match any keys in `dictionary`, the maximum value between the
     two closest keys values is returned
 
     Arguments:
-        time_str (str):
+        `time_str` (str):
             Time step of the form "float"+"time_unit"
         
-        dictionary (dict):
+        `dictionary` (dict):
             Uncertainty values corresponding to different decay time steps
         
-        factors_time (dict):
+        `factors_time` (dict):
             Correspondence in seconds for different time units
 
     Returns:
-        uncertainty (float):
+        `uncertainty` (float):
             Uncertainty value to be used
 
     Example:
         >>> from dictionaries import fp_uncertainty, factors_time
         >>> find_unc('1.5d', fp_uncertainty, factors_time)
         0.03
+
     """
 
     time_sec = convert_str_sec(time_str, factors_time)
@@ -658,13 +645,14 @@ def get_dict_group_ioe(df):
         - 2nd level: names of the isotopes or elements
 
     Arguments:
-        df (pandas.DataFrame):
+        `df` (pandas.DataFrame):
             Two levels indexed DataFrame
 
     Returns:
-        di (dict):
+        `di` (dict):
             Dictionary whose keys are the contained group, and values are the
             sorted list of isotopes or elements contained in this group
+
     """
 
     di = {}
@@ -690,15 +678,16 @@ def get_state_IntVar(dictionary, factors_time):
     Get the state of IntVar instances stored in a dictionary
 
     Arguments:
-        dictionary (dict):
+        `dictionary` (dict):
             Keys are string instances whose values are 0 or 1
         
-        factors_time (dict):
+        `factors_time` (dict):
             Correspondence in seconds for different time units
 
     Returns:
-        list_IntVar1 (list):
+        `list_IntVar1` (list):
             List of the dictionary's keys whose values equal to 1
+
     """
 
     list_IntVar1 = []
@@ -716,15 +705,16 @@ def check_input_output(in_loc, out_loc):
     files in input folder
 
     Arguments:
-        in_loc (str):
+        `in_loc` (str):
             Absolute location of input folder
         
-        out_loc (str):
+        `out_loc` (str):
             Absolute location of output folder
 
     Returns:
-        list_in_files (list):
+        `list_in_files` (list):
             Absolute location of available .out files in "../Input" folder
+
     """
 
     from os import mkdir, path
@@ -768,12 +758,13 @@ def create_df_info(**kwargs):
     inserted in a Dataframe
 
     Arguments:
-        **kwargs (dict):
+        `kwargs` (dict):
             Information concerning post-processed files and corresponding data
 
     Returns:
-        df_info (pandas.DataFrame):
+        `df_info` (pandas.DataFrame):
             User informations stored in a DataFrame
+
     """
 
     from os import path
@@ -806,28 +797,28 @@ def write_results(output_location,
     exists, and create it if it does not. Create the results file
 
     Arguments:
-        output_location (str):
+        `output_location` (str):
 
-        results_type (str):
+        `results_type` (str):
             Name of the sub-folder for results ("Decay_power_curve" or
             "Source_terms")
-        
-        suffix (str):
+
+        `suffix` (str):
             Suffix of the results file name asked by the user appended to
             results file name
         
-        dict_results (dict):
-            Contains the pandas DataFrames to be printed in the result file:
+        `dict_results` (dict):
+            Contains the DataFrame to be printed in the result file:
                 - 1st key: results_type
                 - 2nd key: categories (only for source terms)
                 - 3rd key: units (only for source terms)
-            For decay power curve generation: dict_results is directly a
+            For decay power curve generation: `dict_results` is directly a
             pandas.DataFrame
-        
-        df_user_data (pandas.DataFrame):
+
+        `df_user_data` (pandas.DataFrame):
             Data provided by the user in UserData
-        
-        **kwargs (dict):
+
+        `kwargs` (dict):
             Only for source terms results:
                 - index_group_ioe (list): tuples containing (group, isotope or
                   element) names for source terms result file indexing
@@ -837,8 +828,9 @@ def write_results(output_location,
                   of time
 
     Returns:
-        list_title_msg (list):
+        `list_title_msg` (list):
             tuple(s) of title (str), msg (str) to be displayed in a messagebox
+
     """
 
     from pandas import ExcelWriter

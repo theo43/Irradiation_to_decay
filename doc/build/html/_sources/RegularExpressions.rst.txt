@@ -1,0 +1,9 @@
+*******************
+Regular expressions
+*******************
+
+All the functions
+=================
+
+.. automodule:: regular_expressions
+   :members:
