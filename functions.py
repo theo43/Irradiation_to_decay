@@ -713,7 +713,7 @@ def check_input_output(in_loc, out_loc):
 
     Returns:
         `list_in_files` (list):
-            Absolute location of available .out files in "../Input" folder
+            Absolute location of available .out files in `in_loc` folder
 
     """
 
