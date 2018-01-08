@@ -798,6 +798,7 @@ def write_results(output_location,
 
     Arguments:
         `output_location` (str):
+            Path for the results
 
         `results_type` (str):
             Name of the sub-folder for results ("Decay_power_curve" or
@@ -807,8 +808,9 @@ def write_results(output_location,
             Suffix of the results file name asked by the user appended to
             results file name
         
-        `dict_results` (dict):
-            Contains the DataFrame to be printed in the result file:
+        `dict_results` (dict or pandas.DataFrame):
+            For source terms inventories generation, the `dict_results`
+            contains the DataFrames to be printed in the result file:
                 - 1st key: results_type
                 - 2nd key: categories (only for source terms)
                 - 3rd key: units (only for source terms)
