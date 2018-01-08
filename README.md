@@ -6,7 +6,7 @@ This tool runs with Python v3.5 or more. To run it:
 ```
 python main.py
 ```
-A GUI application using tkinter module then manages the code.
+A GUI designed with `tkinter` module then controls the application.
 
 ## Tests
 Two kind of tests have been implemented:
