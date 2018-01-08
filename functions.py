@@ -6,8 +6,8 @@ functions can be used in class methods definitions.
 
 def find_group(line):
     """
-    Post-process the name of the group of nuclides or elements ("actinides",
-    "fission products" or "light elements")
+    Post-process the name of the group of nuclides or elements ("Actinides",
+    "Fission products" or "Light elements")
 
     Arguments:
         `line` (str):
@@ -39,10 +39,10 @@ def find_group(line):
 
 def find_category_unit(line):
     """
-    Post-process the category of results: "nuclides" or "elements" and the
-    unit of the results:
+    Post-process the category of results: "Isotopes" or "Elements" and the
+    unit of the results line:
         - "g" for mass in grams
-        - "bq" for radioactivity in Bq (1 Cu = 3.7E10 Bq)
+        - "bq" for radioactivity in Bq (1 Cu = 3.7E10 Bq).
           Curies results given in .out files are finally converted in Bq
         - "wt" for total thermal power in watts
         - "wg" for gamma contribution in total power, in watts
@@ -260,7 +260,7 @@ def gather_df_decay_power(list_batch_df,            FAmass_per_file,
                           u9_np9_uncertainty,       fp_uncertainty,
                           fuel_uncertainty,         factors_time):
     """
-    Gather the DataFrames listed in list_batch_df, taking into account the
+    Gather the DataFrames listed in `list_batch_df`, taking into account the
     number of FA per batch and the FA mass in each batch.
     Calculate the resulting Best-Estimate power (%FP), sigma value (%),
     and the power value with 1.645, 2.0, 3.0 sigma (%FP).
