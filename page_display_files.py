@@ -8,7 +8,7 @@ needed for each file post-processing.
 from tkinter import (Frame, Label, StringVar, Entry, messagebox,
                      Checkbutton, ttk)
 from os.path import join
-from page_choose_files import ChooseFilesPage
+from .page_choose_files import ChooseFilesPage
 
 LARGE_FONT = ("Verdana", 12)
 
@@ -28,7 +28,7 @@ class DisplayFilesPage(Frame):
 
             `controller` (Tk):
                 Main controller page
-            
+
             `file_names` (list):
                 Chosen file names
 
@@ -59,15 +59,15 @@ class DisplayFilesPage(Frame):
         label.grid(row=row, columnspan=3, sticky='w')
 
         row += 1
-        label = Label(self, text="-"*150)
+        label = Label(self, text="-"*170)
         label.grid(row=row, columnspan=4, sticky='w')
 
         row += 1
         label = Label(self, text="Selected files names")
         label.grid(row=row, columnspan=2, sticky='w')
-        label = Label(self, text="Number of FA")
+        label = Label(self, text="Number of fuel assemblies")
         label.grid(row=row, column=2, sticky='w')
-        label = Label(self, text="FA mass (tons of U)")
+        label = Label(self, text="Assemblies mass (tons of U/Pu)")
         label.grid(row=row, column=3, sticky='w')
 
         working_dir = self.controller.data.working_dir
@@ -92,17 +92,17 @@ class DisplayFilesPage(Frame):
             entry.grid(row=row, column=3, sticky='w')
 
         row += 1
-        label = Label(self, text="-"*150)
+        label = Label(self, text="-"*170)
         label.grid(row=row, columnspan=4, sticky='w')
 
         row += 1
         var = self.controller.data.choice['decay']['bool']
-        txt = "You want to generate decay power curves"
+        txt = "Generate decay power curves"
         checkbu = Checkbutton(self, text=txt, variable=var)
         checkbu.grid(row=row, column=0, sticky='w')
 
         row += 1
-        txt = "Total thermal power (MW): "
+        txt = "Total thermal power (MWth): "
         label = Label(self, text=txt)
         label.grid(row=row, column=0, sticky='w')
         var = self.controller.data.choice['decay']['power']
@@ -116,7 +116,7 @@ class DisplayFilesPage(Frame):
         checkbu.grid(row=row, column=0, sticky='w')
 
         row += 1
-        txt = ("Suffix for results file: \n(Letters, numbers or\n"
+        txt = ("Suffix for results file: (Letters, numbers or "
                "underscores only)")
         label = Label(self, text=txt)
         label.grid(row=row, column=0, sticky='w')
@@ -125,17 +125,17 @@ class DisplayFilesPage(Frame):
         entry.grid(row=row, column=1, sticky='w')
 
         row += 1
-        label = Label(self, text="-"*150)
+        label = Label(self, text="-"*170)
         label.grid(row=row, columnspan=4, sticky='w')
 
         row += 1
         var = self.controller.data.choice['source']['bool']
-        txt = "You want to generate source terms inventories"
+        txt = "Generate source terms inventories"
         checkbu = Checkbutton(self, text=txt, variable=var)
         checkbu.grid(row=row, column=0, sticky='w')
 
         row += 1
-        label = Label(self, text="You want inventories for:")
+        label = Label(self, text="Make inventories of:")
         label.grid(row=row, column=0, sticky='w')
 
         row += 1
@@ -147,7 +147,7 @@ class DisplayFilesPage(Frame):
         checkbu.grid(row=row, column=1, sticky='w')
 
         row += 1
-        label = Label(self, text="For what unit(s):")
+        label = Label(self, text="Output unit(s) (many options are possible):")
         label.grid(row=row, column=0, sticky='w')
 
         row += 1
@@ -165,7 +165,7 @@ class DisplayFilesPage(Frame):
         checkbu.grid(row=row, column=3, sticky='w')
 
         row += 1
-        txt = ("Suffix for results file: \n(Letters, numbers or\n"
+        txt = ("Suffix for results file: (Letters, numbers or "
                "underscores only)")
         label = Label(self, text=txt)
         label.grid(row=row, column=0, sticky='w')
@@ -174,11 +174,11 @@ class DisplayFilesPage(Frame):
         entry.grid(row=row, column=1, sticky='w')
 
         row += 1
-        label = Label(self, text="-"*150)
+        label = Label(self, text="-"*170)
         label.grid(row=row, columnspan=4, sticky='w')
 
         row += 1
         txt = "Next"
         cmd = self.controller.check_user_data
         button = ttk.Button(self, text=txt, command=cmd)
-        button.grid(row=row, column=2, sticky='w')
+        button.grid(row=row, column=3, sticky='w')
