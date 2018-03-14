@@ -20,14 +20,14 @@ def test_decay_power_generation():
     """Test for decay power curve generation"""
 
     # Import the test DataFrame
-    df_test = pd.read_excel('../tests/Decay_power_curve_TPU_core.xlsx',
+    df_test = pd.read_excel('../tests/Decay_power_curve_test.xlsx',
                             sheetname='decay_power_curve',
                             index_col = 0)
 
     # Create the DataFrame to be compared to df_test
-    list_path = ['../tests/TPU1.out',
-                 '../tests/TPU2.out',
-                 '../tests/TPU3.out']
+    list_path = ['../tests/file1.out',
+                 '../tests/file2.out',
+                 '../tests/file3.out']
     list_nbfa = [21, 68, 68]
     list_massfa = [0.465] * 3
 
@@ -58,8 +58,8 @@ def test_source_terms_generation():
     """Test for source terms generation"""
 
     # Import the test DataFrames
-    PATH_DF_ELEMENTS = '../tests/Source_terms_elements_TPU_core.xlsx'
-    PATH_DF_ISOTOPES = '../tests/Source_terms_isotopes_TPU_core.xlsx'
+    PATH_DF_ELEMENTS = '../tests/Source_terms_elements_test.xlsx'
+    PATH_DF_ISOTOPES = '../tests/Source_terms_isotopes_test.xlsx'
 
     df_test_elem = pd.read_excel(PATH_DF_ELEMENTS,
                                  sheetname=['grams', 'becquerels',
@@ -83,9 +83,9 @@ def test_source_terms_generation():
     index_isot = test_isot_g.index
 
     # Create the new DataFrame to be compared to the test_*
-    list_path = ['../tests/TPU1.out',
-                 '../tests/TPU2.out',
-                 '../tests/TPU3.out']
+    list_path = ['../tests/file1.out',
+                 '../tests/file2.out',
+                 '../tests/file3.out']
     list_nbfa = [21, 68, 68]
     list_massfa = [0.465] * 3
     list_units = ['g', 'bq', 'wt', 'wg']
