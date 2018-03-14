@@ -6,8 +6,8 @@ Pages for choice of elements and isotopes for source terms inventories.
 from tkinter import Frame, Label, IntVar, Checkbutton, ttk, messagebox
 from functools import partial
 from sys import exit
-from functions import write_results
-from dictionaries import factors_time
+from .functions import write_results
+from .dictionaries import factors_time
 LARGE_FONT = ("Verdana", 12)
 
 class ElementsPage(Frame):
