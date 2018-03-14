@@ -11,21 +11,21 @@ import os
 from re import match, split
 from time import time
 from sys import exit
-from page_choose_files import ChooseFilesPage
-from page_display_files import DisplayFilesPage
-from page_decay_power_curve import DecayPowerCurvePage
-from page_choose_time_steps import ChooseTimeStepsPage
-from pages_elements_isotopes_choice import ElementsPage, IsotopesPage
-from functions import (create_df_decay_power, gather_df_decay_power,
-                       create_df_inventories,
-                       gather_df_inventories,
-                       get_dict_group_ioe,
-                       write_results,
-                       create_df_info)
-from regular_expressions import (regex_time, regex_category, regex_categ_unit,
-                                 regex_after_Decay)
-from dictionaries import (act_u9_np9_uncertainty, u9_np9_uncertainty,
-                          fp_uncertainty, fuel_uncertainty, factors_time)
+from .page_choose_files import ChooseFilesPage
+from .page_display_files import DisplayFilesPage
+from .page_decay_power_curve import DecayPowerCurvePage
+from .page_choose_time_steps import ChooseTimeStepsPage
+from .pages_elements_isotopes_choice import ElementsPage, IsotopesPage
+from .functions import (create_df_decay_power, gather_df_decay_power,
+                        create_df_inventories,
+                        gather_df_inventories,
+                        get_dict_group_ioe,
+                        write_results,
+                        create_df_info)
+from .regular_expressions import (regex_time, regex_category, regex_categ_unit,
+                                  regex_after_Decay)
+from .dictionaries import (act_u9_np9_uncertainty, u9_np9_uncertainty,
+                           fp_uncertainty, fuel_uncertainty, factors_time)
 
 LARGE_FONT = ("Verdana", 12)
 
@@ -40,7 +40,7 @@ class Data():
         
         `file_data` (dict):
             Keys are chosen file names, whose values are dictionaries whose
-            keys once provided in DisplayFilesPage are
+            keys once provided in DisplayFilesPage are:
                 - loc (str): absolute path of the file
                 - nbFA (StringVar): number of FA for this file
                 - FAmass (StringVar): FA mass for this file
@@ -241,7 +241,6 @@ class Data():
 
             return (error, (title, msg))  # No error detected
 
-
     def generate_power(self):
         """
         Generate decay power curve
@@ -272,9 +271,9 @@ class Data():
             nFA_per_file.append(float(self.file_data[file]['nbFA'].get()))
 
         t1 = time()
-        msg = ("Decay power curve times:\n\t- DataFrame(s) list creation: {}"
-               " sec".format(round(t1-t0, 1)))
-        print(msg)
+        # Uncomment in order to get DataFrames management times
+        #print("Decay power curve times:\n\t- DataFrame(s) list creation: {}"
+        #      " sec".format(round(t1-t0, 1)))
 
         df = gather_df_decay_power(list_df,            FAmass_per_file,
                                    nFA_per_file,       core_power,
@@ -282,9 +281,9 @@ class Data():
                                    u9_np9_uncertainty, fp_uncertainty,
                                    fuel_uncertainty,   factors_time)
         t2 = time()
-        msg = ("Decay power curve times:\n\t- DataFrame(s) gathering: {}"
-               " sec".format(round(t2-t1, 1)))
-        print(msg)
+        # Uncomment in order to get DataFrames management times
+        #print("Decay power curve times:\n\t- DataFrame(s) gathering: {}"
+        #      " sec".format(round(t2-t1, 1)))
 
         self.choice['decay']['bool'].set(0)
 
@@ -334,9 +333,9 @@ class Data():
             nFA_per_file.append(float(self.file_data[file]['nbFA'].get()))
 
         t1 = time()
-        msg = ("Source terms times:\n\t- DataFrame(s) list creation: {}"
-               " sec".format(round(t1-t0, 1)))
-        print(msg)
+        # Uncomment in order to get DataFrames management times
+        #print("Source terms times:\n\t- DataFrame(s) list creation: {}"
+        #      " sec".format(round(t1-t0, 1)))
 
         # Gather the dictionaries (one per chosen file) into a single one
         dict_df = gather_df_inventories(list_categories,
@@ -345,10 +344,9 @@ class Data():
                                         FAmass_per_file,
                                         nFA_per_file)
         t2 = time()
-        msg = ("Source terms times:\n\t- DataFrame(s) gathering: {}"
-               " sec".format(round(t2-t1, 1)))
-        print(msg)
-        #self.choice['source']['time']['gather_df'] = round(t2-t1, 1)
+        # Uncomment in order to get DataFrames management times
+        #print("Source terms times:\n\t- DataFrame(s) gathering: {}"
+        #      " sec".format(round(t2-t1, 1)))
 
         self.choice['source']['bool'].set(0)
 
@@ -388,10 +386,10 @@ class MainPage(Tk):
 
         """
         super().__init__()
-        Tk.wm_title(self, "Irradec")
+        Tk.wm_title(self, "Post_ORIGENS")
 
         # Initialize parameters (could be separated in a dedicated function)
-        title = ("Location of the folder containing your files")
+        title = "Location of the folder containing your files"
         ini_dir = os.environ['HOME']
         working_dir = filedialog.askdirectory(title=title,
                                               initialdir=ini_dir)
@@ -554,7 +552,7 @@ class MainPage(Tk):
             return  # Just leave the function
 
         if (not di['chosen_categ']['Isotopes'].get())\
-        and (not di['chosen_categ']['Elements'].get()):
+                and (not di['chosen_categ']['Elements'].get()):
             title = "End of the program"
             msg = "Normal end of the program"
             messagebox.showinfo(title, msg)
