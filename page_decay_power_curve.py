@@ -6,7 +6,7 @@ uncertainty values for all the available time steps. The user can zoom and save
 images.
 """
 
-from page_display_files import DisplayFilesPage
+from .page_display_files import DisplayFilesPage
 import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,
