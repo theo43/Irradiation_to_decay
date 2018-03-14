@@ -1,33 +1,33 @@
-#! /usr/bin/env python3
+#!/users5/appli/tools/anaconda/anaconda3-2.4.0-Linux-x86_64/bin/python
 # -*- coding: utf-8 -*-
 """
 This ``test_functions`` module aims at testing the global good behavior of the
-code by comparing the results with the ones stored in `input_tests/*.xlsx`.
+code by comparing the results with the ones stored in `../tests/*.xlsx`.
 """
 
 import pandas as pd
-from functions import (create_df_decay_power,
-                       gather_df_decay_power,
-                       create_df_inventories,
-                       gather_df_inventories,
-                       convert_str_sec)
-from dictionaries import (factors_time, act_u9_np9_uncertainty,
-                          u9_np9_uncertainty, fp_uncertainty, fuel_uncertainty)
-from regular_expressions import (regex_time, regex_category, regex_categ_unit,
-                                 regex_after_Decay)
+from .functions import (create_df_decay_power,
+                        gather_df_decay_power,
+                        create_df_inventories,
+                        gather_df_inventories,
+                        convert_str_sec)
+from .dictionaries import (factors_time, act_u9_np9_uncertainty,
+                           u9_np9_uncertainty, fp_uncertainty, fuel_uncertainty)
+from .regular_expressions import (regex_time, regex_category, regex_categ_unit,
+                                  regex_after_Decay)
 
 def test_decay_power_generation():
     """Test for decay power curve generation"""
 
     # Import the test DataFrame
-    df_test = pd.read_excel('input_tests/Decay_power_curve_test.xlsx',
+    df_test = pd.read_excel('../tests/Decay_power_curve_TPU_core.xlsx',
                             sheetname='decay_power_curve',
                             index_col = 0)
 
     # Create the DataFrame to be compared to df_test
-    list_path = ['input_tests/file1.out',
-                 'input_tests/file2.out',
-                 'input_tests/file3.out']
+    list_path = ['../tests/TPU1.out',
+                 '../tests/TPU2.out',
+                 '../tests/TPU3.out']
     list_nbfa = [21, 68, 68]
     list_massfa = [0.465] * 3
 
@@ -58,8 +58,8 @@ def test_source_terms_generation():
     """Test for source terms generation"""
 
     # Import the test DataFrames
-    PATH_DF_ELEMENTS = 'input_tests/Source_terms_elements_test.xlsx'
-    PATH_DF_ISOTOPES = 'input_tests/Source_terms_isotopes_test.xlsx'
+    PATH_DF_ELEMENTS = '../tests/Source_terms_elements_TPU_core.xlsx'
+    PATH_DF_ISOTOPES = '../tests/Source_terms_isotopes_TPU_core.xlsx'
 
     df_test_elem = pd.read_excel(PATH_DF_ELEMENTS,
                                  sheetname=['grams', 'becquerels',
@@ -83,9 +83,9 @@ def test_source_terms_generation():
     index_isot = test_isot_g.index
 
     # Create the new DataFrame to be compared to the test_*
-    list_path = ['input_tests/file1.out',
-                 'input_tests/file2.out',
-                 'input_tests/file3.out']
+    list_path = ['../tests/TPU1.out',
+                 '../tests/TPU2.out',
+                 '../tests/TPU3.out']
     list_nbfa = [21, 68, 68]
     list_massfa = [0.465] * 3
     list_units = ['g', 'bq', 'wt', 'wg']
