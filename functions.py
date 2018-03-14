@@ -6,7 +6,7 @@ functions can be used in class methods definitions.
 
 def find_group(line):
     """
-    Post-process the name of the group of nuclides or elements ("Actinides",
+    Post-process the name of the group of isotopes or elements ("Actinides",
     "Fission products" or "Light elements")
 
     Arguments:
@@ -139,11 +139,11 @@ def find_results(line):
 
 
 def create_df_decay_power(file_path,
-                          factors_time,
-                          regex_time,
-                          regex_category,
-                          regex_categ_unit,
-                          regex_after_Decay):
+                         factors_time,
+                         regex_time,
+                         regex_category,
+                         regex_categ_unit,
+                         regex_after_Decay):
     """
     Read a single .out file and create a pandas DataFrame containing the
     power results (in Watts total) for every detected time steps, for
@@ -247,20 +247,19 @@ def create_df_decay_power(file_path,
     del df['charge']
     columns = sorted(df.columns,
                      key=lambda x: convert_str_sec(x, factors_time))
-    df = df.reindex(columns=columns)
-    df = df.T
+    df = df.reindex(columns=columns).T
     df['Total (BE)'] = df['Actinides']+df['Fission products']
 
     return df
 
 
 def gather_df_decay_power(list_batch_df,            FAmass_per_file,
-                          nFA_per_file,             core_power,
-                          mox,                      act_u9_np9_uncertainty,
-                          u9_np9_uncertainty,       fp_uncertainty,
-                          fuel_uncertainty,         factors_time):
+                         nFA_per_file,             core_power,
+                         mox,                      act_u9_np9_uncertainty,
+                         u9_np9_uncertainty,       fp_uncertainty,
+                         fuel_uncertainty,         factors_time):
     """
-    Gather the DataFrames listed in `list_batch_df`, taking into account the
+    Gather the DataFrames listed in list_batch_df, taking into account the
     number of FA per batch and the FA mass in each batch.
     Calculate the resulting Best-Estimate power (%FP), sigma value (%),
     and the power value with 1.645, 2.0, 3.0 sigma (%FP).
@@ -277,13 +276,13 @@ def gather_df_decay_power(list_batch_df,            FAmass_per_file,
 
         `core_power` (float):
             Power used to normalize the decay power curve
-        
+
         `mox` (bool):
             If the core contains mox or not
-            
+
         `*_uncertainty` (dict):
             Uncertainties corresponding to decay times
-            
+
         `factors_time` (dict):
             Correspondence in seconds for different time units
 
@@ -306,7 +305,7 @@ def gather_df_decay_power(list_batch_df,            FAmass_per_file,
     df['%Act-(U9+Np9)'] = df['Act-(U9+Np9)']       / df['Total (BE)']
     df['%(U9+Np9)']     = (df['U239']+df['Np239']) / df['Total (BE)']
     df['%FP']           = df['Fission products']   / df['Total (BE)']
-    df['Best-estimate'] = df['Total (BE)']         / (core_power*1000000)
+    df['Best-estimate [%FP]'] = df['Total (BE)']   / (core_power*1000000)
 
     df['act_u9_np9_unc'] = nan
     df['u9_np9_unc'] = nan
@@ -347,9 +346,12 @@ def gather_df_decay_power(list_batch_df,            FAmass_per_file,
                                            df['sigma_calc'][i])
         del df['sig_uo2']
 
-    df['1.645 sigma'] = df['Best-estimate'] * (1 + 1.645*df['Sigma value [%]'])
-    df['2 sigma']     = df['Best-estimate'] * (1 + 2.000*df['Sigma value [%]'])
-    df['3 sigma']     = df['Best-estimate'] * (1 + 3.000*df['Sigma value [%]'])
+    df['1.645 sigma [%FP]'] = df['Best-estimate [%FP]'] * \
+                              (1 + 1.645*df['Sigma value [%]'])
+    df['2 sigma [%FP]'] = df['Best-estimate [%FP]'] * \
+                          (1 + 2.000*df['Sigma value [%]'])
+    df['3 sigma [%FP]'] = df['Best-estimate [%FP]'] * \
+                          (1 + 3.000*df['Sigma value [%]'])
 
     list_time_sec = []
     for t_str in df.index:
@@ -357,27 +359,27 @@ def gather_df_decay_power(list_batch_df,            FAmass_per_file,
     df['Time steps [s]'] = list_time_sec
 
     columns_final = ['Time steps [s]',
-                     'Best-estimate',
+                     'Best-estimate [%FP]',
                      'Sigma value [%]',
-                     '1.645 sigma',
-                     '2 sigma',
-                     '3 sigma']
+                     '1.645 sigma [%FP]',
+                     '2 sigma [%FP]',
+                     '3 sigma [%FP]']
 
     df = df.reindex(columns=columns_final)
 
-    df['Best-estimate']   = df['Best-estimate']   * 100
+    df['Best-estimate [%FP]'] = df['Best-estimate [%FP]'] * 100
     df['Sigma value [%]'] = df['Sigma value [%]'] * 100
-    df['1.645 sigma']     = df['1.645 sigma']     * 100
-    df['2 sigma']         = df['2 sigma']         * 100
-    df['3 sigma']         = df['3 sigma']         * 100
+    df['1.645 sigma [%FP]'] = df['1.645 sigma [%FP]'] * 100
+    df['2 sigma [%FP]'] = df['2 sigma [%FP]'] * 100
+    df['3 sigma [%FP]'] = df['3 sigma [%FP]'] * 100
 
     return df
 
 
 def create_df_inventories(file_path,        list_units,
-                          list_categories,  factors_time,
-                          regex_time,       regex_category,
-                          regex_categ_unit, regex_after_Decay):
+                         list_categories,  factors_time,
+                         regex_time,       regex_category,
+                         regex_categ_unit, regex_after_Decay):
     """
     Read a single .out file and create a dictionary containing the stored
     data with pandas DataFrames. The dictionary keys represent:
@@ -394,13 +396,13 @@ def create_df_inventories(file_path,        list_units,
 
         `list_units` (list):
             Units chosen by the user
-        
+
         `list_categories` (list):
             Categories ('elements' or 'isotopes') chosen by the user
-        
+
         `factors_time` (dict):
             Correspondence in seconds for different time units
-        
+
         `regex_*` (str):
             Regular expressions used during files post-processing
 
@@ -519,16 +521,16 @@ def gather_df_inventories(list_categories,
     Arguments:
         `list_category` (list):
             Categories chosen by the user
-        
+
         `list_units` (list):
             Units chosen by the user
-        
+
         `list_batch_df` (list):
             List of dictionaries returned by create_df_inventories
-        
+
         `FAmass_per_file` (list):
             FA masses chosen by the user per batch
-        
+
         `nFA_per_file` (list):
             Number of FA chosen by the user per batch
 
@@ -566,7 +568,7 @@ def convert_str_sec(word, factors_time):
     Arguments:
         `word` (str):
             Time step to convert
-         
+
         `factors_time` (dict):
             Correspondence in seconds for different time units
 
@@ -575,7 +577,7 @@ def convert_str_sec(word, factors_time):
             Corresponding time in seconds
 
     Example:
-        >>> from dictionaries import factors_time
+        >>> from .dictionaries import factors_time
         >>> convert_str_sec("2.0hr", factors_time)
         7200.0
 
@@ -601,10 +603,10 @@ def find_unc(time_str, dictionary, factors_time):
     Arguments:
         `time_str` (str):
             Time step of the form "float"+"time_unit"
-        
+
         `dictionary` (dict):
             Uncertainty values corresponding to different decay time steps
-        
+
         `factors_time` (dict):
             Correspondence in seconds for different time units
 
@@ -613,7 +615,7 @@ def find_unc(time_str, dictionary, factors_time):
             Uncertainty value to be used
 
     Example:
-        >>> from dictionaries import fp_uncertainty, factors_time
+        >>> from .dictionaries import fp_uncertainty, factors_time
         >>> find_unc('1.5d', fp_uncertainty, factors_time)
         0.03
 
@@ -640,7 +642,7 @@ def find_unc(time_str, dictionary, factors_time):
 def get_dict_group_ioe(df):
     """
     Analyze a pandas Dataframe having a two levels index:
-        - 1st level: group of isotope or element ("Actinides", "Fission 
+        - 1st level: group of isotope or element ("Actinides", "Fission
           products", ..)
         - 2nd level: names of the isotopes or elements
 
@@ -680,7 +682,7 @@ def get_state_IntVar(dictionary, factors_time):
     Arguments:
         `dictionary` (dict):
             Keys are string instances whose values are 0 or 1
-        
+
         `factors_time` (dict):
             Correspondence in seconds for different time units
 
@@ -707,7 +709,7 @@ def check_input_output(in_loc, out_loc):
     Arguments:
         `in_loc` (str):
             Absolute location of input folder
-        
+
         `out_loc` (str):
             Absolute location of output folder
 
@@ -798,7 +800,7 @@ def write_results(output_location,
 
     Arguments:
         `output_location` (str):
-            Path for the results
+            Path to the results
 
         `results_type` (str):
             Name of the sub-folder for results ("Decay_power_curve" or
@@ -807,7 +809,7 @@ def write_results(output_location,
         `suffix` (str):
             Suffix of the results file name asked by the user appended to
             results file name
-        
+
         `dict_results` (dict or pandas.DataFrame):
             For source terms inventories generation, the `dict_results`
             contains the DataFrames to be printed in the result file:
@@ -835,8 +837,13 @@ def write_results(output_location,
 
     """
 
-    from pandas import ExcelWriter
+    from pandas import ExcelWriter, Series
     from os import path, mkdir
+    from time import strftime, localtime
+
+    # Create a Series providing the execution time of the function
+    date = strftime("%Y-%m-%d %H:%M:%S", localtime())
+    serie = Series({'File creation': date})
 
     list_title_msg = []
 
@@ -879,20 +886,47 @@ def write_results(output_location,
         file_name += "_" + suffix + ".xlsx"
         file_name = path.join(folder, file_name)
         writer = ExcelWriter(file_name)
+
+        # Create 'creation_time' sheet
+        serie.to_frame(name='useless').to_excel(writer, "creation_time",
+                                                header=False)
+        # Create 'user_data' sheet
         df_user_data.to_excel(writer, "user_data")
 
         for unit in sorted(dict_results[category].keys()):
             df = dict_results[category][unit]
             df = df.reindex(index=index_group_ioe, columns=time_steps)
             name = dict_unit[unit]
+
+            # Format the results
+            for col in df.columns:
+                df[col] = df[col].map("{:.3e}".format)
             df.to_excel(writer, name)
 
-    else:  # Decay power curve file creation
+    elif results_type == "Decay_power_curve":
+        # Decay power curve file creation
         file_name = results_type + "_" + suffix + ".xlsx"
         file_name = path.join(folder, file_name)
         writer = ExcelWriter(file_name)
+
+        # Create 'creation_time' sheet
+        serie.to_frame(name='useless').to_excel(writer, "creation_time",
+                                                header=False)
+        # Create 'user_data' sheet
         df_user_data.to_excel(writer, "user_data")
-        dict_results.to_excel(writer, results_type.lower())
+
+        # Format the results - copy it in order to let matplotlib plot the
+        # DataFrame correctly (else it won't support strings)
+        df_copy = dict_results.copy()
+        df_copy["Time steps [s]"] = df_copy["Time steps [s]"]\
+            .map("{:.2e}".format)
+        for col in [c for c in df_copy.columns if c != "Time steps [s]"]:
+            df_copy[col] = df_copy[col].map("{:.3f}".format)
+        df_copy.to_excel(writer, results_type.lower())
+
+    else:
+        print("Wrong parameter (write_result function). Exit")
+        exit(1)
 
     writer.save()
 
