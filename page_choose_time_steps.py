@@ -5,10 +5,10 @@ Page displaying all the available time steps for source terms inventories.
 
 from tkinter import Frame, Label, IntVar, Checkbutton, ttk, messagebox
 from functools import partial
-from functions import convert_str_sec
-from dictionaries import factors_time
-from page_decay_power_curve import DecayPowerCurvePage
-from page_display_files import DisplayFilesPage
+from .functions import convert_str_sec
+from .dictionaries import factors_time
+from .page_decay_power_curve import DecayPowerCurvePage
+from .page_display_files import DisplayFilesPage
 
 LARGE_FONT = ("Verdana", 12)
 
