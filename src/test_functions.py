@@ -16,6 +16,7 @@ from .dictionaries import (factors_time, act_u9_np9_uncertainty,
 from .regular_expressions import (regex_time, regex_category, regex_categ_unit,
                                   regex_after_Decay)
 
+
 def test_decay_power_generation():
     """Test for decay power curve generation"""
 

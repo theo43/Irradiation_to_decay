@@ -5,8 +5,7 @@ the other Frames. Also defines the `Data` class which contains all the data
 provided by the user, and the program results.
 """
 
-from tkinter import (messagebox, Tk, filedialog, Scrollbar, Canvas,
-                     IntVar, StringVar)
+import tkinter
 import os
 from re import match, split
 from time import time
@@ -30,7 +29,7 @@ from .dictionaries import (act_u9_np9_uncertainty, u9_np9_uncertainty,
 LARGE_FONT = ("Verdana", 12)
 
 
-class Data():
+class Data(object):
     """
     Object containing all the gathered user data and the results
 
@@ -58,25 +57,25 @@ class Data():
                 # Switches to a DataFrame when decay power curve is generated
                 'result': False,
                 'path_res': "",  # Path to 'result'
-                'bool': IntVar(),  # For decay power curve generation
-                'mox': IntVar(),  # If fuel contains MOX
-                'suffix': StringVar(),  # Suffix name for result file
+                'bool': tkinter.IntVar(),  # For decay power curve generation
+                'mox': tkinter.IntVar(),  # If fuel contains MOX
+                'suffix': tkinter.StringVar(),  # Suffix name for result file
                 # Total thermal power in MW for normalization
-                'power': StringVar(),
+                'power': tkinter.StringVar(),
 
             },
             'source': {
-                'bool': IntVar(),  # For source terms generation
-                'suffix': StringVar(),  # Suffix name for result file
+                'bool': tkinter.IntVar(),  # For source terms generation
+                'suffix': tkinter.StringVar(),  # Suffix name for result file
                 'chosen_categ': {
-                    'Isotopes': IntVar(),  # For isotopes source terms
-                    'Elements': IntVar(),  # For elements source terms
+                    'Isotopes': tkinter.IntVar(),  # For isotopes source terms
+                    'Elements': tkinter.IntVar(),  # For elements source terms
                 },
                 'chosen_units': {
-                    'g': IntVar(),  # For source terms in grams
-                    'bq': IntVar(),  # For source terms in Becquerels
-                    'wt': IntVar(),  # For source terms in Watts (total)
-                    'wg': IntVar(),  # For source terms in Watts (gamma)
+                    'g': tkinter.IntVar(),  # For source terms in grams
+                    'bq': tkinter.IntVar(),  # For source terms in Becquerels
+                    'wt': tkinter.IntVar(),  # For source terms in Watts (total)
+                    'wg': tkinter.IntVar(),  # For source terms in Watts (gamma)
                 },
                 # Switches to a dict when inventories are generated
                 'result': False,  # Available groups, elements/isotopes, units
@@ -374,7 +373,7 @@ class Data():
         return get_dict_group_ioe(dict_resu[category][u0])
 
 
-class MainPage(Tk):
+class MainPage(tkinter.Tk):
     """Main application, refered to as `controller` in the different frames"""
 
     def __init__(self, data):
@@ -386,13 +385,13 @@ class MainPage(Tk):
 
         """
         super().__init__()
-        Tk.wm_title(self, "Post_ORIGENS")
+        tkinter.Tk.wm_title(self, "Irradiec")
 
         # Initialize parameters (could be separated in a dedicated function)
         title = "Location of the folder containing your files"
         ini_dir = os.environ['HOME']
-        working_dir = filedialog.askdirectory(title=title,
-                                              initialdir=ini_dir)
+        working_dir = tkinter.filedialog.askdirectory(title=title,
+                                                      initialdir=ini_dir)
 
         # Initialize Data object controlled by the MainWindow
         self.data = Data(working_dir)
@@ -412,15 +411,15 @@ class MainPage(Tk):
     def init_UI(self):
 
         # Create vertical and horizontal Scrollbars
-        self.SbV = Scrollbar(self, orient='vertical')
+        self.SbV = tkinter.Scrollbar(self, orient='vertical')
         self.SbV.grid(row=0, column=1, sticky='N'+'S')
-        self.SbH = Scrollbar(self, orient='horizontal')
+        self.SbH = tkinter.Scrollbar(self, orient='horizontal')
         self.SbH.grid(row=1, column=0, sticky='E'+'W')
 
         # Create a canvas
-        self.ca = Canvas(self,
-                         yscrollcommand=self.SbV.set,
-                         xscrollcommand=self.SbH.set)
+        self.ca = tkinter.Canvas(self,
+                                 yscrollcommand=self.SbV.set,
+                                 xscrollcommand=self.SbH.set)
         self.ca.grid(row=0, column=0, sticky="news")
 
         # Configure the Scrollbars on the Canvas
@@ -473,25 +472,25 @@ class MainPage(Tk):
                 # If decay power curve was not generated
                 title = "Error: task selection"
                 msg = "No requested task!\nExiting..."
-                messagebox.showerror(title, msg)
+                tkinter.messagebox.showerror(title, msg)
                 self.destroy()
             else:
                 # If only decay power curve generation was asked: normal end
                 title = "End of the program"
                 msg = "Normal end of the program"
-                messagebox.showinfo(title, msg)
+                tkinter.messagebox.showinfo(title, msg)
                 self.destroy()
         else:
             test_error = self.data.error_input('files')
             if test_error[0]:
-                messagebox.showerror(test_error[1][0], test_error[1][1])
+                tkinter.messagebox.showerror(test_error[1][0], test_error[1][1])
                 self.destroy()
                 exit(0)
 
         if self.data.choice['decay']['bool'].get():
             test_error = self.data.error_input('decay')
             if test_error[0]:
-                messagebox.showerror(test_error[1][0], test_error[1][1])
+                tkinter.messagebox.showerror(test_error[1][0], test_error[1][1])
                 self.destroy()
                 exit(0)
             self.data.choice['decay']['result'] = self.data.generate_power()
@@ -506,7 +505,7 @@ class MainPage(Tk):
                                            result,
                                            df_info)
             for tup in list_title_msg:
-                messagebox.showinfo(tup[0], tup[1])
+                tkinter.messagebox.showinfo(tup[0], tup[1])
 
             path_res = split("\n", list_title_msg[-1][1])[-1]
             self.data.choice['decay']['path_res'] = path_res
@@ -517,7 +516,7 @@ class MainPage(Tk):
         if self.data.choice['source']['bool'].get():
             test_error = self.data.error_input('source')
             if test_error[0]:
-                messagebox.showerror(test_error[1][0], test_error[1][1])
+                tkinter.messagebox.showerror(test_error[1][0], test_error[1][1])
                 self.destroy()
                 exit(0)
             self.data.choice['source']['result'] = self.data.generate_source()
@@ -555,6 +554,6 @@ class MainPage(Tk):
                 and (not di['chosen_categ']['Elements'].get()):
             title = "End of the program"
             msg = "Normal end of the program"
-            messagebox.showinfo(title, msg)
+            tkinter.messagebox.showinfo(title, msg)
             self.destroy()
             exit(0)

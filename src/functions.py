@@ -848,14 +848,14 @@ def write_results(output_location,
     list_title_msg = []
 
     # Check if the folder inside the one containing the .out files exists
-    folder = path.join(output_location, "Post_ORIGENS_results")
+    folder = path.join(output_location, "irradiec_results")
     if not path.exists(folder):
         title = "Info: folder creation"
         msg = "Folder {} does not exist, it is created".format(folder)
         list_title_msg.append((title, msg))
         mkdir(folder)
 
-    # Check if the sub-folder already exists in "Post_ORIGENS" folder
+    # Check if the sub-folder already exists in "irradiec" folder
     folder = path.join(folder, results_type)
     if (not path.exists(folder)) or\
        (path.exists(folder) and (not path.isdir(folder))):

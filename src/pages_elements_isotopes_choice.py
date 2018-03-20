@@ -3,14 +3,17 @@
 Pages for choice of elements and isotopes for source terms inventories.
 """
 
-from tkinter import Frame, Label, IntVar, Checkbutton, ttk, messagebox
+import tkinter
 from functools import partial
 from sys import exit
 from .functions import write_results
 from .dictionaries import factors_time
+
+
 LARGE_FONT = ("Verdana", 12)
 
-class ElementsPage(Frame):
+
+class ElementsPage(tkinter.Frame):
     """Choice of the elements for source terms inventories generation"""
 
     def __init__(self, parent, controller, *args):
@@ -33,7 +36,7 @@ class ElementsPage(Frame):
 
         row = 0
         txt = "Choose the required elements for source terms inventories"
-        label = Label(self, text=txt, font=LARGE_FONT)
+        label = tkinter.Label(self, text=txt, font=LARGE_FONT)
         label.grid(row=row, columnspan=6, sticky='w')
 
         dict_grp_ioe = self.controller.data.choice['source']['di_elem']
@@ -45,19 +48,19 @@ class ElementsPage(Frame):
         list_ch_grp = []
         for grp in sorted(dict_grp_ioe):
             cmd = partial(self.select_all, grp)
-            ch_sel = ttk.Button(self,
-                                text="Select all {}".format(grp.lower()),
-                                command=cmd)
+            ch_sel = tkinter.ttk.Button(self,
+                                        text="Select all {}".format(grp.lower()),
+                                        command=cmd)
             cmd = partial(self.unselect_all, grp)
-            ch_unsel = ttk.Button(self,
-                                  text="Unselect all {}".format(grp.lower()),
-                                  command=cmd)
+            ch_unsel = tkinter.ttk.Button(self,
+                                          text="Unselect all {}".format(grp.lower()),
+                                          command=cmd)
             list_ch_grp.append((ch_sel, ch_unsel))
 
             di[grp] = {}
 
             # Display the group name ("Actinides", "Fission products", ..)
-            label = Label(self, text=grp.title(), font=LARGE_FONT)
+            label = tkinter.Label(self, text=grp.title(), font=LARGE_FONT)
             label.grid(row=1, column=3*i, sticky='w')
 
             (row, col) = (1, 0)
@@ -68,10 +71,10 @@ class ElementsPage(Frame):
                 else:
                     row= 2
                     col += 1
-                di[grp][ioe] = IntVar()
-                ch = Checkbutton(self,
-                                 text=ioe.title(),
-                                 variable=di[grp][ioe])
+                di[grp][ioe] = tkinter.IntVar()
+                ch = tkinter.Checkbutton(self,
+                                         text=ioe.title(),
+                                         variable=di[grp][ioe])
                 ch.grid(row=row, column=col+3*i, sticky='w')
             i += 1
 
@@ -82,7 +85,7 @@ class ElementsPage(Frame):
                       'Actinides',
                       'Fission products',
                       'Light elements')
-        bu = ttk.Button(self, text=txt, command=cmd)
+        bu = tkinter.ttk.Button(self, text=txt, command=cmd)
         bu.grid(row=row, column=0, sticky='w')
 
         txt = "Unselect all elements"
@@ -90,7 +93,7 @@ class ElementsPage(Frame):
                       'Actinides',
                       'Fission products',
                       'Light elements')
-        bu = ttk.Button(self, text=txt, command=cmd)
+        bu = tkinter.ttk.Button(self, text=txt, command=cmd)
         bu.grid(row=row+1, column=0, sticky='w')
 
         co = 1
@@ -101,7 +104,7 @@ class ElementsPage(Frame):
 
         txt = "Next"
         cmd = partial(self.after_elements)
-        bu = ttk.Button(self, text=txt, command=cmd)
+        bu = tkinter.ttk.Button(self, text=txt, command=cmd)
         bu.grid(row=row+1, column=4, sticky='w')
 
     def after_elements(self):
@@ -115,7 +118,7 @@ class ElementsPage(Frame):
         di_chosen_categ['Elements'].set(0)
         test_error = self.controller.data.error_input('Elements')
         if test_error[0]:
-            messagebox.showerror(test_error[1][0], test_error[1][1])
+            tkinter.messagebox.showerror(test_error[1][0], test_error[1][1])
             self.destroy()
             exit(0)
 
@@ -137,7 +140,7 @@ class ElementsPage(Frame):
                                        factors_time=factors_time)
 
         for tup in list_title_msg:
-            messagebox.showinfo(tup[0], tup[1])
+            tkinter.messagebox.showinfo(tup[0], tup[1])
 
         self.controller.raise_elements_isotopes()
 
@@ -160,7 +163,7 @@ class ElementsPage(Frame):
                     dictio[group][ioe].set(0)
 
 
-class IsotopesPage(Frame):
+class IsotopesPage(tkinter.Frame):
     """Choice of the isotopes for source terms inventories generation"""
 
     def __init__(self, parent, controller, *args):
@@ -183,7 +186,7 @@ class IsotopesPage(Frame):
 
         row = 0
         txt = "Choose the required isotopes for source terms inventories"
-        label = Label(self, text=txt, font=LARGE_FONT)
+        label = tkinter.Label(self, text=txt, font=LARGE_FONT)
         label.grid(row=row, columnspan=6, sticky='w')
 
         dict_grp_ioe = self.controller.data.choice['source']['di_isot']
@@ -195,19 +198,19 @@ class IsotopesPage(Frame):
         list_ch_grp = []
         for grp in sorted(dict_grp_ioe):
             cmd = partial(self.select_all, grp)
-            ch_sel = ttk.Button(self,
-                                text="Select all {}".format(grp.lower()),
-                                command=cmd)
+            ch_sel = tkinter.ttk.Button(self,
+                                        text="Select all {}".format(grp.lower()),
+                                        command=cmd)
             cmd = partial(self.unselect_all, grp)
-            ch_unsel = ttk.Button(self,
-                                  text="Unselect all {}".format(grp.lower()),
-                                  command=cmd)
+            ch_unsel = tkinter.ttk.Button(self,
+                                          text="Unselect all {}".format(grp.lower()),
+                                          command=cmd)
             list_ch_grp.append((ch_sel, ch_unsel))
 
             di[grp] = {}
 
             # Display the group name ("Actinides", "Fission products", ..)
-            label = Label(self, text=grp.title(), font=LARGE_FONT)
+            label = tkinter.Label(self, text=grp.title(), font=LARGE_FONT)
             label.grid(row=1, column=5*i, sticky='w')
 
             (row, col) = (1, 0)
@@ -218,9 +221,9 @@ class IsotopesPage(Frame):
                 else:
                     row= 2
                     col += 1
-                di[grp][noe] = IntVar()
-                ch = Checkbutton(self, text=noe.title(),
-                                 variable=di[grp][noe])
+                di[grp][noe] = tkinter.IntVar()
+                ch = tkinter.Checkbutton(self, text=noe.title(),
+                                         variable=di[grp][noe])
                 ch.grid(row=row, column=col+5*i, sticky='w')
             i += 1
 
@@ -229,13 +232,13 @@ class IsotopesPage(Frame):
         txt = "Select all isotopes"
         cmd = partial(self.select_all, 'Actinides', 'Fission products',
                       'Light elements')
-        bu = ttk.Button(self, text=txt, command=cmd)
+        bu = tkinter.ttk.Button(self, text=txt, command=cmd)
         bu.grid(row=row, column=0, sticky='w')
 
         txt = "Unselect all isotopes"
         cmd = partial(self.unselect_all, 'Actinides', 'Fission products',
                       'Light elements')
-        bu = ttk.Button(self, text=txt, command=cmd)
+        bu = tkinter.ttk.Button(self, text=txt, command=cmd)
         bu.grid(row=row+1, column=0, sticky='w')
 
         co = 1
@@ -246,7 +249,7 @@ class IsotopesPage(Frame):
 
         txt = "Next"
         cmd = partial(self.after_isotopes)
-        bu = ttk.Button(self, text=txt, command=cmd)
+        bu = tkinter.ttk.Button(self, text=txt, command=cmd)
         bu.grid(row=row+1, column=4, sticky='w')
 
 
@@ -261,7 +264,7 @@ class IsotopesPage(Frame):
         di_chosen_categ['Isotopes'].set(0)
         test_error = self.controller.data.error_input('Isotopes')
         if test_error[0]:
-            messagebox.showerror(test_error[1][0], test_error[1][1])
+            tkinter.messagebox.showerror(test_error[1][0], test_error[1][1])
             self.destroy()
             exit(0)
 
@@ -283,7 +286,7 @@ class IsotopesPage(Frame):
                                        factors_time=factors_time)
 
         for tup in list_title_msg:
-                messagebox.showinfo(tup[0], tup[1])
+                tkinter.messagebox.showinfo(tup[0], tup[1])
 
         self.controller.raise_elements_isotopes()
 

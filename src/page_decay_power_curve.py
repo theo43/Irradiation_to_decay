@@ -8,6 +8,7 @@ images.
 
 from .page_display_files import DisplayFilesPage
 import matplotlib
+
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,
                                                NavigationToolbar2TkAgg)
@@ -38,10 +39,9 @@ class DecayPowerCurvePage(Frame):
 
     # Create main GUI window
     def init_UI(self):
-
         txt = "Decay power curves"
         label = Label(self, text=txt, font=LARGE_FONT)
-        label.pack(pady=10,padx=10)
+        label.pack(pady=10, padx=10)
         path_res = self.controller.data.choice['decay']['path_res']
         txt = ("You can save the figure by selecting the saving button at the "
                "bottom of the page.\nDetailed values are provided in the "
