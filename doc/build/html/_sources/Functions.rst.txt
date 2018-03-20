@@ -2,5 +2,5 @@
 Functions
 *********
 
-.. automodule:: functions
+.. automodule:: src.functions
    :members:

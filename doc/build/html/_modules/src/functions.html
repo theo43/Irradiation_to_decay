@@ -1,0 +1,1025 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>src.functions &#8212; Irradiec 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for src.functions</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This ``functions`` module provides all the functions used in the code. These</span>
+<span class="sd">functions can be used in class methods definitions.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="find_group"><a class="viewcode-back" href="../../Functions.html#src.functions.find_group">[docs]</a><span class="k">def</span> <span class="nf">find_group</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Post-process the name of the group of isotopes or elements (&quot;Actinides&quot;,</span>
+<span class="sd">    &quot;Fission products&quot; or &quot;Light elements&quot;)</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        `line` (str):</span>
+<span class="sd">            Line of a .out file to post-process</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        `group` (str):</span>
+<span class="sd">            Group of the isotope or element</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; find_group(&quot;  Decay from 11 h to 20 h    actinides  page  533&quot;)</span>
+<span class="sd">        &#39;Actinides&#39;</span>
+<span class="sd">        &gt;&gt;&gt; find_group(&quot;Decay from 200 s to 1800 s fission products  page&quot;)</span>
+<span class="sd">        &#39;Fission products&#39;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">re</span> <span class="k">import</span> <span class="n">search</span>
+    <span class="n">group</span> <span class="o">=</span><span class="s1">&#39;NA&#39;</span>
+    <span class="k">if</span> <span class="n">search</span><span class="p">(</span><span class="s2">&quot;fission products&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="s2">&quot;Fission products&quot;</span>
+    <span class="k">if</span> <span class="n">search</span><span class="p">(</span><span class="s2">&quot;actinides&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="s2">&quot;Actinides&quot;</span>
+    <span class="k">if</span> <span class="n">search</span><span class="p">(</span><span class="s2">&quot;light elements&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="s2">&quot;Light elements&quot;</span>
+
+    <span class="k">return</span> <span class="n">group</span></div>
+
+
+<div class="viewcode-block" id="find_category_unit"><a class="viewcode-back" href="../../Functions.html#src.functions.find_category_unit">[docs]</a><span class="k">def</span> <span class="nf">find_category_unit</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Post-process the category of results: &quot;Isotopes&quot; or &quot;Elements&quot; and the</span>
+<span class="sd">    unit of the results line:</span>
+<span class="sd">        - &quot;g&quot; for mass in grams</span>
+<span class="sd">        - &quot;bq&quot; for radioactivity in Bq (1 Cu = 3.7E10 Bq).</span>
+<span class="sd">          Curies results given in .out files are finally converted in Bq</span>
+<span class="sd">        - &quot;wt&quot; for total thermal power in watts</span>
+<span class="sd">        - &quot;wg&quot; for gamma contribution in total power, in watts</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        `line` (str):</span>
+<span class="sd">            Line of a .out file to post-process</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        `tup` (tuple):</span>
+<span class="sd">            Contains the category (tup[0]) and the unit (tup[1])</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; find_category_unit(&quot;      element thermal power, watts  &quot;)</span>
+<span class="sd">        (&#39;Elements&#39;, &#39;wt&#39;)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">re</span> <span class="k">import</span> <span class="n">search</span>
+    <span class="k">if</span> <span class="n">search</span><span class="p">(</span><span class="s2">&quot;concentrations, grams&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+        <span class="n">unit</span> <span class="o">=</span> <span class="s2">&quot;g&quot;</span>
+    <span class="k">if</span> <span class="n">search</span><span class="p">(</span><span class="s2">&quot;radioactivity, curies&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+        <span class="n">unit</span> <span class="o">=</span> <span class="s2">&quot;bq&quot;</span>
+    <span class="k">if</span> <span class="n">search</span><span class="p">(</span><span class="s2">&quot;thermal power, watts&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+        <span class="n">unit</span> <span class="o">=</span> <span class="s2">&quot;wt&quot;</span>
+    <span class="k">if</span> <span class="n">search</span><span class="p">(</span><span class="s2">&quot;gamma power, watts&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+        <span class="n">unit</span> <span class="o">=</span> <span class="s2">&quot;wg&quot;</span>
+    <span class="k">if</span> <span class="n">search</span><span class="p">(</span><span class="s2">&quot; element &quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+        <span class="n">category</span> <span class="o">=</span> <span class="s2">&quot;Elements&quot;</span>
+    <span class="k">if</span> <span class="n">search</span><span class="p">(</span><span class="s2">&quot; nuclide &quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+        <span class="n">category</span> <span class="o">=</span> <span class="s2">&quot;Isotopes&quot;</span>
+    <span class="n">tup</span> <span class="o">=</span> <span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">tup</span></div>
+
+
+<div class="viewcode-block" id="find_times"><a class="viewcode-back" href="../../Functions.html#src.functions.find_times">[docs]</a><span class="k">def</span> <span class="nf">find_times</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Post-process the time steps of the block of data being read. Time steps</span>
+<span class="sd">    are given with the following form: &quot;float&quot;+&quot;unit&quot;. If the time step value</span>
+<span class="sd">    is given in:</span>
+<span class="sd">        - Seconds: no space between the float and &quot;sec&quot;</span>
+<span class="sd">        - Minutes: to be completed</span>
+<span class="sd">        - Hours: one space between the float and &quot;hr&quot;</span>
+<span class="sd">        - Days: one space between the float and &quot;d&quot;</span>
+<span class="sd">        - Months: to be completed</span>
+<span class="sd">        - Years: one space between the float and &quot;yr&quot;</span>
+
+<span class="sd">    Argument:</span>
+<span class="sd">        `line` (str):</span>
+<span class="sd">            Line of a .out file to post-process</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        `time_steps` (list):</span>
+<span class="sd">            Split of the line containing the time steps</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; find_times(&quot;             initial   11.0 hr   12.0 hr &quot;)</span>
+<span class="sd">        [&#39;initial&#39;, &#39;11.0 hr&#39;, &#39;12.0 hr&#39;]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">re</span> <span class="k">import</span> <span class="n">findall</span>
+    <span class="n">time_steps</span> <span class="o">=</span> <span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[a-z]+|\d+\.\d{,2}\s?[secdhryr]{1,3}&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">time_steps</span></div>
+
+
+<div class="viewcode-block" id="find_results"><a class="viewcode-back" href="../../Functions.html#src.functions.find_results">[docs]</a><span class="k">def</span> <span class="nf">find_results</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Post-process the results in [unit] of a block of data being read</span>
+
+<span class="sd">    Argument:</span>
+<span class="sd">        `line` (str):</span>
+<span class="sd">            Line of a .out file to post-process</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        `results` (list):</span>
+<span class="sd">            Split of the line containing the results. The first element of the</span>
+<span class="sd">            list is the isotope or element name (str), the rest is the</span>
+<span class="sd">            resulting contribution (float)</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; find_results(&quot;    am239   2.90E-18  4.44E-09  4.44E-09  &quot;)</span>
+<span class="sd">        [&#39;am239&#39;, 2.9e-18, 4.44e-09, 4.44e-09]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">re</span> <span class="k">import</span> <span class="n">findall</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[a-z]{1,6}\s{,2}\d{,3}m?|\d\.\d</span><span class="si">{2}</span><span class="s2">E[+-]\d</span><span class="si">{2}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+        <span class="n">results</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">results</span></div>
+
+
+<div class="viewcode-block" id="create_df_decay_power"><a class="viewcode-back" href="../../Functions.html#src.functions.create_df_decay_power">[docs]</a><span class="k">def</span> <span class="nf">create_df_decay_power</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span>
+                         <span class="n">factors_time</span><span class="p">,</span>
+                         <span class="n">regex_time</span><span class="p">,</span>
+                         <span class="n">regex_category</span><span class="p">,</span>
+                         <span class="n">regex_categ_unit</span><span class="p">,</span>
+                         <span class="n">regex_after_Decay</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read a single .out file and create a pandas DataFrame containing the</span>
+<span class="sd">    power results (in Watts total) for every detected time steps, for</span>
+<span class="sd">    following contribution:</span>
+<span class="sd">        - Total decay power (best-estimate)</span>
+<span class="sd">        - Actinides (without 239U and 239Np)</span>
+<span class="sd">        - 239U and 239 Np</span>
+<span class="sd">        - Fission products</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        `file_path` (str):</span>
+<span class="sd">            Absolute location of the file</span>
+
+<span class="sd">        `factors_time` (dict):</span>
+<span class="sd">            Correspondence in seconds for different time units</span>
+
+<span class="sd">        `regex_*` (str):</span>
+<span class="sd">            Regular expressions used to post-process</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        `df` (pandas.DataFrame):</span>
+<span class="sd">            Decay power values for `file_path`</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">re</span> <span class="k">import</span> <span class="n">search</span>
+    <span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">Series</span>
+
+    <span class="c1"># Regex &quot;nuclides or elements&quot;: initially &#39;None&#39;, switches to:</span>
+    <span class="c1">#   regex_category[&#39;elements&#39;] if category == elements;</span>
+    <span class="c1">#   regex_category[&#39;nuclides&#39;] if category == nuclides.</span>
+    <span class="n">regex_noe</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Variable switching to 1 when a block of &#39;Decay&#39; results is read.</span>
+    <span class="n">readblock</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># Create the DataFrame containing the results</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">()</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Time steps&#39;</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Contributions&#39;</span>
+
+    <span class="c1"># Open the .out file in read mode and store the lines in a list</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fi</span><span class="p">:</span>
+        <span class="n">read_file</span> <span class="o">=</span> <span class="n">fi</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">read_file</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^\s+Decay &quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span> <span class="ow">and</span>\
+        <span class="p">(</span><span class="n">search</span><span class="p">(</span><span class="n">regex_after_Decay</span><span class="p">,</span> <span class="n">line</span><span class="p">)):</span>
+            <span class="n">readblock</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="c1"># Search the group of nuclides or elements</span>
+            <span class="c1"># Ex: &#39;fission products&#39;, &#39;actinides&#39; or &#39;light elements&#39;</span>
+            <span class="n">group</span> <span class="o">=</span> <span class="n">find_group</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">readblock</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">search</span><span class="p">(</span><span class="n">regex_categ_unit</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+            <span class="c1"># Search the category (&#39;elements&#39; or &#39;nuclides&#39;)</span>
+            <span class="n">category</span><span class="p">,</span> <span class="n">unit</span> <span class="o">=</span> <span class="n">find_category_unit</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="n">regex_noe</span> <span class="o">=</span> <span class="n">regex_category</span><span class="p">[</span><span class="n">category</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">readblock</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">search</span><span class="p">(</span><span class="n">regex_time</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+            <span class="c1"># Read the block of data only if &quot; Decay &quot; has been read</span>
+            <span class="n">time_steps</span> <span class="o">=</span> <span class="n">find_times</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">time_steps</span><span class="p">):</span>
+                <span class="n">time_steps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">readblock</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">regex_noe</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="n">search</span><span class="p">(</span><span class="n">regex_noe</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span> <span class="ow">and</span> <span class="n">unit</span> <span class="o">==</span> <span class="s1">&#39;wt&#39;</span><span class="p">:</span>
+                <span class="c1"># Search the list of results for the current bloc of data</span>
+                <span class="c1">#  results[0]: name of the nuclide or element</span>
+                <span class="c1">#  results[i!=0]: result for the corresponding unit and time</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="n">find_results</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+                <span class="c1"># &#39;NOE&#39;: Nuclide Or Element name, without space(s) in it</span>
+                <span class="n">NOE</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="n">NOE</span> <span class="o">=</span> <span class="n">NOE</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;totals&quot;</span><span class="p">,</span> <span class="s2">&quot;total&quot;</span><span class="p">)</span>
+
+                <span class="n">cond1</span> <span class="o">=</span> <span class="p">(</span><span class="n">NOE</span> <span class="o">==</span> <span class="s1">&#39;u239&#39;</span> <span class="ow">or</span> <span class="n">NOE</span> <span class="o">==</span> <span class="s1">&#39;np239&#39;</span><span class="p">)</span>
+                <span class="n">cond2</span> <span class="o">=</span> <span class="p">(</span><span class="n">group</span> <span class="ow">in</span>  <span class="p">[</span><span class="s1">&#39;Actinides&#39;</span><span class="p">,</span> <span class="s1">&#39;Fission products&#39;</span><span class="p">]</span> <span class="ow">and</span>\
+                         <span class="n">NOE</span> <span class="o">==</span> <span class="s1">&#39;total&#39;</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">cond1</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">se</span> <span class="o">=</span> <span class="n">Series</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+                                <span class="n">index</span><span class="o">=</span><span class="n">time_steps</span><span class="p">,</span>
+                                <span class="n">name</span><span class="o">=</span><span class="n">NOE</span><span class="o">.</span><span class="n">title</span><span class="p">())</span>
+                    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">se</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">cond2</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">se</span> <span class="o">=</span> <span class="n">Series</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+                                <span class="n">index</span><span class="o">=</span><span class="n">time_steps</span><span class="p">,</span>
+                                <span class="n">name</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+                    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">se</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">search</span><span class="p">(</span><span class="s2">&quot;^</span><span class="se">\x0c</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span> <span class="ow">and</span> <span class="n">readblock</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># Detect the special font at the end of the bloc of data</span>
+            <span class="c1"># caractherizing the bloc&#39;s end: stops data reading</span>
+            <span class="n">readblock</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">del</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;initial&#39;</span><span class="p">]</span>
+    <span class="k">del</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;charge&#39;</span><span class="p">]</span>
+    <span class="n">columns</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span>
+                     <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">convert_str_sec</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">factors_time</span><span class="p">))</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Total (BE)&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Actinides&#39;</span><span class="p">]</span><span class="o">+</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Fission products&#39;</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="gather_df_decay_power"><a class="viewcode-back" href="../../Functions.html#src.functions.gather_df_decay_power">[docs]</a><span class="k">def</span> <span class="nf">gather_df_decay_power</span><span class="p">(</span><span class="n">list_batch_df</span><span class="p">,</span>            <span class="n">FAmass_per_file</span><span class="p">,</span>
+                         <span class="n">nFA_per_file</span><span class="p">,</span>             <span class="n">core_power</span><span class="p">,</span>
+                         <span class="n">mox</span><span class="p">,</span>                      <span class="n">act_u9_np9_uncertainty</span><span class="p">,</span>
+                         <span class="n">u9_np9_uncertainty</span><span class="p">,</span>       <span class="n">fp_uncertainty</span><span class="p">,</span>
+                         <span class="n">fuel_uncertainty</span><span class="p">,</span>         <span class="n">factors_time</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gather the DataFrames listed in list_batch_df, taking into account the</span>
+<span class="sd">    number of FA per batch and the FA mass in each batch.</span>
+<span class="sd">    Calculate the resulting Best-Estimate power (%FP), sigma value (%),</span>
+<span class="sd">    and the power value with 1.645, 2.0, 3.0 sigma (%FP).</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        `list_batch_df` (list):</span>
+<span class="sd">            DataFrames containing decay power data</span>
+
+<span class="sd">        `FAmass_per_file` (list):</span>
+<span class="sd">            Corresponding FA masses per DataFrame</span>
+
+<span class="sd">        `nFA_per_file` (list):</span>
+<span class="sd">            Corresponding numbers of FA per DataFrame</span>
+
+<span class="sd">        `core_power` (float):</span>
+<span class="sd">            Power used to normalize the decay power curve</span>
+
+<span class="sd">        `mox` (bool):</span>
+<span class="sd">            If the core contains mox or not</span>
+
+<span class="sd">        `*_uncertainty` (dict):</span>
+<span class="sd">            Uncertainties corresponding to decay times</span>
+
+<span class="sd">        `factors_time` (dict):</span>
+<span class="sd">            Correspondence in seconds for different time units</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        `df` (pandas.DataFrame):</span>
+<span class="sd">            Gathered decay power curve values for each available time step</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">DataFrame</span>
+    <span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">nan</span><span class="p">,</span> <span class="n">sqrt</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">list_batch_df</span><span class="p">):</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">d</span> <span class="o">*</span> <span class="n">FAmass_per_file</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">nFA_per_file</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="n">fill_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Act-(U9+Np9)&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Actinides&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;U239&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Np239&#39;</span><span class="p">]</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;%Act-(U9+Np9)&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Act-(U9+Np9)&#39;</span><span class="p">]</span>       <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Total (BE)&#39;</span><span class="p">]</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;%(U9+Np9)&#39;</span><span class="p">]</span>     <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;U239&#39;</span><span class="p">]</span><span class="o">+</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Np239&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Total (BE)&#39;</span><span class="p">]</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%F</span><span class="s1">P&#39;</span><span class="p">]</span>           <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Fission products&#39;</span><span class="p">]</span>   <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Total (BE)&#39;</span><span class="p">]</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Best-estimate [</span><span class="si">%F</span><span class="s1">P]&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Total (BE)&#39;</span><span class="p">]</span>   <span class="o">/</span> <span class="p">(</span><span class="n">core_power</span><span class="o">*</span><span class="mi">1000000</span><span class="p">)</span>
+
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;act_u9_np9_unc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nan</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;u9_np9_unc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nan</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;fp_unc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nan</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sig_uo2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nan</span>
+
+    <span class="k">if</span> <span class="n">mox</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sig_mox&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nan</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;act_u9_np9_unc&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">find_unc</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">act_u9_np9_uncertainty</span><span class="p">,</span>
+                                           <span class="n">factors_time</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;u9_np9_unc&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">find_unc</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">u9_np9_uncertainty</span><span class="p">,</span> <span class="n">factors_time</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;fp_unc&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">find_unc</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">fp_uncertainty</span><span class="p">,</span> <span class="n">factors_time</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sig_uo2&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">find_unc</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">fuel_uncertainty</span><span class="p">[</span><span class="s1">&#39;UO2&#39;</span><span class="p">],</span> <span class="n">factors_time</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">mox</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sig_mox&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">find_unc</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">fuel_uncertainty</span><span class="p">[</span><span class="s1">&#39;MOX&#39;</span><span class="p">],</span>
+                                        <span class="n">factors_time</span><span class="p">)</span>
+
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sigma_calc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;%Act-(U9+Np9)&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;act_u9_np9_unc&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
+                       <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;%(U9+Np9)&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>        <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;u9_np9_unc&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
+                       <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%F</span><span class="s1">P&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>              <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;fp_unc&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span>\
+                       <span class="o">/</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;%Act-(U9+Np9)&#39;</span><span class="p">]</span><span class="o">+</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;%(U9+Np9)&#39;</span><span class="p">]</span><span class="o">+</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%F</span><span class="s1">P&#39;</span><span class="p">])</span>
+
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Sigma value [%]&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nan</span>
+
+    <span class="k">if</span> <span class="n">mox</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+            <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Sigma value [%]&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;sig_uo2&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span>
+                                           <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sig_mox&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span>
+                                           <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sigma_calc&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">del</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sig_mox&#39;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sig_uo2&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+            <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Sigma value [%]&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;sig_uo2&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span>
+                                           <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sigma_calc&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">del</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sig_uo2&#39;</span><span class="p">]</span>
+
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;1.645 sigma [</span><span class="si">%F</span><span class="s1">P]&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Best-estimate [</span><span class="si">%F</span><span class="s1">P]&#39;</span><span class="p">]</span> <span class="o">*</span> \
+                              <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.645</span><span class="o">*</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Sigma value [%]&#39;</span><span class="p">])</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;2 sigma [</span><span class="si">%F</span><span class="s1">P]&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Best-estimate [</span><span class="si">%F</span><span class="s1">P]&#39;</span><span class="p">]</span> <span class="o">*</span> \
+                          <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">2.000</span><span class="o">*</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Sigma value [%]&#39;</span><span class="p">])</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;3 sigma [</span><span class="si">%F</span><span class="s1">P]&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Best-estimate [</span><span class="si">%F</span><span class="s1">P]&#39;</span><span class="p">]</span> <span class="o">*</span> \
+                          <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">3.000</span><span class="o">*</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Sigma value [%]&#39;</span><span class="p">])</span>
+
+    <span class="n">list_time_sec</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">t_str</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+        <span class="n">list_time_sec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">convert_str_sec</span><span class="p">(</span><span class="n">t_str</span><span class="p">,</span> <span class="n">factors_time</span><span class="p">))</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Time steps [s]&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">list_time_sec</span>
+
+    <span class="n">columns_final</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Time steps [s]&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;Best-estimate [</span><span class="si">%F</span><span class="s1">P]&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;Sigma value [%]&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;1.645 sigma [</span><span class="si">%F</span><span class="s1">P]&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;2 sigma [</span><span class="si">%F</span><span class="s1">P]&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;3 sigma [</span><span class="si">%F</span><span class="s1">P]&#39;</span><span class="p">]</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">columns_final</span><span class="p">)</span>
+
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Best-estimate [</span><span class="si">%F</span><span class="s1">P]&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Best-estimate [</span><span class="si">%F</span><span class="s1">P]&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">100</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Sigma value [%]&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Sigma value [%]&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">100</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;1.645 sigma [</span><span class="si">%F</span><span class="s1">P]&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;1.645 sigma [</span><span class="si">%F</span><span class="s1">P]&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">100</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;2 sigma [</span><span class="si">%F</span><span class="s1">P]&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;2 sigma [</span><span class="si">%F</span><span class="s1">P]&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">100</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;3 sigma [</span><span class="si">%F</span><span class="s1">P]&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;3 sigma [</span><span class="si">%F</span><span class="s1">P]&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">100</span>
+
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="create_df_inventories"><a class="viewcode-back" href="../../Functions.html#src.functions.create_df_inventories">[docs]</a><span class="k">def</span> <span class="nf">create_df_inventories</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span>        <span class="n">list_units</span><span class="p">,</span>
+                         <span class="n">list_categories</span><span class="p">,</span>  <span class="n">factors_time</span><span class="p">,</span>
+                         <span class="n">regex_time</span><span class="p">,</span>       <span class="n">regex_category</span><span class="p">,</span>
+                         <span class="n">regex_categ_unit</span><span class="p">,</span> <span class="n">regex_after_Decay</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read a single .out file and create a dictionary containing the stored</span>
+<span class="sd">    data with pandas DataFrames. The dictionary keys represent:</span>
+<span class="sd">        - 1st key: category (&#39;Elements&#39; or &#39;Isotopes&#39;)</span>
+<span class="sd">        - 2nd key: unit (&#39;g&#39; for mass, &#39;Bq&#39; for activity, &#39;W&#39; for total</span>
+<span class="sd">          power, &#39;W_gamma&#39; for gamma power)</span>
+<span class="sd">    The value of a second key is a pandas DataFrame containing the results</span>
+<span class="sd">    for every detected time steps and for every detected elements or</span>
+<span class="sd">    isotopes</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        `file_path` (str):</span>
+<span class="sd">            Absolute location of the file</span>
+
+<span class="sd">        `list_units` (list):</span>
+<span class="sd">            Units chosen by the user</span>
+
+<span class="sd">        `list_categories` (list):</span>
+<span class="sd">            Categories (&#39;elements&#39; or &#39;isotopes&#39;) chosen by the user</span>
+
+<span class="sd">        `factors_time` (dict):</span>
+<span class="sd">            Correspondence in seconds for different time units</span>
+
+<span class="sd">        `regex_*` (str):</span>
+<span class="sd">            Regular expressions used during files post-processing</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        `inv` (dict):</span>
+<span class="sd">            Source terms inventories for `file_path`</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">re</span> <span class="k">import</span> <span class="n">search</span><span class="p">,</span> <span class="n">sub</span>
+    <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+    <span class="n">inv</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">if</span> <span class="s1">&#39;Elements&#39;</span> <span class="ow">in</span> <span class="n">list_categories</span><span class="p">:</span>
+        <span class="n">inv</span><span class="p">[</span><span class="s1">&#39;Elements&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="s1">&#39;Isotopes&#39;</span> <span class="ow">in</span> <span class="n">list_categories</span><span class="p">:</span>
+        <span class="n">inv</span><span class="p">[</span><span class="s1">&#39;Isotopes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># Regex &quot;nuclides or elements&quot;: initially &#39;None&#39;, switches to:</span>
+    <span class="c1"># &gt;&gt;&gt;&gt; regex_category[&#39;elements&#39;] if category == elements</span>
+    <span class="c1"># &gt;&gt;&gt;&gt; regex_category[&#39;nuclides&#39;] if category == nuclides</span>
+    <span class="n">regex_noe</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Variable switching to 1 when a block of &#39;Decay&#39; results is read</span>
+    <span class="n">readblock</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># Open the .out file in read mode and store the lines in a list</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fi</span><span class="p">:</span>
+        <span class="n">read_file</span> <span class="o">=</span> <span class="n">fi</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">read_file</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^\s+Decay &quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">))</span> <span class="ow">and</span>\
+        <span class="p">(</span><span class="n">search</span><span class="p">(</span><span class="n">regex_after_Decay</span><span class="p">,</span> <span class="n">line</span><span class="p">)):</span>
+            <span class="n">readblock</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="c1"># Search the group of nuclides or elements</span>
+            <span class="c1"># Ex: &#39;fission products&#39;, &#39;actinides&#39; or &#39;light elements&#39;</span>
+            <span class="n">group</span> <span class="o">=</span> <span class="n">find_group</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="n">bloc_res</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="n">readblock</span> <span class="ow">and</span> <span class="n">search</span><span class="p">(</span><span class="n">regex_categ_unit</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+            <span class="c1"># Search the category (&#39;elements&#39; or &#39;nuclides&#39;)</span>
+            <span class="n">category</span><span class="p">,</span> <span class="n">unit</span> <span class="o">=</span> <span class="n">find_category_unit</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="n">regex_noe</span> <span class="o">=</span> <span class="n">regex_category</span><span class="p">[</span><span class="n">category</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">readblock</span> <span class="ow">and</span> <span class="n">search</span><span class="p">(</span><span class="n">regex_time</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+            <span class="c1"># Read the block of data only if &quot; Decay &quot; has been read</span>
+            <span class="n">time_steps</span> <span class="o">=</span> <span class="n">find_times</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">time_steps</span><span class="p">):</span>
+                <span class="n">time_steps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">columns_df</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Group&#39;</span><span class="p">,</span> <span class="n">sub</span><span class="p">(</span><span class="s2">&quot;s$&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">category</span><span class="p">)]</span>
+            <span class="n">columns_df</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">time_steps</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">readblock</span> <span class="ow">and</span> <span class="n">regex_noe</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="n">search</span><span class="p">(</span><span class="n">regex_noe</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">unit</span> <span class="ow">in</span> <span class="n">list_units</span><span class="p">)</span> <span class="ow">and</span>\
+            <span class="p">(</span><span class="n">category</span> <span class="ow">in</span> <span class="n">list_categories</span><span class="p">):</span>
+                <span class="c1"># Search the list of results for the current bloc of data</span>
+                <span class="c1"># results[0]: name of the nuclide or element</span>
+                <span class="c1"># results[i!=0]: result for the corresponding unit and time</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="n">find_results</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\s+&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Totals&quot;</span><span class="p">:</span>
+                    <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Total&quot;</span>
+
+                <span class="c1"># Information: radioactivity results in .out files are provided</span>
+                <span class="c1"># in curies, not becquerels. The conversion is not done here</span>
+                <span class="c1"># as it is much more efficient to convert directly an entire</span>
+                <span class="c1"># pandas DataFrame: see gather_df_inventories function</span>
+
+                <span class="c1"># Build the bloc results</span>
+                <span class="n">row_res</span> <span class="o">=</span> <span class="p">[</span><span class="n">group</span><span class="p">]</span>
+                <span class="n">row_res</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+                <span class="n">bloc_res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row_res</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;^</span><span class="se">\x0c</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">))</span> <span class="ow">and</span> <span class="n">readblock</span><span class="p">:</span>
+            <span class="c1"># Detect the special font at the end of the bloc of data</span>
+            <span class="c1"># caractherizing the bloc&#39;s end: stops data reading</span>
+            <span class="n">readblock</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="c1"># End of the bloc of data: an elementary DataFrame based on</span>
+            <span class="c1"># &quot;bloc_res&quot; matrix (content) and &quot;columns_df&quot; for indices</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">unit</span> <span class="ow">in</span> <span class="n">list_units</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">category</span> <span class="ow">in</span> <span class="n">list_categories</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">unit</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">inv</span><span class="p">[</span><span class="n">category</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">inv</span><span class="p">[</span><span class="n">category</span><span class="p">][</span><span class="n">unit</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">bloc_res</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">columns_df</span><span class="p">)</span>
+                <span class="n">inv</span><span class="p">[</span><span class="n">category</span><span class="p">][</span><span class="n">unit</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">inv</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">inv</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="c1"># inv[k1][k2] is a dataframes list. Concatenate them into one df</span>
+            <span class="n">inv</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">inv</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">u</span><span class="p">])</span>
+            <span class="k">if</span> <span class="s2">&quot;Isotope&quot;</span> <span class="ow">in</span> <span class="n">inv</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">u</span><span class="p">]</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">inv</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="n">inv</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">u</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;Group&#39;</span><span class="p">,</span> <span class="s1">&#39;Isotope&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="k">if</span> <span class="s2">&quot;Element&quot;</span> <span class="ow">in</span> <span class="n">inv</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">u</span><span class="p">]</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">inv</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="n">inv</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">u</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;Group&#39;</span><span class="p">,</span> <span class="s1">&#39;Element&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+            <span class="k">del</span> <span class="n">inv</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">u</span><span class="p">][</span><span class="s1">&#39;initial&#39;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">inv</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">u</span><span class="p">][</span><span class="s1">&#39;charge&#39;</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">inv</span></div>
+
+
+<div class="viewcode-block" id="gather_df_inventories"><a class="viewcode-back" href="../../Functions.html#src.functions.gather_df_inventories">[docs]</a><span class="k">def</span> <span class="nf">gather_df_inventories</span><span class="p">(</span><span class="n">list_categories</span><span class="p">,</span>
+                          <span class="n">list_units</span><span class="p">,</span>
+                          <span class="n">list_batch_df</span><span class="p">,</span>
+                          <span class="n">FAmass_per_file</span><span class="p">,</span>
+                          <span class="n">nFA_per_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gather the DataFrames created by `create_df_inventories` with the</span>
+<span class="sd">    corresponding FA mass and number of FA per batch. Create a dictionary</span>
+<span class="sd">    whose:</span>
+<span class="sd">        - 1st key is the chosen category(ies): &#39;Elements&#39; or &#39;Isotopes&#39;</span>
+<span class="sd">        - 2nd key is the chosen unit(s)</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        `list_category` (list):</span>
+<span class="sd">            Categories chosen by the user</span>
+
+<span class="sd">        `list_units` (list):</span>
+<span class="sd">            Units chosen by the user</span>
+
+<span class="sd">        `list_batch_df` (list):</span>
+<span class="sd">            List of dictionaries returned by create_df_inventories</span>
+
+<span class="sd">        `FAmass_per_file` (list):</span>
+<span class="sd">            FA masses chosen by the user per batch</span>
+
+<span class="sd">        `nFA_per_file` (list):</span>
+<span class="sd">            Number of FA chosen by the user per batch</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        `dinv` (dict):</span>
+<span class="sd">            Gathered source terms inventories</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">dinv</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">list_categories</span><span class="p">:</span>
+        <span class="n">dinv</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">list_units</span><span class="p">:</span>
+            <span class="n">dinv</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="n">list_batch_df</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">c</span><span class="p">][</span><span class="n">u</span><span class="p">]</span>
+            <span class="n">dinv</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="n">dinv</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">u</span><span class="p">]</span> <span class="o">*</span> <span class="n">FAmass_per_file</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span>\
+                         <span class="n">nFA_per_file</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">list_batch_df</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+                <span class="n">df_to_add</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">u</span><span class="p">]</span> <span class="o">*</span> <span class="n">FAmass_per_file</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span>\
+                            <span class="n">nFA_per_file</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">dinv</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="n">dinv</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">u</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">df_to_add</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="c1"># Convert curies to becquerels</span>
+            <span class="c1"># Radioactivity results in .out files are initially in Cu</span>
+            <span class="c1"># 1 cu = 3.7E10 bq</span>
+            <span class="k">if</span> <span class="n">u</span> <span class="o">==</span> <span class="s1">&#39;bq&#39;</span><span class="p">:</span>
+                <span class="n">dinv</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="n">dinv</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="n">u</span><span class="p">]</span> <span class="o">*</span> <span class="mf">3.7E10</span>
+
+    <span class="k">return</span> <span class="n">dinv</span></div>
+
+
+<div class="viewcode-block" id="convert_str_sec"><a class="viewcode-back" href="../../Functions.html#src.functions.convert_str_sec">[docs]</a><span class="k">def</span> <span class="nf">convert_str_sec</span><span class="p">(</span><span class="n">word</span><span class="p">,</span> <span class="n">factors_time</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a time step given in a string into a number of seconds</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        `word` (str):</span>
+<span class="sd">            Time step to convert</span>
+
+<span class="sd">        `factors_time` (dict):</span>
+<span class="sd">            Correspondence in seconds for different time units</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        `sec` (float):</span>
+<span class="sd">            Corresponding time in seconds</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from .dictionaries import factors_time</span>
+<span class="sd">        &gt;&gt;&gt; convert_str_sec(&quot;2.0hr&quot;, factors_time)</span>
+<span class="sd">        7200.0</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">re</span> <span class="k">import</span> <span class="n">findall</span>
+    <span class="k">if</span> <span class="n">word</span> <span class="o">==</span> <span class="s1">&#39;discharge&#39;</span><span class="p">:</span>
+        <span class="n">sec</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sec</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\d+\.\d+&quot;</span><span class="p">,</span> <span class="n">word</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span>\
+              <span class="n">factors_time</span><span class="p">[</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;[a-z]+&quot;</span><span class="p">,</span> <span class="n">word</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]</span>
+
+    <span class="k">return</span> <span class="n">sec</span></div>
+
+
+<div class="viewcode-block" id="find_unc"><a class="viewcode-back" href="../../Functions.html#src.functions.find_unc">[docs]</a><span class="k">def</span> <span class="nf">find_unc</span><span class="p">(</span><span class="n">time_str</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">,</span> <span class="n">factors_time</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find the uncertainty value to be used, depending on the time step. If</span>
+<span class="sd">    `time_str` (converted from string to float in sec with `convert_str_sec`)</span>
+<span class="sd">    does not match any keys in `dictionary`, the maximum value between the</span>
+<span class="sd">    two closest keys values is returned</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        `time_str` (str):</span>
+<span class="sd">            Time step of the form &quot;float&quot;+&quot;time_unit&quot;</span>
+
+<span class="sd">        `dictionary` (dict):</span>
+<span class="sd">            Uncertainty values corresponding to different decay time steps</span>
+
+<span class="sd">        `factors_time` (dict):</span>
+<span class="sd">            Correspondence in seconds for different time units</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        `uncertainty` (float):</span>
+<span class="sd">            Uncertainty value to be used</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from .dictionaries import fp_uncertainty, factors_time</span>
+<span class="sd">        &gt;&gt;&gt; find_unc(&#39;1.5d&#39;, fp_uncertainty, factors_time)</span>
+<span class="sd">        0.03</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">time_sec</span> <span class="o">=</span> <span class="n">convert_str_sec</span><span class="p">(</span><span class="n">time_str</span><span class="p">,</span> <span class="n">factors_time</span><span class="p">)</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dictionary</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">convert_str_sec</span><span class="p">(</span><span class="n">x</span><span class="p">,</span>
+                                                                <span class="n">factors_time</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">L</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">time_sec</span> <span class="o">==</span> <span class="n">convert_str_sec</span><span class="p">(</span><span class="n">L</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">factors_time</span><span class="p">))</span> <span class="ow">or</span>\
+           <span class="p">(</span><span class="n">time_sec</span> <span class="o">&lt;</span> <span class="n">convert_str_sec</span><span class="p">(</span><span class="n">L</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">factors_time</span><span class="p">)):</span>
+            <span class="n">uncertainty</span> <span class="o">=</span> <span class="n">dictionary</span><span class="p">[</span><span class="n">L</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+            <span class="k">break</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">time_sec</span> <span class="o">&gt;</span> <span class="n">convert_str_sec</span><span class="p">(</span><span class="n">L</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">factors_time</span><span class="p">))</span> <span class="ow">and</span>\
+           <span class="p">(</span><span class="n">time_sec</span> <span class="o">&lt;</span> <span class="n">convert_str_sec</span><span class="p">(</span><span class="n">L</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">factors_time</span><span class="p">)):</span>
+            <span class="n">uncertainty</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">dictionary</span><span class="p">[</span><span class="n">L</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">dictionary</span><span class="p">[</span><span class="n">L</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]])</span>
+            <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+    <span class="k">return</span> <span class="n">uncertainty</span></div>
+
+
+<div class="viewcode-block" id="get_dict_group_ioe"><a class="viewcode-back" href="../../Functions.html#src.functions.get_dict_group_ioe">[docs]</a><span class="k">def</span> <span class="nf">get_dict_group_ioe</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Analyze a pandas Dataframe having a two levels index:</span>
+<span class="sd">        - 1st level: group of isotope or element (&quot;Actinides&quot;, &quot;Fission</span>
+<span class="sd">          products&quot;, ..)</span>
+<span class="sd">        - 2nd level: names of the isotopes or elements</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        `df` (pandas.DataFrame):</span>
+<span class="sd">            Two levels indexed DataFrame</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        `di` (dict):</span>
+<span class="sd">            Dictionary whose keys are the contained group, and values are the</span>
+<span class="sd">            sorted list of isotopes or elements contained in this group</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">di</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">L0</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">L1</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e0</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">L0</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">e0</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">di</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">di</span><span class="p">[</span><span class="n">e0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">di</span><span class="p">[</span><span class="n">e0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">L1</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">di</span><span class="p">[</span><span class="n">e0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">L1</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+    <span class="c1"># Sort the list of elements or isotopes</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">di</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">di</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">di</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">di</span></div>
+
+
+<div class="viewcode-block" id="get_state_IntVar"><a class="viewcode-back" href="../../Functions.html#src.functions.get_state_IntVar">[docs]</a><span class="k">def</span> <span class="nf">get_state_IntVar</span><span class="p">(</span><span class="n">dictionary</span><span class="p">,</span> <span class="n">factors_time</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the state of IntVar instances stored in a dictionary</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        `dictionary` (dict):</span>
+<span class="sd">            Keys are string instances whose values are 0 or 1</span>
+
+<span class="sd">        `factors_time` (dict):</span>
+<span class="sd">            Correspondence in seconds for different time units</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        `list_IntVar1` (list):</span>
+<span class="sd">            List of the dictionary&#39;s keys whose values equal to 1</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">list_IntVar1</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dictionary</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
+                    <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">convert_str_sec</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">factors_time</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">dictionary</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">list_IntVar1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">list_IntVar1</span></div>
+
+
+<div class="viewcode-block" id="check_input_output"><a class="viewcode-back" href="../../Functions.html#src.functions.check_input_output">[docs]</a><span class="k">def</span> <span class="nf">check_input_output</span><span class="p">(</span><span class="n">in_loc</span><span class="p">,</span> <span class="n">out_loc</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if input and output folders exist, and get all the available .out</span>
+<span class="sd">    files in input folder</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        `in_loc` (str):</span>
+<span class="sd">            Absolute location of input folder</span>
+
+<span class="sd">        `out_loc` (str):</span>
+<span class="sd">            Absolute location of output folder</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        `list_in_files` (list):</span>
+<span class="sd">            Absolute location of available .out files in `in_loc` folder</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">os</span> <span class="k">import</span> <span class="n">mkdir</span><span class="p">,</span> <span class="n">path</span>
+    <span class="kn">import</span> <span class="nn">glob</span>
+    <span class="kn">import</span> <span class="nn">sys</span>
+
+    <span class="c1"># Check if &#39;Input&#39; folder exists - useless now</span>
+    <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">in_loc</span><span class="p">):</span>
+        <span class="n">list_in_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">in_loc</span><span class="p">,</span> <span class="s1">&#39;*.out&#39;</span><span class="p">))]</span>
+
+        <span class="c1"># If empty, restart needed</span>
+        <span class="k">if</span> <span class="n">list_in_files</span> <span class="o">==</span> <span class="p">[]:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Warning, the following folder:</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="s2">does not contain any&quot;</span>
+                   <span class="s2">&quot; </span><span class="se">\&quot;</span><span class="s2">.out</span><span class="se">\&quot;</span><span class="s2"> file. The files you want to post-process need to &quot;</span>
+                   <span class="s2">&quot;be placed in it. Please restart.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">in_loc</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">in_loc</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Warning, the following folder doesn&#39;t exist:</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="s2">It is now &quot;</span>
+               <span class="s2">&quot;created and empty. The files you want to post-process need to &quot;</span>
+               <span class="s2">&quot;be placed in it. Please restart.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">in_loc</span><span class="p">))</span>
+        <span class="n">mkdir</span><span class="p">(</span><span class="n">in_loc</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Also check if &#39;Output&#39; folder exists. If not, create it</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">out_loc</span><span class="p">):</span>
+        <span class="n">mkdir</span><span class="p">(</span><span class="n">out_loc</span><span class="p">)</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">The following folder doesn&#39;t exist:</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="s2">Creation of this &quot;</span>
+               <span class="s2">&quot;folder, where your resulting files will be located.&quot;</span>\
+               <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">out_loc</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">list_in_files</span></div>
+
+
+<div class="viewcode-block" id="create_df_info"><a class="viewcode-back" href="../../Functions.html#src.functions.create_df_info">[docs]</a><span class="k">def</span> <span class="nf">create_df_info</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Build a list containing the information chosen by the user to be</span>
+<span class="sd">    inserted in a Dataframe</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        `kwargs` (dict):</span>
+<span class="sd">            Information concerning post-processed files and corresponding data</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        `df_info` (pandas.DataFrame):</span>
+<span class="sd">            User informations stored in a DataFrame</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">os</span> <span class="k">import</span> <span class="n">path</span>
+    <span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">DataFrame</span>
+
+    <span class="n">info</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">info</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;chosen_files&quot;</span><span class="p">]])</span>
+    <span class="n">info</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;FAmass_per_file&quot;</span><span class="p">])</span>
+    <span class="n">info</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;nFA_per_file&quot;</span><span class="p">])</span>
+    <span class="n">info</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;chosen_files&quot;</span><span class="p">])</span>
+
+    <span class="n">df_info</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">info</span><span class="p">,</span>
+                        <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;File name&#39;</span><span class="p">,</span>
+                               <span class="s1">&#39;FA mass (tons)&#39;</span><span class="p">,</span>
+                               <span class="s1">&#39;Number of FA&#39;</span><span class="p">,</span>
+                               <span class="s1">&#39;File location&#39;</span><span class="p">])</span>
+    <span class="n">df_info</span> <span class="o">=</span> <span class="n">df_info</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;File name&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">df_info</span></div>
+
+
+<div class="viewcode-block" id="write_results"><a class="viewcode-back" href="../../Functions.html#src.functions.write_results">[docs]</a><span class="k">def</span> <span class="nf">write_results</span><span class="p">(</span><span class="n">output_location</span><span class="p">,</span>
+                  <span class="n">results_type</span><span class="p">,</span>
+                  <span class="n">suffix</span><span class="p">,</span>
+                  <span class="n">dict_results</span><span class="p">,</span>
+                  <span class="n">df_user_data</span><span class="p">,</span>
+                  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if the sub-folder corresponding to the required results type</span>
+<span class="sd">    exists, and create it if it does not. Create the results file</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        `output_location` (str):</span>
+<span class="sd">            Path to the results</span>
+
+<span class="sd">        `results_type` (str):</span>
+<span class="sd">            Name of the sub-folder for results (&quot;Decay_power_curve&quot; or</span>
+<span class="sd">            &quot;Source_terms&quot;)</span>
+
+<span class="sd">        `suffix` (str):</span>
+<span class="sd">            Suffix of the results file name asked by the user appended to</span>
+<span class="sd">            results file name</span>
+
+<span class="sd">        `dict_results` (dict or pandas.DataFrame):</span>
+<span class="sd">            For source terms inventories generation, the `dict_results`</span>
+<span class="sd">            contains the DataFrames to be printed in the result file:</span>
+<span class="sd">                - 1st key: results_type</span>
+<span class="sd">                - 2nd key: categories (only for source terms)</span>
+<span class="sd">                - 3rd key: units (only for source terms)</span>
+<span class="sd">            For decay power curve generation: `dict_results` is directly a</span>
+<span class="sd">            pandas.DataFrame</span>
+
+<span class="sd">        `df_user_data` (pandas.DataFrame):</span>
+<span class="sd">            Data provided by the user in UserData</span>
+
+<span class="sd">        `kwargs` (dict):</span>
+<span class="sd">            Only for source terms results:</span>
+<span class="sd">                - index_group_ioe (list): tuples containing (group, isotope or</span>
+<span class="sd">                  element) names for source terms result file indexing</span>
+<span class="sd">                - time_steps (list): time steps names for columns indexing</span>
+<span class="sd">                - category (str): category for source terms results</span>
+<span class="sd">                - factors_time (dict): amount of seconds in different units</span>
+<span class="sd">                  of time</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        `list_title_msg` (list):</span>
+<span class="sd">            tuple(s) of title (str), msg (str) to be displayed in a messagebox</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">ExcelWriter</span><span class="p">,</span> <span class="n">Series</span>
+    <span class="kn">from</span> <span class="nn">os</span> <span class="k">import</span> <span class="n">path</span><span class="p">,</span> <span class="n">mkdir</span>
+    <span class="kn">from</span> <span class="nn">time</span> <span class="k">import</span> <span class="n">strftime</span><span class="p">,</span> <span class="n">localtime</span>
+
+    <span class="c1"># Create a Series providing the execution time of the function</span>
+    <span class="n">date</span> <span class="o">=</span> <span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">,</span> <span class="n">localtime</span><span class="p">())</span>
+    <span class="n">serie</span> <span class="o">=</span> <span class="n">Series</span><span class="p">({</span><span class="s1">&#39;File creation&#39;</span><span class="p">:</span> <span class="n">date</span><span class="p">})</span>
+
+    <span class="n">list_title_msg</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Check if the folder inside the one containing the .out files exists</span>
+    <span class="n">folder</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_location</span><span class="p">,</span> <span class="s2">&quot;irradiec_results&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Info: folder creation&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Folder </span><span class="si">{}</span><span class="s2"> does not exist, it is created&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
+        <span class="n">list_title_msg</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">title</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
+        <span class="n">mkdir</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
+
+    <span class="c1"># Check if the sub-folder already exists in &quot;irradiec&quot; folder</span>
+    <span class="n">folder</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">results_type</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">folder</span><span class="p">))</span> <span class="ow">or</span>\
+       <span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">folder</span><span class="p">))):</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Info: folder creation&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Folder </span><span class="si">{}</span><span class="s2"> does not exist, it is created&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
+        <span class="n">list_title_msg</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">title</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
+        <span class="n">mkdir</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
+
+    <span class="c1"># Write the output file in Excel format</span>
+    <span class="k">if</span> <span class="n">results_type</span> <span class="o">==</span> <span class="s2">&quot;Source_terms&quot;</span><span class="p">:</span>  <span class="c1"># Source terms file creation</span>
+
+        <span class="c1"># Unit names for result file sheet names</span>
+        <span class="n">dict_unit</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;wt&#39;</span><span class="p">:</span> <span class="s1">&#39;watts_total&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;wg&#39;</span><span class="p">:</span> <span class="s1">&#39;watts_gamma&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;g&#39;</span><span class="p">:</span> <span class="s1">&#39;grams&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;bq&#39;</span><span class="p">:</span> <span class="s1">&#39;becquerels&#39;</span>
+        <span class="p">}</span>
+
+        <span class="n">index_group_ioe</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;index_group_ioe&#39;</span><span class="p">]</span>
+        <span class="n">time_steps</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;time_steps&#39;</span><span class="p">]</span>
+        <span class="n">factors_time</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;factors_time&#39;</span><span class="p">]</span>
+        <span class="n">time_steps</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">time_steps</span><span class="p">,</span>
+                            <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">convert_str_sec</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">factors_time</span><span class="p">))</span>
+        <span class="n">category</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;category&#39;</span><span class="p">]</span>
+
+        <span class="n">file_name</span> <span class="o">=</span> <span class="n">results_type</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">category</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">file_name</span> <span class="o">+=</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">suffix</span> <span class="o">+</span> <span class="s2">&quot;.xlsx&quot;</span>
+        <span class="n">file_name</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
+        <span class="n">writer</span> <span class="o">=</span> <span class="n">ExcelWriter</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+
+        <span class="c1"># Create &#39;creation_time&#39; sheet</span>
+        <span class="n">serie</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;useless&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="s2">&quot;creation_time&quot;</span><span class="p">,</span>
+                                                <span class="n">header</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="c1"># Create &#39;user_data&#39; sheet</span>
+        <span class="n">df_user_data</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="s2">&quot;user_data&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">unit</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dict_results</span><span class="p">[</span><span class="n">category</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">dict_results</span><span class="p">[</span><span class="n">category</span><span class="p">][</span><span class="n">unit</span><span class="p">]</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">index_group_ioe</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">time_steps</span><span class="p">)</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">dict_unit</span><span class="p">[</span><span class="n">unit</span><span class="p">]</span>
+
+            <span class="c1"># Format the results</span>
+            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{:.3e}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">)</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">results_type</span> <span class="o">==</span> <span class="s2">&quot;Decay_power_curve&quot;</span><span class="p">:</span>
+        <span class="c1"># Decay power curve file creation</span>
+        <span class="n">file_name</span> <span class="o">=</span> <span class="n">results_type</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">suffix</span> <span class="o">+</span> <span class="s2">&quot;.xlsx&quot;</span>
+        <span class="n">file_name</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
+        <span class="n">writer</span> <span class="o">=</span> <span class="n">ExcelWriter</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+
+        <span class="c1"># Create &#39;creation_time&#39; sheet</span>
+        <span class="n">serie</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;useless&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="s2">&quot;creation_time&quot;</span><span class="p">,</span>
+                                                <span class="n">header</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="c1"># Create &#39;user_data&#39; sheet</span>
+        <span class="n">df_user_data</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="s2">&quot;user_data&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Format the results - copy it in order to let matplotlib plot the</span>
+        <span class="c1"># DataFrame correctly (else it won&#39;t support strings)</span>
+        <span class="n">df_copy</span> <span class="o">=</span> <span class="n">dict_results</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">df_copy</span><span class="p">[</span><span class="s2">&quot;Time steps [s]&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_copy</span><span class="p">[</span><span class="s2">&quot;Time steps [s]&quot;</span><span class="p">]</span>\
+            <span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{:.2e}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df_copy</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="s2">&quot;Time steps [s]&quot;</span><span class="p">]:</span>
+            <span class="n">df_copy</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_copy</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{:.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">)</span>
+        <span class="n">df_copy</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="n">results_type</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Wrong parameter (write_result function). Exit&quot;</span><span class="p">)</span>
+        <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">writer</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+    <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Info: results file creation&quot;</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Creation of:</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+    <span class="n">list_title_msg</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">title</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">list_title_msg</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Theo Painvin.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
