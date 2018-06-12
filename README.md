@@ -4,7 +4,7 @@ This tool aims at post-processing files containing isotopes and elements irradia
 ## Getting started
 This tool runs with Python v3.5 or more. To run it:
 ```
-python main.py
+python irradiec.py
 ```
 A GUI designed with `tkinter` module then controls the application.
 
